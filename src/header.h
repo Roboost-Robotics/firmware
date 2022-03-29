@@ -2,6 +2,7 @@
 #include <FreeRTOS.h>
 #include <BasicLinearAlgebra.h>
 #include <PID_v1.h>
+#include <ros.h>
 
 //--------------------------hardware declarations---------------------------------
 // measurements in [m]
