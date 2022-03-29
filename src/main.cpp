@@ -51,10 +51,10 @@ PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUT
 BLA::Matrix<4> calculateWheelVelocity(BLA::Matrix<3> robotVelocity){
   
   BLA::Matrix<4> wheelVelocity;
-  BLA::Matrix<4, 3> forwardKinematicsModel = { 1, -1, -1/(L_X + L_Y),
-                                               1, 1, 1/(L_X + L_Y),
-                                               1, 1, -1/(L_X + L_Y),
-                                               1, -1, 1/(L_X + L_Y)};
+  BLA::Matrix<4, 3> forwardKinematicsModel = { 1, -1, -(L_X + L_Y),
+                                               1, 1, L_X + L_Y,
+                                               1, 1, -(L_X + L_Y),
+                                               1, -1, L_X + L_Y};
   wheelVelocity = forwardKinematicsModel * robotVelocity;
   wheelVelocity *=  1 / WHEELRADIUS;
 
@@ -222,14 +222,14 @@ void loop() {
       wantedWheelVel_FR = wantedWheelVel(3);
 
       // measure motor speed
-      //rotationspeed_BL = ((double)count_BL / ((double)dt / (double)1000)) / (double)360;  // rad/s
-      //count_BL = 0;
-      //rotationspeed_BL = ((double)count_BR / ((double)dt / (double)1000)) / (double)360;  // rad/s
-      //count_BR = 0;
-      //rotationspeed_BL = ((double)count_FL / ((double)dt / (double)1000)) / (double)360;  // rad/s
-      //count_FL = 0;
-      //rotationspeed_BL = ((double)count_FR / ((double)dt / (double)1000)) / (double)360;  // rad/s
-      //count_FR = 0;
+      rotationspeed_BL = ((double)count_BL / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      count_BL = 0;
+      rotationspeed_BL = ((double)count_BR / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      count_BR = 0;
+      rotationspeed_BL = ((double)count_FL / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      count_FL = 0;
+      rotationspeed_BL = ((double)count_FR / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      count_FR = 0;
 
       // compute controllers
       PID_BL.Compute();
