@@ -219,16 +219,16 @@ void loop() {
       wantedWheelVel_BL = wantedWheelVel(0);
       wantedWheelVel_BR = wantedWheelVel(1);
       wantedWheelVel_FL = wantedWheelVel(2);
-      wantedWheelVel_FR = wantedWheelVel(3);
+      wantedWheelVel_FR = 1;//wantedWheelVel(3);
 
       // measure motor speed
-      rotationspeed_BL = ((double)count_BL / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      rotationspeed_BL = ((double)count_BL / ((double)dt / (double)1000)) / (double)600;  // rad/s inserted different encoder with 600 BM
       count_BL = 0;
-      rotationspeed_BL = ((double)count_BR / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      rotationspeed_BR = ((double)count_BR / ((double)dt / (double)1000)) / (double)360;  // rad/s
       count_BR = 0;
-      rotationspeed_BL = ((double)count_FL / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      rotationspeed_FL = ((double)count_FL / ((double)dt / (double)1000)) / (double)360;  // rad/s
       count_FL = 0;
-      rotationspeed_BL = ((double)count_FR / ((double)dt / (double)1000)) / (double)360;  // rad/s
+      rotationspeed_FR = ((double)count_FR / ((double)dt / (double)1000)) / (double)360;  // rad/s
       count_FR = 0;
 
       // compute controllers
@@ -289,14 +289,10 @@ void loop() {
       ledcWrite(M_FR_PWM_CNL, dutyCycle_FR);//0); //
     }
     // TODO: DutyCicle versucht bei negativer sollgeschw. negativ zu werden... diese blöd
-    //Serial.print(wantedWheelVel_BL); Serial.print(" "); Serial.print(rotationspeed_BL); Serial.print(" "); Serial.println(dutyCycle_BL);
-    //Serial.print(wantedWheelVel_BR); Serial.print(" "); Serial.print(rotationspeed_BR); Serial.print(" "); Serial.println(dutyCycle_BR);
-    //Serial.print(wantedWheelVel_FL); Serial.print(" "); Serial.print(rotationspeed_FL); Serial.print(" "); Serial.println(dutyCycle_FL);
-    //Serial.print(wantedWheelVel_FR); Serial.print(" "); Serial.print(rotationspeed_FR); Serial.print(" "); Serial.println(dutyCycle_FR);
-    Serial.println(count_BL);
-    Serial.println(count_BR);
-    Serial.println(count_FL);
-    Serial.println(count_FR);
+    Serial.print(wantedWheelVel_BL); Serial.print(" "); Serial.print(rotationspeed_BL); Serial.print(" "); Serial.println(dutyCycle_BL);
+    Serial.print(wantedWheelVel_BR); Serial.print(" "); Serial.print(rotationspeed_BR); Serial.print(" "); Serial.println(dutyCycle_BR);
+    Serial.print(wantedWheelVel_FL); Serial.print(" "); Serial.print(rotationspeed_FL); Serial.print(" "); Serial.println(dutyCycle_FL);
+    Serial.print(wantedWheelVel_FR); Serial.print(" "); Serial.print(rotationspeed_FR); Serial.print(" "); Serial.println(dutyCycle_FR);
     vTaskDelay(400 / portTICK_PERIOD_MS);
   }
 }
