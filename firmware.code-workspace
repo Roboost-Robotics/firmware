@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "Motorshield"
+		},
+		{
+			"name": "Sensorshield",
+			"path": "Sensorshield"
+		}
+	],
+	"settings": {
+		"files.autoSave": "afterDelay"
+	}
+}
