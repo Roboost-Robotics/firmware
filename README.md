@@ -3,6 +3,7 @@
 ## Motorshield Firmware
 ### Overview
 This program controls the movement of a four-wheeled robot using encoder feedback and PID control. It also includes functions for calculating the robot's velocity using forward and inverse kinematics models.
+[latex]E=mc^2[/latex]
 
 ### Variables
 - `count_BL`, `count_BR`, `count_FL`, `count_FR`: 16-bit integers representing the number of encoder counts for the back left, back right, front left, and front right wheels, respectively
