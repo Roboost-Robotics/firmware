@@ -43,5 +43,5 @@ Constants
 `L_X` and `L_Y`: constants representing the dimensions of the robot in the x and y directions, respectively
 `WHEELRADIUS`: constant representing the radius of the wheels
 
-## Motorshield Firmware
+## Sensorshield Firmware
 TODO
