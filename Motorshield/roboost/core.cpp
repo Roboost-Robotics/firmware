@@ -1,10 +1,10 @@
-#include "header.h"
+#include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <BasicLinearAlgebra.h>
+#include <PID_v1.h>
+#include <ros.h>
 
-// B pin of encoder is not used. The direction of the motors will be deduced from H-Bridge. This is, however, a precision flaw
-volatile uint16_t count_BL = 0;
-volatile uint16_t count_BR = 0;
-volatile uint16_t count_FL = 0;
-volatile uint16_t count_FR = 0;
+#include "config.h"
 
 double rotationspeed_BL = 0;
 double rotationspeed_BR = 0;
@@ -21,32 +21,51 @@ double wantedWheelVel_BR = 0;
 double wantedWheelVel_FL = 0;
 double wantedWheelVel_FR = 0;
 
-// Interrup routines
-void IRAM_ATTR function_ISR_EC_BL() {
-  // Encoder out A triggers interrupt
-  // TODO: check last B state to determine direction
-  count_BL++;
-}
-
-void IRAM_ATTR function_ISR_EC_BR() {
-  count_BR++;
-}
-
-void IRAM_ATTR function_ISR_EC_FL() {
-  count_FL++;
-}
-
-void IRAM_ATTR function_ISR_EC_FR() {
-  count_FR++;
-}
 
 // PID init
 double Kp=2, Ki=1, Kd=1;
 
-PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
-PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
-PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
-PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+#ifdef ENCODERS
+// Encoder specific definitions and functions
+
+  // B pin of encoder is not used. The direction of the motors will be deduced from H-Bridge. This is, however, a precision flaw
+  volatile uint16_t count_BL = 0;
+  volatile uint16_t count_BR = 0;
+  volatile uint16_t count_FL = 0;
+  volatile uint16_t count_FR = 0;
+
+  // Interrup routines
+  void IRAM_ATTR function_ISR_EC_BL() {
+    // Encoder out A triggers interrupt
+    // TODO: check last B state to determine direction
+    count_BL++;
+  }
+
+  void IRAM_ATTR function_ISR_EC_BR() {
+    count_BR++;
+  }
+
+  void IRAM_ATTR function_ISR_EC_FL() {
+    count_FL++;
+  }
+
+  void IRAM_ATTR function_ISR_EC_FR() {
+    count_FR++;
+  }
+
+  PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+
+#else
+
+  PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+
+#endif
 
 BLA::Matrix<4> calculateWheelVelocity(BLA::Matrix<3> robotVelocity){
   
@@ -105,23 +124,24 @@ inline void motorHardwareSetup(){
   pinMode(M_FR_CCW, OUTPUT);
 
   //-----Encoder-----
+  #ifdef ENCODERS
+    pinMode(EC_BL_A, INPUT); // hardware pullup
+    pinMode(EC_BL_B, INPUT); // hardware pullup
 
-  pinMode(EC_BL_A, INPUT); // hardware pullup
-  pinMode(EC_BL_B, INPUT); // hardware pullup
-  
-  pinMode(EC_BR_A, INPUT); // hardware pullup
-  pinMode(EC_BR_B, INPUT); // hardware pullup
-  
-  pinMode(EC_FL_A, INPUT_PULLUP);
-  pinMode(EC_FL_B, INPUT_PULLUP);
-  
-  pinMode(EC_FR_A, INPUT_PULLUP);
-  pinMode(EC_FR_B, INPUT_PULLUP);
-  
-  attachInterrupt(EC_BL_A, function_ISR_EC_BL, FALLING);
-  attachInterrupt(EC_BR_A, function_ISR_EC_BR, FALLING);
-  attachInterrupt(EC_FL_A, function_ISR_EC_FL, FALLING);
-  attachInterrupt(EC_FR_A, function_ISR_EC_FR, FALLING);
+    pinMode(EC_BR_A, INPUT); // hardware pullup
+    pinMode(EC_BR_B, INPUT); // hardware pullup
+
+    pinMode(EC_FL_A, INPUT_PULLUP);
+    pinMode(EC_FL_B, INPUT_PULLUP);
+
+    pinMode(EC_FR_A, INPUT_PULLUP);
+    pinMode(EC_FR_B, INPUT_PULLUP);
+
+    attachInterrupt(EC_BL_A, function_ISR_EC_BL, FALLING);
+    attachInterrupt(EC_BR_A, function_ISR_EC_BR, FALLING);
+    attachInterrupt(EC_FL_A, function_ISR_EC_FL, FALLING);
+    attachInterrupt(EC_FR_A, function_ISR_EC_FR, FALLING);
+  #endif
 }
 
 void setup() {
