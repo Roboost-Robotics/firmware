@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <BasicLinearAlgebra.h>
-#include <PID_v1.h>
+#include <PID/PID.h>
 #include <ros.h>
 
 #include "config.h"
@@ -83,6 +83,10 @@ BLA::Matrix<4> calculateWheelVelocity(BLA::Matrix<3> robotVelocity){
 // calculates the velocity in direction x and y, as well as the angular velocity around the z axis
 // [m/s] [m/s] [rad/s]
 // using the wheel velocities as input
+
+/// @brief calculates the velocity in direction x and y, as well as the angular velocity around the z axis [m/s] [m/s] [rad/s]
+/// @param wheelVelocity 
+/// @return velocity of the robot
 BLA::Matrix<3> calculateRobotVelocity(BLA::Matrix<4> wheelVelocity){
   BLA::Matrix<3> robotVelocity;
 
