@@ -53,17 +53,17 @@ double Kp=2, Ki=1, Kd=1;
     count_FR++;
   }
 
-  PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_BL(Kp, Ki, Kd);
+  PID PID_BR(Kp, Ki, Kd);
+  PID PID_FL(Kp, Ki, Kd);
+  PID PID_FR(Kp, Ki, Kd);
 
 #else
 
-  PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
-  PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+  PID PID_BL(Kp, Ki, Kd);
+  PID PID_BR(Kp, Ki, Kd);
+  PID PID_FL(Kp, Ki, Kd);
+  PID PID_FR(Kp, Ki, Kd);
 
 #endif
 
