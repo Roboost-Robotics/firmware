@@ -1,5 +1,10 @@
 # README
 
+## TODO
+- Implememt the use of URDF files
+- Make virtual motor class that uses PID controll; implementations are specific like H-bridge or VESC
+- Implement ROS communication
+
 ## Motorshield Firmware
 ### Overview
 This program controls the movement of a four-wheeled robot using encoder feedback and PID control. It also includes functions for calculating the robot's velocity using forward and inverse kinematics models.

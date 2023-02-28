@@ -1,7 +1,7 @@
 #include "PID.h"
 
 // Constructor
-PID::PIDController(double kp, double ki, double kd)
+PID::PID(double kp, double ki, double kd)
     : Kp(kp), Ki(ki), Kd(kd), prevError(0), integral(0) {}
 
 // Compute the control signal using the PID algorithm
