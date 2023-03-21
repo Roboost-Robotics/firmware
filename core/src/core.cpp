@@ -1,3 +1,14 @@
+/**
+ * @file core.cpp
+ * @author Friedl Jakob (friedl.jak@gmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-03-21
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include <Arduino.h>
 #include <freertos/FreeRTOS.h>
 #include <BasicLinearAlgebra.h>
@@ -80,13 +91,12 @@ BLA::Matrix<4> calculateWheelVelocity(BLA::Matrix<3> robotVelocity){
   return wheelVelocity;
 }
 
-// calculates the velocity in direction x and y, as well as the angular velocity around the z axis
-// [m/s] [m/s] [rad/s]
-// using the wheel velocities as input
-
-/// @brief calculates the velocity in direction x and y, as well as the angular velocity around the z axis [m/s] [m/s] [rad/s]
-/// @param wheelVelocity 
-/// @return velocity of the robot
+/**
+ * @brief Calculates the velocity in direction x and y, as well as the angular velocity around the z axis [m/s] [m/s] [rad/s].
+ * 
+ * @param wheelVelocity 
+ * @return BLA::Matrix<3> velocity of the robot in x, y and rotational velocity around z
+ */
 BLA::Matrix<3> calculateRobotVelocity(BLA::Matrix<4> wheelVelocity){
   BLA::Matrix<3> robotVelocity;
 
