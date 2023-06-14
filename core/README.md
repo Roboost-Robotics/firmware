@@ -3,7 +3,14 @@
 nices tutorial:
 https://micro.ros.org/docs/tutorials/core/first_application_linux/
 
+to run:
 
+- upload code
+- press EN pin
+- once the micro-ROS agent is built, run following command to make the serial port accessible in the host machine:
+```bash
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
+```
 
 
 
