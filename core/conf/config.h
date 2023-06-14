@@ -9,15 +9,12 @@
  * 
  */
 
-
-
-
 /**
  * @brief Selection of robot kinematics.
  * MECANUM_4WHEEL: Kinematics of a four wheeled mecanum drive.
  * SWERVE_3WHEEL: Kinematics of a robot with three swerve drives.
  */
-#define MECANUM_4WHEEL
+//#define MECANUM_4WHEEL
 //#define SWERVE_3WHEEL
 
 
