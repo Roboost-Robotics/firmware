@@ -1,5 +1,12 @@
 # README
 
+nices tutorial:
+https://micro.ros.org/docs/tutorials/core/first_application_linux/
+
+
+
+
+
 ## TODO
 - Implememt the use of URDF files
 - Make virtual motor class that uses PID controll; implementations are specific like H-bridge or VESC
