@@ -13,12 +13,8 @@
 
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include "config.h"
-
-#define SSID       ""
-#define SSID_PW    ""
-#define AGENT_IP   "" // IP of the ROS2 messages recceiver
-#define AGENT_PORT 2018 //AGENT port number
+#include "conf_network.h"
+#include "conf_robot.h"
 
 #define PUBLISH_FREQUENCY 2 //hz
 
