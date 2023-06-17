@@ -1,14 +1,3 @@
-/**
- * @file core.cpp
- * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief 
- * @version 0.2
- * @date 2023-06-14
- * 
- * @copyright Copyright (c) 2023
- * 
- */
-
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 
@@ -16,9 +5,7 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
-#include <geometry_msgs/msg/twist.h>
-
-#include "subscribers/cmd_vel_subscriber.hpp"
+#include <geometry_msgs/msg/twist.h> // Include Twist message
 
 #if !defined(MICRO_ROS_TRANSPORT_ARDUINO_SERIAL)
 #error This example is only avaliable for Arduino framework with serial transport.
@@ -42,6 +29,17 @@ void error_loop() {
   }
 }
 
+// Create the subscriber callback
+void cmd_vel_subscriber_callback(const void * msgin) {
+  const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
+  // Do something with the received message
+  // For example, print the received velocities
+  Serial.print("Received linear velocity: ");
+  Serial.println(msg->linear.x);
+  Serial.print("Received angular velocity: ");
+  Serial.println(msg->angular.z);
+}
+
 void setup() {
   // Configure serial transport
   Serial.begin(115200);
@@ -54,21 +52,17 @@ void setup() {
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
   // create node
-  RCCHECK(rclc_node_init_default(&node, "micro_ros_arduino_node", "", &support));
-
-  // Declare and initialize the message variable
-  geometry_msgs__msg__Twist msg;
-  geometry_msgs__msg__Twist__init(&msg);
+  RCCHECK(rclc_node_init_default(&node, "micro_ros_platformio_node", "", &support));
 
   // create subscriber
   RCCHECK(rclc_subscription_init_default(
     &subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "/cmd_vel"));
+    "command_vel"));  // Here we use the name "command_vel"
 
   // create executor
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
+  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator)); // Note that we now have 1 handle for the subscriber
   RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscriber_callback, ON_NEW_DATA));
 }
 
