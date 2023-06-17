@@ -18,5 +18,6 @@ void OdometryPublisher::publishOdometry(float linear_velocity, float angular_vel
   msg_->twist.twist.linear.x = linear_velocity;
   msg_->twist.twist.angular.z = angular_velocity;
 
+  // TODO: Use return value to log success
   rcl_publish(&publisher_, &msg_, NULL);
 }

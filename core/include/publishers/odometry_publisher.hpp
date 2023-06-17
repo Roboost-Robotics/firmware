@@ -13,7 +13,7 @@ public:
 
 private:
   rcl_publisher_t publisher_;
-  nav_msgs__msg__Odometry msg_;
+  nav_msgs__msg__Odometry *msg_;
 };
 
 #endif // ODOMETRY_PUBLISHER_H
