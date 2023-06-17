@@ -18,7 +18,7 @@
 
 #include <geometry_msgs/msg/twist.h>
 
-#include "subscriber/subscriber.hpp"
+#include "subscribers/cmd_vel_subscriber.hpp"
 
 #if !defined(MICRO_ROS_TRANSPORT_ARDUINO_SERIAL)
 #error This example is only avaliable for Arduino framework with serial transport.
@@ -69,7 +69,7 @@ void setup() {
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscriber_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscriber_callback, ON_NEW_DATA));
 }
 
 void loop() {

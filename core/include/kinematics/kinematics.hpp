@@ -4,8 +4,6 @@
 #ifndef KINEMATICS_H
 #define KINEMATICS_H
 
-// Function to calculate wheel velocities
-BLA::Matrix<4> calculateWheelVelocity(BLA::Matrix<3> robotVelocity);
 #if defined(MECANUM_4WHEEL)
   /**
    * @brief Calculates wheel velocity based on given robot velocity

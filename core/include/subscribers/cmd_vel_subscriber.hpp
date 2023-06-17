@@ -8,6 +8,6 @@
  * 
  * @param msgin 
  */
-void subscriber_callback(const void * msgin);
+void cmd_vel_subscriber_callback(const void * msgin);
 
 #endif // SUBSCRIBER_H

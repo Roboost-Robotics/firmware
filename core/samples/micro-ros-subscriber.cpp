@@ -30,7 +30,7 @@ void error_loop() {
 }
 
 // Create the subscriber callback
-void subscriber_callback(const void * msgin) {
+void cmd_vel_subscriber_callback(const void * msgin) {
   const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
   // Do something with the received message
   // For example, print the received velocities
@@ -63,7 +63,7 @@ void setup() {
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator)); // Note that we now have 1 handle for the subscriber
-  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscriber_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscriber_callback, ON_NEW_DATA));
 }
 
 void loop() {

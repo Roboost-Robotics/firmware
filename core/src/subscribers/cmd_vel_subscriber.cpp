@@ -1,8 +1,8 @@
-#include "subscriber/subscriber.hpp"
+#include "subscribers/cmd_vel_subscriber.hpp"
 #include "kinematics/kinematics.hpp"
 
 // Subscriber callback function implementation
-void subscriber_callback(const void * msgin) {
+void cmd_vel_subscriber_callback(const void * msgin) {
     const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
     
     Serial.print("Received linear velocity: ");
