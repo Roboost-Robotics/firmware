@@ -45,6 +45,9 @@ void error_loop() {
 void setup() {
   // Configure serial transport
   Serial.begin(115200);
+
+  Serial.println("Initialized Roboost core!");
+
   set_microros_serial_transports(Serial);
   delay(2000);
 
