@@ -48,7 +48,10 @@ void setup() {
 
   Serial.println("Initialized Roboost core!");
 
-  set_microros_serial_transports(Serial);
+  IPAddress agent_ip(AGENT_IP);
+  size_t agent_port = AGENT_PORT;
+
+  set_microros_wifi_transports(SSID, SSID_PW, agent_ip, agent_port);
   delay(2000);
 
   allocator = rcl_get_default_allocator();
