@@ -1,13 +1,6 @@
-#ifndef SUBSCRIBER_H
-#define SUBSCRIBER_H
+#ifndef CMD_VEL_SUBSCRIBER_H
+#define CMD_VEL_SUBSCRIBER_H
 
-#include <geometry_msgs/msg/twist.h>
+void cmd_vel_subscription_callback(const void * msgin);
 
-/**
- * @brief Subscriber callback function declaration
- * 
- * @param msgin 
- */
-void cmd_vel_subscriber_callback(const void * msgin);
-
-#endif // SUBSCRIBER_H
+#endif // CMD_VEL_SUBSCRIBER_H

@@ -18,3 +18,16 @@ ros2 run micro_ros_setup build_agent.sh
 ```bash
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
 ```
+
+For wireless controll:
+
+
+```bash
+cd microros_ws
+source install/local_setup.bash
+```
+
+Then start teleop to controll the robot:
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
