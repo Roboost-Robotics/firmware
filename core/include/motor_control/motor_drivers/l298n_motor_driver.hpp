@@ -5,15 +5,15 @@
 
 class L298NMotorDriver : public MotorDriver {
 public:
-  L298NMotorDriver(int pinIN1, int pinIN2, int pinENA);
+  L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena, unsigned int pwm_channel);
 
-  virtual void setPWM(int pwm) override;
-
-  // Other L298N-specific functions...
+  void set_motor_control(float control_value);
 
 private:
-  int pinIN1_, pinIN2_, pinENA_;
-  // Other L298N-specific variables...
+  const unsigned int pin_in1_;
+  const unsigned int pin_in2_;
+  const unsigned int pin_ena_;
+  const unsigned int pwm_channel_;
 };
 
 #endif // L298N_MOTOR_DRIVER_H

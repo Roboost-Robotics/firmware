@@ -3,7 +3,7 @@
 
 class MotorDriver {
 public:
-  virtual void setPWM(int pwm) = 0; // = 0 makes this function pure virtual, meaning it MUST be implemented by any derived class
+  virtual void set_motor_control(float control_value) = 0; // = 0 makes this function pure virtual, meaning it MUST be implemented by any derived class
   virtual ~MotorDriver() {} // virtual destructor
 };
 
