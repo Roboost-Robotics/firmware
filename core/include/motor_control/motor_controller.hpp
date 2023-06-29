@@ -7,6 +7,8 @@ class MotorController {
 public:
   MotorController(MotorDriver& motor_driver) : motor_driver_(motor_driver) {}
   
+  virtual ~MotorController() {}
+
   virtual void set_rotation_speed(float desired_rotation_speed) = 0;
 
 protected:

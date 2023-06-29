@@ -3,12 +3,12 @@
 
 class Encoder {
 public:
-  Encoder(int pinA, int pinB);
+  Encoder(int pin_A, int pin_B);
 
-  float readVelocity();
+  float read_velocity();
 
 private:
-  int pinA_, pinB_;
+  int pin_A_, pin_B_;
 };
 
 #endif // ENCODER_H

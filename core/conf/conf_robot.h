@@ -31,29 +31,29 @@
     #define L_Y 0.32 // distance between wheel contact point in y direction
 //--------------------------pinout definitions------------------------------------
     // motor back right
-    #define M_BR_CCW 33
-    #define M_BR_CW 32
-    #define M_BR_PWM 25
+    #define M3_IN1 33
+    #define M3_IN2 32
+    #define M3_ENA 25
 
     // motor back left
-    #define M_BL_CW 26
-    #define M_BL_CCW 27
-    #define M_BL_PWM 13
+    #define M2_IN1 26
+    #define M2_IN2 27
+    #define M2_ENA 13
 
     // motor front left
-    #define M_FL_CW 23
-    #define M_FL_CCW 22
-    #define M_FL_PWM 21
+    #define M0_IN1 23
+    #define M0_IN2 22
+    #define M0_ENA 21
 
     // motor front right
-    #define M_FR_CCW 18
-    #define M_FR_CW 14
-    #define M_FR_PWM 19
+    #define M1_IN1 18
+    #define M1_IN2 14
+    #define M1_ENA 19
     // PWM config
-    #define M_BR_PWM_CNL 0
-    #define M_BL_PWM_CNL 0
-    #define M_FR_PWM_CNL 0
-    #define M_FL_PWM_CNL 0
+    #define M3_PWM_CNL 0
+    #define M2_PWM_CNL 0
+    #define M0_PWM_CNL 0
+    #define M1_PWM_CNL 0
 
     #define M_PWM_FRQ 1000 // Hz
     #define M_PWM_RES 8 // 2^n Bits

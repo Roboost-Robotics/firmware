@@ -1,56 +1,32 @@
-#include <Arduino.h>
-#include <micro_ros_platformio.h>
+#include "ros_handler.hpp"
+#include "robot_controller.hpp"
+#include "motor_control/simple_motor_controller.hpp"
+#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
+#include "conf_robot.h"
 
-#include <rcl/rcl.h>
-#include <rclc/rclc.h>
-#include <rclc/executor.h>
+L298NMotorDriver driver_M0(M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL);
+L298NMotorDriver driver_M1(M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL);
+L298NMotorDriver driver_M2(M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL);
+L298NMotorDriver driver_M3(M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL);
 
-#include <geometry_msgs/msg/twist.h>
+SimpleMotorController controller_M0(driver_M0, 1.);
+SimpleMotorController controller_M1(driver_M1, 1.);
+SimpleMotorController controller_M2(driver_M2, 1.);
+SimpleMotorController controller_M3(driver_M3, 1.);
 
-#include "conf_network.h"
-#include "rcl_checks.h"
+MotorControllerManager motor_controll_manager{&controller_M0}; // initializer list
 
-#include "subscribers/cmd_vel_subscriber.hpp"
+MecanumKinematics4W kinematics(WHEELRADIUS, L_X, L_Y);
 
-rcl_subscription_t subscriber;
-geometry_msgs__msg__Twist msg;
+RobotController robot_controller(motor_controll_manager, kinematics);
 
-rclc_executor_t executor;
-rclc_support_t support;
-rcl_allocator_t allocator;
-rcl_node_t node;
-
+RosHandler ros_handler(robot_controller);
 
 void setup() {
-  // Configure serial transport
-  Serial.begin(115200);
-  IPAddress agent_ip(AGENT_IP);
-  size_t agent_port = AGENT_PORT;
-
-  set_microros_wifi_transports(SSID, SSID_PW, agent_ip, agent_port);
-  delay(2000);
-
-  allocator = rcl_get_default_allocator();
-
-  //create init_options
-  RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
-
-  // create node
-  RCCHECK(rclc_node_init_default(&node, "roboost_core_node", "", &support));
-
-  // create subscriber
-  RCCHECK(rclc_subscription_init_default(
-    &subscriber,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "cmd_vel"));
-
-  // create executor
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscription_callback, ON_NEW_DATA));
+    ros_handler.setup();
 }
 
 void loop() {
-  delay(100);
-  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+    delay(100);
+    ros_handler.spin();
 }
