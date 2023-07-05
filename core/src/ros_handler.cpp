@@ -4,28 +4,29 @@
 #include "conf_network.h"
 #include "rcl_checks.h"
 
-// TODO: maybe unnessesary includes
+// TODO: maybe unnecessary includes
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
 
+// Global Variables (instead of private members)
+rcl_subscription_t subscriber_;
+rcl_publisher_t publisher_;
+geometry_msgs__msg__Twist msg_;
+nav_msgs__msg__Odometry odom_;
 
-RosHandler::RosHandler(RobotController& robot_controller)  // Update this constructor
-    : robot_controller_(robot_controller) {
-    // Constructor
+rclc_executor_t executor_;
+rclc_support_t support_;
+rcl_allocator_t allocator_;
+rcl_node_t node_;
+
+RobotController* robot_controller_ptr = nullptr;
+
+void set_robot_command(const BLA::Matrix<3>& cmd){
+    robot_controller_ptr->set_latest_command(cmd);
 }
 
-RosHandler::~RosHandler() {
-    // Destructor
-}
-
-void RosHandler::set_robot_command(const BLA::Matrix<3>& cmd){
-    robot_controller_.set_latest_command(cmd);
-}
-
-    // TODO: fix subscriber
 // Update the callback function definition
 void cmd_vel_subscription_callback(const void* msgin, void* ros_handler_void) {
-    RosHandler* ros_handler = static_cast<RosHandler*>(ros_handler_void);
     const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
 
     // Convert the ROS Twist message to a BLA::Matrix<3> and call set_latest_command
@@ -34,10 +35,10 @@ void cmd_vel_subscription_callback(const void* msgin, void* ros_handler_void) {
     cmd(1) = msg->linear.y;
     cmd(2) = msg->angular.z;
 
-    ros_handler->set_robot_command(cmd);
+    set_robot_command(cmd);
 }
 
-void RosHandler::setup() {
+void setup_ros_handler() {
     Serial.begin(115200);
     IPAddress agent_ip(AGENT_IP);
     size_t agent_port = AGENT_PORT;
@@ -63,9 +64,7 @@ void RosHandler::setup() {
 
     // create executor
     RCCHECK(rclc_executor_init(&executor_, &support_.context, 1, &allocator_));
-
-    // TODO: fix subscriber
-    RCCHECK(rclc_executor_add_subscription(&executor_, &subscriber_, &msg_, cmd_vel_subscription_callback, this, ON_NEW_DATA));
+    RCCHECK(rclc_executor_add_subscription(&executor_, &subscriber_, &msg_, cmd_vel_subscription_callback, NULL, ON_NEW_DATA));
 
     // Create publisher for odometry
     RCCHECK(rclc_publisher_init_default(
@@ -76,10 +75,9 @@ void RosHandler::setup() {
     ));
 }
 
-void RosHandler::spin() {
-
+void spin_ros_handler() {
     // Publish the RobotController's latest odometry
-    BLA::Matrix<6> odometry = robot_controller_.get_odometry();
+    BLA::Matrix<6> odometry = robot_controller_ptr->get_odometry();
 
     // Convert the odometry matrix to a nav_msgs__msg__Odometry
     odom_.pose.pose.position.x = odometry(0); // x position

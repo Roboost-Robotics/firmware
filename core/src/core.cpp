@@ -16,17 +16,16 @@ SimpleMotorController controller_M3(driver_M3, 1.);
 
 MotorControllerManager motor_controll_manager{&controller_M0}; // initializer list
 
-MecanumKinematics4W kinematics(WHEELRADIUS, L_X, L_Y);
-
 RobotController robot_controller(motor_controll_manager, kinematics);
 
-RosHandler ros_handler(robot_controller);
+// Assign the robot controller to the global pointer
+robot_controller_ptr = &robot_controller;
 
 void setup() {
-    ros_handler.setup();
+    setup_ros_handler();
 }
 
 void loop() {
     delay(100);
-    ros_handler.spin();
+    spin_ros_handler();
 }

@@ -13,37 +13,26 @@
 
 #include "robot_controller.hpp"
 
-    // TODO: fix subscriber
-// Forward declare the RosHandler class so that it can be used in the callback function prototype
-class RosHandler;
+extern RobotController* robot_controller_ptr;
 
-    // TODO: fix subscriber
-// Update the callback function prototype
+// Global Variables (instead of private members)
+extern rcl_subscription_t subscriber_;
+extern rcl_publisher_t publisher_;
+extern geometry_msgs__msg__Twist msg_;
+extern nav_msgs__msg__Odometry odom_;
+
+extern rclc_executor_t executor_;
+extern rclc_support_t support_;
+extern rcl_allocator_t allocator_;
+extern rcl_node_t node_;
+
+// Function Prototypes (instead of member functions)
+void setup_ros_handler();
+void spin_ros_handler();
+
+// Callback function
 void cmd_vel_subscription_callback(const void* msgin, void* ros_handler_void);
 
-class RosHandler {
-public:
-    RosHandler(RobotController& robot_controller);
-    ~RosHandler();
-
-    void setup();
-    void spin();
-
-    // TODO: fix subscriber
-    void set_robot_command(const BLA::Matrix<3>& cmd);
-
-private:
-    rcl_subscription_t subscriber_;
-    rcl_publisher_t publisher_;
-    geometry_msgs__msg__Twist msg_;
-    nav_msgs__msg__Odometry odom_;
-
-    rclc_executor_t executor_;
-    rclc_support_t support_;
-    rcl_allocator_t allocator_;
-    rcl_node_t node_;
-
-    RobotController& robot_controller_;
-};
+void set_robot_command(const BLA::Matrix<3>& cmd);
 
 #endif // ROS_HANDLER_H
