@@ -27,8 +27,8 @@
     * 
     */
     #define WHEELRADIUS 0.075 // radius of wheels
-    #define L_X 0.38 // distance between wheel contact point in x direction
-    #define L_Y 0.32 // distance between wheel contact point in y direction
+    #define WHEEL_BASE 0.38 // distance between wheel contact point in x direction
+    #define TRACK_WIDTH 0.32 // distance between wheel contact point in y direction
 //--------------------------pinout definitions------------------------------------
     // motor back right
     #define M3_IN1 33
