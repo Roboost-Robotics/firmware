@@ -1,3 +1,14 @@
+/**
+ * @file robot_controller.cpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "robot_controller.hpp"
 
 RobotController::RobotController(MotorControllerManager& motor_manager, Kinematics& kinematics_model)

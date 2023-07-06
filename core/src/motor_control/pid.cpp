@@ -1,3 +1,14 @@
+/**
+ * @file pid.cpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "motor_control/pid.hpp"
 
 PIDController::PIDController(float kp, float ki, float kd)

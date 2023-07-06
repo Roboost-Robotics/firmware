@@ -1,3 +1,13 @@
+/**
+ * @file mecanum_kinematics_4w.cpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include "kinematics/kinematics.hpp"
 
 MecanumKinematics4W::MecanumKinematics4W(double wheel_radius, double wheel_base, double track_width)

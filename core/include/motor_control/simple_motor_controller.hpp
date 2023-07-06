@@ -1,3 +1,14 @@
+/**
+ * @file simple_motor_controller.hpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #ifndef SIMPLE_MOTOR_CONTROLLER_H
 #define SIMPLE_MOTOR_CONTROLLER_H
 

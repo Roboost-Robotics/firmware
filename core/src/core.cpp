@@ -1,3 +1,14 @@
+/**
+ * @file core.cpp
+ * @author Friedl Jakob (friedl.jak@gmail.com)
+ * @brief //TODO
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 
@@ -41,7 +52,11 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 
-// Update the callback function definition
+/**
+ * @brief 
+ * 
+ * @param msgin 
+ */
 void cmd_vel_subscription_callback(const void * msgin) {
     const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
 
@@ -61,7 +76,10 @@ void cmd_vel_subscription_callback(const void * msgin) {
     robot_controller.set_latest_command(cmd);
 }
 
-
+/**
+ * @brief //TODO
+ * 
+ */
 void setup() {
     // Configure serial transport
     Serial.begin(115200);
@@ -99,6 +117,10 @@ void setup() {
     ));
 }
 
+/**
+ * @brief //TODO
+ * 
+ */
 void loop() {
     delay(100);
     // Publish the RobotController's latest odometry

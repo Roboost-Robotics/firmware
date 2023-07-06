@@ -1,12 +1,39 @@
+/**
+ * @file l298n_motor_driver.hpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef L298N_MOTOR_DRIVER_H
 #define L298N_MOTOR_DRIVER_H
 
 #include "motor_control/motor_drivers/motor_driver.hpp"
 
+/**
+ * @brief //TODO
+ * 
+ */
 class L298NMotorDriver : public MotorDriver {
 public:
+  /**
+   * @brief Construct a new L298NMotorDriver object //TODO
+   * 
+   * @param pin_in1 
+   * @param pin_in2 
+   * @param pin_ena 
+   * @param pwm_channel 
+   */
   L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena, unsigned int pwm_channel);
 
+  /**
+   * @brief Set the motor control object //TODO
+   * 
+   * @param control_value 
+   */
   void set_motor_control(float control_value);
 
 private:

@@ -1,9 +1,23 @@
+/**
+ * @file rcl_checks.h //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef RCL_CHECKS_H
 #define RCL_CHECKS_H
 
 #include <Arduino.h>
 
 // Error handle loop
+/**
+ * @brief //TODO
+ * 
+ */
 inline void error_loop() {
   while(1) {
     Serial.print(millis());

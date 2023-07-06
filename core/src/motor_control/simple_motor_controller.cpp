@@ -1,3 +1,14 @@
+/**
+ * @file simple_motor_controller.cpp //TODO
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-07-06
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "motor_control/simple_motor_controller.hpp"
 #include <algorithm> // for std::clamp
 
