@@ -1,5 +1,5 @@
 /**
- * @file l298n_motor_driver.hpp //TODO
+ * @file l298n_motor_driver.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -14,13 +14,13 @@
 #include "motor_control/motor_drivers/motor_driver.hpp"
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class L298NMotorDriver : public MotorDriver {
 public:
   /**
-   * @brief Construct a new L298NMotorDriver object //TODO
+   * @brief Construct a new L298NMotorDriver object //todo
    * 
    * @param pin_in1 
    * @param pin_in2 
@@ -30,7 +30,7 @@ public:
   L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena, unsigned int pwm_channel);
 
   /**
-   * @brief Set the motor control object //TODO
+   * @brief Set the motor control object //todo
    * 
    * @param control_value 
    */

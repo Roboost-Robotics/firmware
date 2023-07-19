@@ -1,5 +1,5 @@
 /**
- * @file l298n_motor_driver.cpp //TODO
+ * @file l298n_motor_driver.cpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1

@@ -1,5 +1,5 @@
 /**
- * @file motor_control_manager.hpp //TODO
+ * @file motor_control_manager.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -16,14 +16,14 @@
 #include <vector>
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class MotorControllerManager {
 public:
     // Constructor that accepts a list of MotorControllers.
     /**
-     * @brief Construct a new Motor Controller Manager object //TODO
+     * @brief Construct a new Motor Controller Manager object //todo
      * 
      * @param motor_controllers 
      */
@@ -31,7 +31,7 @@ public:
 
     // Set the desired speed for a specific motor.
     /**
-     * @brief Set the motor speed object //TODO
+     * @brief Set the motor speed object //todo
      * 
      * @param motor_index 
      * @param desired_speed 
@@ -40,7 +40,7 @@ public:
 
     // Set the desired speed for all motors.
     /**
-     * @brief Set the all motor speeds object //TODO
+     * @brief Set the all motor speeds object //todo
      * 
      * @param desired_speed 
      */
@@ -48,7 +48,7 @@ public:
 
     // Get the desired speed of a specific motor.
     /**
-     * @brief Get the motor speed object //TODO
+     * @brief Get the motor speed object //todo
      * 
      * @param motor_index 
      * @return float 
@@ -57,7 +57,7 @@ public:
 
     // Get the number of MotorControllers in the manager.
     /**
-     * @brief Get the motor count object //TODO
+     * @brief Get the motor count object //todo
      * 
      * @return int 
      */
@@ -65,14 +65,14 @@ public:
 
     // Update the MotorControllers to set the new desired rotational speed.
     /**
-     * @brief //TODO
+     * @brief //todo
      * 
      */
     void update();
 
     // Destructor to free up the memory of MotorControllers
     /**
-     * @brief Destroy the Motor Controller Manager object //TODO
+     * @brief Destroy the Motor Controller Manager object //todo
      * 
      */
     ~MotorControllerManager();

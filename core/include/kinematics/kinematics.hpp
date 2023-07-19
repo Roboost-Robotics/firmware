@@ -1,6 +1,6 @@
 /**
  * @file kinematics.hpp
- * @author your name (you@domain.com) //TODO
+ * @author your name (you@domain.com) //todo
  * @brief 
  * @version 0.1
  * @date 2023-07-06
@@ -15,20 +15,20 @@
 #define KINEMATICS_H
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class Kinematics {
 public:
     /**
-     * @brief //TODO
+     * @brief //todo
      * 
      * @param wheel_velocity 
      * @return BLA::Matrix<3> 
      */
     virtual BLA::Matrix<3> calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) = 0;
     /**
-     * @brief //TODO
+     * @brief //todo
      * 
      * @param robot_velocity 
      * @return BLA::Matrix<4> 
@@ -37,13 +37,13 @@ public:
 };
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class MecanumKinematics4W : public Kinematics {
 public:
     /**
-     * @brief Construct a new Mecanum Kinematics 4 W object //TODO
+     * @brief Construct a new Mecanum Kinematics 4 W object //todo
      * 
      * @param wheel_radius 
      * @param wheel_base 
@@ -52,14 +52,14 @@ public:
     MecanumKinematics4W(double wheel_radius, double wheel_base, double track_width);
 
     /**
-     * @brief //TODO
+     * @brief //todo
      * 
      * @param wheel_velocity 
      * @return BLA::Matrix<3> 
      */
     BLA::Matrix<3> calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) override;
     /**
-     * @brief //TODO
+     * @brief //todo
      * 
      * @param robot_velocity 
      * @return BLA::Matrix<4> 
@@ -72,6 +72,6 @@ private:
     double track_width_; // distance between wheel contact point in y direction
 };
 
-// TODO: add SwerveKinematics3W implementation
+// todo add SwerveKinematics3W implementation
 
 #endif // KINEMATICS_H

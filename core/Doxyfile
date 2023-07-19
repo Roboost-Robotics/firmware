@@ -38,7 +38,7 @@ PROJECT_NAME           = "Roboost - Artificial Primary Motor Cortex"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER         = V2.1
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -68,7 +68,7 @@ OUTPUT_DIRECTORY       = doc
 # performance problems for the file system.
 # The default value is: NO.
 
-CREATE_SUBDIRS         = NO
+CREATE_SUBDIRS         = YES
 
 # If the ALLOW_UNICODE_NAMES tag is set to YES, doxygen will allow non-ASCII
 # characters to appear in the names of generated files. If set to NO, non-ASCII
@@ -210,7 +210,7 @@ INHERIT_DOCS           = YES
 # part of the file/class/namespace that contains it.
 # The default value is: NO.
 
-SEPARATE_MEMBER_PAGES  = NO
+SEPARATE_MEMBER_PAGES  = YES
 
 # The TAB_SIZE tag can be used to set the number of spaces in a tab. Doxygen
 # uses this value to replace tabs by spaces in code fragments.
@@ -421,7 +421,7 @@ EXTRACT_PRIVATE        = YES
 # scope will be included in the documentation.
 # The default value is: NO.
 
-EXTRACT_PACKAGE        = NO
+EXTRACT_PACKAGE        = YES
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file will be
 # included in the documentation.
@@ -726,7 +726,7 @@ WARN_IF_DOC_ERROR      = YES
 # documentation, but not about the absence of documentation.
 # The default value is: NO.
 
-WARN_NO_PARAMDOC       = NO
+WARN_NO_PARAMDOC       = YES
 
 # The WARN_FORMAT tag determines the format of the warning messages that doxygen
 # can produce. The string should contain the $file, $line, and $text tags, which
@@ -890,7 +890,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE =
+USE_MDFILE_AS_MAINPAGE = "README.md"
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1045,6 +1045,8 @@ HTML_FILE_EXTENSION    = .html
 # default header when upgrading to a newer version of doxygen. For a description
 # of the possible markers and block names see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
+
+# todo costumize html
 
 HTML_HEADER            =
 
@@ -1364,7 +1366,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values that
 # doxygen will group on one line in the generated HTML documentation.

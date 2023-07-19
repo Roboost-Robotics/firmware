@@ -1,5 +1,5 @@
 /**
- * @file encoder.hpp //TODO
+ * @file encoder.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -12,13 +12,13 @@
 #define ENCODER_H
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class Encoder {
 public:
   /**
-   * @brief Construct a new Encoder object //TODO
+   * @brief Construct a new Encoder object //todo
    * 
    * @param pin_A 
    * @param pin_B 
@@ -26,7 +26,7 @@ public:
   Encoder(int pin_A, int pin_B);
 
   /**
-   * @brief //TODO
+   * @brief //todo
    * 
    * @return float 
    */

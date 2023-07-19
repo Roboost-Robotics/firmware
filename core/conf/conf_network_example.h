@@ -1,6 +1,6 @@
 /**
  * @file conf_network_example.h
- * @author your name (you@domain.com) //TODO
+ * @author your name (you@domain.com) //todo
  * @brief 
  * @version 0.1
  * @date 2023-07-06
@@ -12,7 +12,7 @@
 #define CONF_NETWORK_H
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 #define SSID "your_ssid"

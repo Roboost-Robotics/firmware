@@ -1,5 +1,5 @@
 /**
- * @file pid.hpp //TODO
+ * @file pid.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -12,13 +12,13 @@
 #define PID_H
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class PIDController {
 public:
   /**
-   * @brief Construct a new PIDController object //TODO
+   * @brief Construct a new PIDController object //todo
    * 
    * @param kp 
    * @param ki 
@@ -27,7 +27,7 @@ public:
   PIDController(float kp, float ki, float kd);
 
   /**
-   * @brief //TODO
+   * @brief //todo
    * 
    * @param setpoint 
    * @param actual_value 

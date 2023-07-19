@@ -1,5 +1,5 @@
 /**
- * @file rcl_checks.h //TODO
+ * @file rcl_checks.h //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -15,14 +15,14 @@
 
 // Error handle loop
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 inline void error_loop() {
   while(1) {
     Serial.print(millis());
     Serial.println(" RC check failed. Press EN to reset.");
-    delay(100);
+    delay(1000);
   }
 }
 

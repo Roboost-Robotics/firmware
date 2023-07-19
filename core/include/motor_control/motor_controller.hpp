@@ -1,5 +1,5 @@
 /**
- * @file motor_controller.hpp //TODO
+ * @file motor_controller.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
@@ -14,26 +14,26 @@
 #include "motor_control/motor_drivers/motor_driver.hpp"
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 class MotorController {
 public:
   /**
-   * @brief Construct a new Motor Controller object //TODO
+   * @brief Construct a new Motor Controller object //todo
    * 
    * @param motor_driver 
    */
   MotorController(MotorDriver& motor_driver) : motor_driver_(motor_driver) {}
   
   /**
-   * @brief Destroy the Motor Controller object //TODO
+   * @brief Destroy the Motor Controller object //todo
    * 
    */
   virtual ~MotorController() {}
 
   /**
-   * @brief Set the rotation speed object //TODO
+   * @brief Set the rotation speed object //todo
    * 
    * @param desired_rotation_speed 
    */

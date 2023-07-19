@@ -23,10 +23,10 @@ This design allows you to easily switch out different components (like different
 
 Data Storage:
 
-TODO: GPIO pins will vary depending on the motor controller, so it does not make sense to store them at the base class.
+todo GPIO pins will vary depending on the motor controller, so it does not make sense to store them at the base class.
 - *MotorController*: This class would store the GPIO pin numbers associated with each motor control function (PWM, IN1, IN2). It would also store the current control value for the motor.
 
-TODO
+todo
 - *SimpleMotorController*: In addition to the data stored by the MotorController base class, SimpleMotorController would store the max velocity for the motor.
 
 - *MotorControllerManager*: This class would store a collection of MotorController objects. This could be an array, a vector, or some other container, depending on what makes sense for your setup.

@@ -1,7 +1,7 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief //TODO
+ * @brief //todo
  * @version 0.1
  * @date 2023-07-06
  * 
@@ -38,7 +38,7 @@ SimpleMotorController controller_M3(driver_M3, 1.);
 
 MotorControllerManager motor_controll_manager{&controller_M0}; // initializer list
 
-// TODO: initialize kinematics
+// todo initialize kinematics
 MecanumKinematics4W kinematics(WHEELRADIUS, WHEEL_BASE, TRACK_WIDTH);
 RobotController robot_controller(motor_controll_manager, kinematics);
 
@@ -77,7 +77,7 @@ void cmd_vel_subscription_callback(const void * msgin) {
 }
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 void setup() {
@@ -92,12 +92,15 @@ void setup() {
     allocator = rcl_get_default_allocator();
 
     //create init_options
+    Serial.println("Creating init options...");
     RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
     // create node
+    Serial.println("Creating node...");
     RCCHECK(rclc_node_init_default(&node, "roboost_core_node", "", &support));
 
     // create subscriber
+    Serial.println("Creating subscriber...");
     RCCHECK(rclc_subscription_init_default(
         &subscriber,
         &node,
@@ -105,10 +108,15 @@ void setup() {
         "cmd_vel"));
 
     // create executor
+    Serial.println("Creating executor...");
     RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
+
+    // create subscriber
+    Serial.println("Creating subscriber...");
     RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscription_callback, ON_NEW_DATA));
 
-      // Create publisher for odometry
+    // Create publisher for odometry
+    Serial.print("Creating publisher...");
     RCCHECK(rclc_publisher_init_default(
         &publisher,
         &node,
@@ -118,7 +126,7 @@ void setup() {
 }
 
 /**
- * @brief //TODO
+ * @brief //todo
  * 
  */
 void loop() {

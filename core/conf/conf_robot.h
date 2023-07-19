@@ -83,7 +83,7 @@
 
 //--------------------------------------------------------------------------------
 
-// TODO: refactor
+// todo refactor
 
 #ifdef ENCODERS
 // Encoder specific definitions and functions
@@ -97,7 +97,7 @@
   // Interrup routines
   void IRAM_ATTR function_ISR_EC_BL() {
     // Encoder out A triggers interrupt
-    // TODO: check last B state to determine direction
+    // todo check last B state to determine direction
     count_BL++;
   }
 

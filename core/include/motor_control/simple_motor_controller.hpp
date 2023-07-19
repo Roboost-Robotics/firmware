@@ -1,5 +1,5 @@
 /**
- * @file simple_motor_controller.hpp //TODO
+ * @file simple_motor_controller.hpp //todo
  * @author your name (you@domain.com)
  * @brief 
  * @version 0.1
