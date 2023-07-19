@@ -6,3 +6,6 @@
 
 # exclude network settings from git:
 conf/conf_network.h
+
+# exclude doxygen documentation
+doc/*
