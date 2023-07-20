@@ -3,5 +3,6 @@
     "cmake.configureOnOpen": false,
     "files.associations": {
         "vector": "cpp"
-    }
+    },
+    "editor.formatOnSave": true
 }

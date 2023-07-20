@@ -1,12 +1,12 @@
 /**
  * @file motor_controller.hpp //todo
  * @author your name (you@domain.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-07-06
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #ifndef MOTOR_CONTROLLER_H
 #define MOTOR_CONTROLLER_H
@@ -15,32 +15,32 @@
 
 /**
  * @brief //todo
- * 
+ *
  */
 class MotorController {
-public:
-  /**
-   * @brief Construct a new Motor Controller object //todo
-   * 
-   * @param motor_driver 
-   */
-  MotorController(MotorDriver& motor_driver) : motor_driver_(motor_driver) {}
-  
-  /**
-   * @brief Destroy the Motor Controller object //todo
-   * 
-   */
-  virtual ~MotorController() {}
+  public:
+    /**
+     * @brief Construct a new Motor Controller object //todo
+     *
+     * @param motor_driver
+     */
+    MotorController(MotorDriver &motor_driver) : motor_driver_(motor_driver) {}
 
-  /**
-   * @brief Set the rotation speed object //todo
-   * 
-   * @param desired_rotation_speed 
-   */
-  virtual void set_rotation_speed(float desired_rotation_speed) = 0;
+    /**
+     * @brief Destroy the Motor Controller object //todo
+     *
+     */
+    virtual ~MotorController() {}
 
-protected:
-  MotorDriver& motor_driver_;
+    /**
+     * @brief Set the rotation speed object //todo
+     *
+     * @param desired_rotation_speed
+     */
+    virtual void set_rotation_speed(float desired_rotation_speed) = 0;
+
+  protected:
+    MotorDriver &motor_driver_;
 };
 
-#endif // MOTOR_CONTROLLER_H
+#endif   // MOTOR_CONTROLLER_H

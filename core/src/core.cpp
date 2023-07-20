@@ -4,27 +4,27 @@
  * @brief //todo
  * @version 0.1
  * @date 2023-07-06
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include <Arduino.h>
 #include <micro_ros_platformio.h>
 
-#include <rcl/rcl.h>
-#include <rclc/rclc.h>
-#include <rclc/executor.h>
 #include "rcl_checks.h"
+#include <rcl/rcl.h>
+#include <rclc/executor.h>
+#include <rclc/rclc.h>
 
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
 
-#include "robot_controller.hpp"
-#include "motor_control/simple_motor_controller.hpp"
-#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
-#include "conf_robot.h"
 #include "conf_network.h"
+#include "conf_robot.h"
+#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
+#include "motor_control/simple_motor_controller.hpp"
+#include "robot_controller.hpp"
 
 L298NMotorDriver driver_M0(M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL);
 L298NMotorDriver driver_M1(M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL);
@@ -36,7 +36,7 @@ SimpleMotorController controller_M1(driver_M1, 1.);
 SimpleMotorController controller_M2(driver_M2, 1.);
 SimpleMotorController controller_M3(driver_M3, 1.);
 
-MotorControllerManager motor_controll_manager{&controller_M0}; // initializer list
+MotorControllerManager motor_controll_manager{&controller_M0};   // initializer list
 
 // todo initialize kinematics
 MecanumKinematics4W kinematics(WHEELRADIUS, WHEEL_BASE, TRACK_WIDTH);
@@ -53,12 +53,13 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 
 /**
- * @brief 
- * 
- * @param msgin 
+ * @brief
+ *
+ * @param msgin
  */
-void cmd_vel_subscription_callback(const void * msgin) {
-    const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
+void
+cmd_vel_subscription_callback(const void *msgin) {
+    const auto *msg = reinterpret_cast<const geometry_msgs__msg__Twist *>(msgin);
 
     // Convert the ROS Twist message to a BLA::Matrix<3> and call set_latest_command
     BLA::Matrix<3> cmd;
@@ -78,9 +79,10 @@ void cmd_vel_subscription_callback(const void * msgin) {
 
 /**
  * @brief //todo
- * 
+ *
  */
-void setup() {
+void
+setup() {
     // Configure serial transport
     Serial.begin(115200);
     IPAddress agent_ip(AGENT_IP);
@@ -91,7 +93,7 @@ void setup() {
 
     allocator = rcl_get_default_allocator();
 
-    //create init_options
+    // create init_options
     Serial.println("Creating init options...");
     RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 
@@ -101,11 +103,8 @@ void setup() {
 
     // create subscriber
     Serial.println("Creating subscriber...");
-    RCCHECK(rclc_subscription_init_default(
-        &subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "cmd_vel"));
+    RCCHECK(rclc_subscription_init_default(&subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+                                           "cmd_vel"));
 
     // create executor
     Serial.println("Creating executor...");
@@ -117,31 +116,28 @@ void setup() {
 
     // Create publisher for odometry
     Serial.print("Creating publisher...");
-    RCCHECK(rclc_publisher_init_default(
-        &publisher,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
-        "odom"
-    ));
+    RCCHECK(
+        rclc_publisher_init_default(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "odom"));
 }
 
 /**
  * @brief //todo
- * 
+ *
  */
-void loop() {
+void
+loop() {
     delay(100);
     // Publish the RobotController's latest odometry
     BLA::Matrix<6> odometry = robot_controller.get_odometry();
 
     // Convert the odometry matrix to a nav_msgs__msg__Odometry
-    odom.pose.pose.position.x = odometry(0); // x position
-    odom.pose.pose.position.y = odometry(1); // y position
-    odom.pose.pose.orientation.z = odometry(2); // yaw orientation (using z-axis rotation)
+    odom.pose.pose.position.x = odometry(0);      // x position
+    odom.pose.pose.position.y = odometry(1);      // y position
+    odom.pose.pose.orientation.z = odometry(2);   // yaw orientation (using z-axis rotation)
 
-    odom.twist.twist.linear.x = odometry(3); // x linear velocity
-    odom.twist.twist.linear.y = odometry(4); // y linear velocity
-    odom.twist.twist.angular.z = odometry(5); // z angular velocity
+    odom.twist.twist.linear.x = odometry(3);    // x linear velocity
+    odom.twist.twist.linear.y = odometry(4);    // y linear velocity
+    odom.twist.twist.angular.z = odometry(5);   // z angular velocity
 
     RCSOFTCHECK(rcl_publish(&publisher, &odom, NULL));
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
