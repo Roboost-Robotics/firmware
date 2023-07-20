@@ -19,15 +19,17 @@
  * @brief //todo
  *
  */
-class MotorControllerManager {
-  public:
+class MotorControllerManager
+{
+public:
     // Constructor that accepts a list of MotorControllers.
     /**
      * @brief Construct a new Motor Controller Manager object //todo
      *
      * @param motor_controllers
      */
-    MotorControllerManager(std::initializer_list<MotorController *> motor_controllers);
+    MotorControllerManager(
+        std::initializer_list<MotorController*> motor_controllers);
 
     // Set the desired speed for a specific motor.
     /**
@@ -77,9 +79,10 @@ class MotorControllerManager {
      */
     ~MotorControllerManager();
 
-  private:
-    std::vector<std::pair<MotorController *, float>>
-        motor_controllers_;   // Vector to hold MotorController pointers and desired speeds.
+private:
+    std::vector<std::pair<MotorController*, float>>
+        motor_controllers_; // Vector to hold MotorController pointers and
+                            // desired speeds.
 };
 
-#endif   // MOTOR_CONTROLLER_MANAGER_H
+#endif // MOTOR_CONTROLLER_MANAGER_H

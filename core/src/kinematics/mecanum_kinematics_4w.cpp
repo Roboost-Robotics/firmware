@@ -10,11 +10,16 @@
  */
 #include "kinematics/kinematics.hpp"
 
-MecanumKinematics4W::MecanumKinematics4W(double wheel_radius, double wheel_base, double track_width)
-    : wheel_radius_(wheel_radius), wheel_base_(wheel_base), track_width_(track_width) {}
+MecanumKinematics4W::MecanumKinematics4W(double wheel_radius, double wheel_base,
+                                         double track_width)
+    : wheel_radius_(wheel_radius), wheel_base_(wheel_base),
+      track_width_(track_width)
+{
+}
 
-BLA::Matrix<3>
-MecanumKinematics4W::calculate_robot_velocity(const BLA::Matrix<4> &wheel_velocity) {
+BLA::Matrix<3> MecanumKinematics4W::calculate_robot_velocity(
+    const BLA::Matrix<4>& wheel_velocity)
+{
     BLA::Matrix<3> robot_velocity;
 
     // clang-format off
@@ -28,8 +33,9 @@ MecanumKinematics4W::calculate_robot_velocity(const BLA::Matrix<4> &wheel_veloci
     return robot_velocity;
 }
 
-BLA::Matrix<4>
-MecanumKinematics4W::calculate_wheel_velocity(const BLA::Matrix<3> &robot_velocity) {
+BLA::Matrix<4> MecanumKinematics4W::calculate_wheel_velocity(
+    const BLA::Matrix<3>& robot_velocity)
+{
     BLA::Matrix<4> wheel_velocity;
 
     // clang-format off

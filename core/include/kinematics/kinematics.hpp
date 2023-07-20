@@ -18,30 +18,34 @@
  * @brief //todo
  *
  */
-class Kinematics {
-  public:
+class Kinematics
+{
+public:
     /**
      * @brief //todo
      *
      * @param wheel_velocity
      * @return BLA::Matrix<3>
      */
-    virtual BLA::Matrix<3> calculate_robot_velocity(const BLA::Matrix<4> &wheel_velocity) = 0;
+    virtual BLA::Matrix<3>
+    calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) = 0;
     /**
      * @brief //todo
      *
      * @param robot_velocity
      * @return BLA::Matrix<4>
      */
-    virtual BLA::Matrix<4> calculate_wheel_velocity(const BLA::Matrix<3> &robot_velocity) = 0;
+    virtual BLA::Matrix<4>
+    calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) = 0;
 };
 
 /**
  * @brief //todo
  *
  */
-class MecanumKinematics4W : public Kinematics {
-  public:
+class MecanumKinematics4W : public Kinematics
+{
+public:
     /**
      * @brief Construct a new Mecanum Kinematics 4 W object //todo
      *
@@ -49,7 +53,8 @@ class MecanumKinematics4W : public Kinematics {
      * @param wheel_base
      * @param track_width
      */
-    MecanumKinematics4W(double wheel_radius, double wheel_base, double track_width);
+    MecanumKinematics4W(double wheel_radius, double wheel_base,
+                        double track_width);
 
     /**
      * @brief //todo
@@ -57,21 +62,23 @@ class MecanumKinematics4W : public Kinematics {
      * @param wheel_velocity
      * @return BLA::Matrix<3>
      */
-    BLA::Matrix<3> calculate_robot_velocity(const BLA::Matrix<4> &wheel_velocity) override;
+    BLA::Matrix<3>
+    calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) override;
     /**
      * @brief //todo
      *
      * @param robot_velocity
      * @return BLA::Matrix<4>
      */
-    BLA::Matrix<4> calculate_wheel_velocity(const BLA::Matrix<3> &robot_velocity) override;
+    BLA::Matrix<4>
+    calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) override;
 
-  private:
-    double wheel_radius_;   // radius of wheels
-    double wheel_base_;     // distance between wheel contact point in x direction
-    double track_width_;    // distance between wheel contact point in y direction
+private:
+    double wheel_radius_; // radius of wheels
+    double wheel_base_;   // distance between wheel contact point in x direction
+    double track_width_;  // distance between wheel contact point in y direction
 };
 
 // todo add SwerveKinematics3W implementation
 
-#endif   // KINEMATICS_H
+#endif // KINEMATICS_H

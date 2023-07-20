@@ -22,14 +22,16 @@
 
 #ifdef MECANUM_4WHEEL
 /**
- * @brief Definitions of hardware parameters. Leghts in meters, angles in degree.
+ * @brief Definitions of hardware parameters. Leghts in meters, angles in
+ * degree.
  *
  */
-#define WHEELRADIUS 0.075   // radius of wheels
-#define WHEEL_BASE  0.38    // distance between wheel contact point in x direction
-#define TRACK_WIDTH 0.32    // distance between wheel contact point in y direction
+#define WHEELRADIUS 0.075 // radius of wheels
+#define WHEEL_BASE 0.38   // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.32  // distance between wheel contact point in y direction
 
-//--------------------------pinout definitions------------------------------------
+//--------------------------pinout
+//definitions------------------------------------
 // motor back right
 #define M3_IN1 33
 #define M3_IN2 32
@@ -55,8 +57,8 @@
 #define M0_PWM_CNL 0
 #define M1_PWM_CNL 0
 
-#define M_PWM_FRQ 1000   // Hz
-#define M_PWM_RES 8      // 2^n Bits
+#define M_PWM_FRQ 1000 // Hz
+#define M_PWM_RES 8    // 2^n Bits
 #endif
 
 // Uncomment if encoders should be used in the system
@@ -88,38 +90,29 @@
 #ifdef ENCODERS
 // Encoder specific definitions and functions
 
-// B pin of encoder is not used. The direction of the motors will be deduced from H-Bridge. This is, however, a
-// precision flaw
+// B pin of encoder is not used. The direction of the motors will be deduced
+// from H-Bridge. This is, however, a precision flaw
 volatile uint16_t count_BL = 0;
 volatile uint16_t count_BR = 0;
 volatile uint16_t count_FL = 0;
 volatile uint16_t count_FR = 0;
 
 // Interrup routines
-void IRAM_ATTR
-function_ISR_EC_BL() {
+void IRAM_ATTR function_ISR_EC_BL()
+{
     // Encoder out A triggers interrupt
     // todo check last B state to determine direction
     count_BL++;
 }
 
-void IRAM_ATTR
-function_ISR_EC_BR() {
-    count_BR++;
-}
+void IRAM_ATTR function_ISR_EC_BR() { count_BR++; }
 
-void IRAM_ATTR
-function_ISR_EC_FL() {
-    count_FL++;
-}
+void IRAM_ATTR function_ISR_EC_FL() { count_FL++; }
 
-void IRAM_ATTR
-function_ISR_EC_FR() {
-    count_FR++;
-}
+void IRAM_ATTR function_ISR_EC_FR() { count_FR++; }
 
 #else
 
 #endif
 
-#endif   // CONF_ROBOT_H
+#endif // CONF_ROBOT_H

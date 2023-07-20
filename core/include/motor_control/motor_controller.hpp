@@ -17,14 +17,15 @@
  * @brief //todo
  *
  */
-class MotorController {
-  public:
+class MotorController
+{
+public:
     /**
      * @brief Construct a new Motor Controller object //todo
      *
      * @param motor_driver
      */
-    MotorController(MotorDriver &motor_driver) : motor_driver_(motor_driver) {}
+    MotorController(MotorDriver& motor_driver) : motor_driver_(motor_driver) {}
 
     /**
      * @brief Destroy the Motor Controller object //todo
@@ -39,8 +40,8 @@ class MotorController {
      */
     virtual void set_rotation_speed(float desired_rotation_speed) = 0;
 
-  protected:
-    MotorDriver &motor_driver_;
+protected:
+    MotorDriver& motor_driver_;
 };
 
-#endif   // MOTOR_CONTROLLER_H
+#endif // MOTOR_CONTROLLER_H

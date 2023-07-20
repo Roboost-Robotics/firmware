@@ -18,15 +18,17 @@
  * @brief Motor controller without encoder feedback or PID
  *
  */
-class SimpleMotorController : public MotorController {
-  public:
+class SimpleMotorController : public MotorController
+{
+public:
     /**
      * @brief Construct a new Simple Motor Controller object
      *
      * @param motor_driver Motor driver to be used
-     * @param max_rotation_speed Max rotational speed motor driver can output in rad/sec
+     * @param max_rotation_speed Max rotational speed motor driver can output in
+     * rad/sec
      */
-    SimpleMotorController(MotorDriver &motor_driver, float max_rotation_speed);
+    SimpleMotorController(MotorDriver& motor_driver, float max_rotation_speed);
 
     /**
      * @brief Set the rotation speed of the motor
@@ -35,8 +37,8 @@ class SimpleMotorController : public MotorController {
      */
     void set_rotation_speed(float desired_rotation_speed);
 
-  private:
+private:
     float max_rotation_speed_;
 };
 
-#endif   // SIMPLE_MOTOR_CONTROLLER_H
+#endif // SIMPLE_MOTOR_CONTROLLER_H

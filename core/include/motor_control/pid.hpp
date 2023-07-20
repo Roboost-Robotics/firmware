@@ -15,8 +15,9 @@
  * @brief //todo
  *
  */
-class PIDController {
-  public:
+class PIDController
+{
+public:
     /**
      * @brief Construct a new PIDController object //todo
      *
@@ -35,9 +36,9 @@ class PIDController {
      */
     float calculate(float setpoint, float actual_value);
 
-  private:
+private:
     float kp_, ki_, kd_;
     float integral_, previous_error_;
 };
 
-#endif   // PID_H
+#endif // PID_H

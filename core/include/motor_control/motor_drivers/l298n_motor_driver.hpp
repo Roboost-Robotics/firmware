@@ -17,8 +17,9 @@
  * @brief //todo
  *
  */
-class L298NMotorDriver : public MotorDriver {
-  public:
+class L298NMotorDriver : public MotorDriver
+{
+public:
     /**
      * @brief Construct a new L298NMotorDriver object //todo
      *
@@ -27,7 +28,8 @@ class L298NMotorDriver : public MotorDriver {
      * @param pin_ena
      * @param pwm_channel
      */
-    L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena, unsigned int pwm_channel);
+    L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2,
+                     unsigned int pin_ena, unsigned int pwm_channel);
 
     /**
      * @brief Set the motor control object //todo
@@ -36,11 +38,11 @@ class L298NMotorDriver : public MotorDriver {
      */
     void set_motor_control(float control_value);
 
-  private:
+private:
     const unsigned int pin_in1_;
     const unsigned int pin_in2_;
     const unsigned int pin_ena_;
     const unsigned int pwm_channel_;
 };
 
-#endif   // L298N_MOTOR_DRIVER_H
+#endif // L298N_MOTOR_DRIVER_H

@@ -15,8 +15,9 @@
  * @brief //todo
  *
  */
-class Encoder {
-  public:
+class Encoder
+{
+public:
     /**
      * @brief Construct a new Encoder object //todo
      *
@@ -32,8 +33,8 @@ class Encoder {
      */
     float read_velocity();
 
-  private:
+private:
     int pin_A_, pin_B_;
 };
 
-#endif   // ENCODER_H
+#endif // ENCODER_H
