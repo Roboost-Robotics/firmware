@@ -3,3 +3,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+# exclude network settings from git:
+conf/conf_network.h
+
+# exclude doxygen documentation
+doc/*

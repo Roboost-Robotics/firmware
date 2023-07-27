@@ -1,49 +1,72 @@
 # README
 
-## TODO
-- Implememt the use of URDF files
-- Make virtual motor class that uses PID controll; implementations are specific like H-bridge or VESC
-- Implement ROS communication
+## System Design:
 
-## Motorshield Firmware
-### Overview
-This program controls the movement of a four-wheeled robot using encoder feedback and PID control. It also includes functions for calculating the robot's velocity using forward and inverse kinematics models.
+![System Design](doc/SystemDesign.svg)
 
-### Variables
-- `count_BL`, `count_BR`, `count_FL`, `count_FR`: 16-bit integers representing the number of encoder counts for the back left, back right, front left, and front right wheels, respectively
-- `rotationspeed_BL`, `rotationspeed_BR`, `rotationspeed_FL`, `rotationspeed_FR`: doubles representing the rotational speed of the back left, back right, front left, and front right wheels, respectively, in revolutions per second
-- `dutyCycle_BL`, `dutyCycle_BR`, `dutyCycle_FL`, `dutyCycle_FR`: doubles representing the duty cycle of the back left, back right, front left, and front right motors, respectively, as a percentage of the maximum duty cycle
-- `wantedWheelVel_BL`, `wantedWheelVel_BR`, `wantedWheelVel_FL`, `wantedWheelVel_FR`: doubles representing the desired rotational speed of the back left, back right, front left, and front right wheels, respectively, in revolutions per second
+- *MotorController*: This is an abstract base class that provides an interface for controlling a motor. It has a method for setting the control value for a motor (such as set_motor_control). The control value is a normalized value between -1 and 1.
 
-### Interrupt Routines
-- `function_ISR_EC_BL()`: interrupt service routine for the back left encoder
-- `function_ISR_EC_BR()`: interrupt service routine for the back right encoder
-- `function_ISR_EC_FL()`: interrupt service routine for the front left encoder
-- `function_ISR_EC_FR()`: interrupt service routine for the front right encoder
+- *SimpleMotorController*: This is a subclass of MotorController that provides a simple implementation. It uses a max velocity and maps this to the normalized control value.
 
-### PID Control
-The program uses PID control to maintain the desired rotational speed of the wheels. The PID constants `Kp`, `Ki`, and `Kd` are set to 2, 1, and 1, respectively. The PID control is initialized for each wheel with the following lines of code:
+- *MotorControllerManager*: This class contains a collection of MotorController objects, one for each wheel on the robot. It has methods for controlling all motors at once, which it delegates to each individual MotorController.
 
-```C++
-PID PID_BL(&wantedWheelVel_BL, &dutyCycle_BL, &rotationspeed_BL, Kp, Ki, Kd, AUTOMATIC);
-PID PID_BR(&wantedWheelVel_BR, &dutyCycle_BR, &rotationspeed_BR, Kp, Ki, Kd, AUTOMATIC);
-PID PID_FL(&wantedWheelVel_FL, &dutyCycle_FL, &rotationspeed_FL, Kp, Ki, Kd, AUTOMATIC);
-PID PID_FR(&wantedWheelVel_FR, &dutyCycle_FR, &rotationspeed_FR, Kp, Ki, Kd, AUTOMATIC);
+- *KinematicsModel*: This is an abstract base class that represents a kinematic model for the robot. It has a method to calculate the desired wheel speeds given a robot velocity and rotation speed.
+
+- *RobotController*: This class uses a MotorControllerManager and a KinematicsModel to control the robot. It has an update() method that uses the KinematicsModel to calculate desired wheel speeds and the MotorControllerManager to set these speeds. It also has a get_odometry() method to provide odometry data for the robot.
+
+- *ROSHandler*: This is a class that handles ROS communication. It uses a RobotController to control the robot based on incoming ROS messages and publishes the robot's odometry data. This class should be separated from the robot control logic for modularity and reusability.
+
+In the main loop of your program, you would call the update() method of the RobotController to update the state of the robot based on the latest ROS messages, and use the get_odometry() method to provide odometry data to the ROS publisher.
+
+This design allows you to easily switch out different components (like different MotorController or KinematicsModel implementations) and keeps the ROS-specific code separated from the rest of your robot code. It's modular, which promotes reusability, and it's flexible, allowing for various robot configurations and control strategies.
+
+
+Data Storage:
+
+todo GPIO pins will vary depending on the motor controller, so it does not make sense to store them at the base class.
+- *MotorController*: This class would store the GPIO pin numbers associated with each motor control function (PWM, IN1, IN2). It would also store the current control value for the motor.
+
+todo
+- *SimpleMotorController*: In addition to the data stored by the MotorController base class, SimpleMotorController would store the max velocity for the motor.
+
+- *MotorControllerManager*: This class would store a collection of MotorController objects. This could be an array, a vector, or some other container, depending on what makes sense for your setup.
+
+- *KinematicsModel*: The data stored by this class would depend on the specifics of the kinematics model. For example, a differential drive kinematics model might store the wheelbase and wheel radius, while an omni-directional model might store different parameters.
+
+- *RobotController*: This class would store an instance of MotorControllerManager and KinematicsModel. It could also store the current state of the robot (position, orientation, velocity, etc.), depending on how your system is set up.
+
+- *ROSHandler*: This class would store the RobotController instance it's using to control the robot. It would also store any ROS-related data it needs, such as the topics it's subscribing to/publishing on, the current state of the ROS node, etc.
+
+## Usage
+
+nices tutorial:
+https://micro.ros.org/docs/tutorials/core/first_application_linux/
+
+to run:
+
+- upload code
+- press EN pin
+- build micro-ROS agent:
+```bash
+# cd into git-cloned micro-ROS project folder
+source install/local_setup.bash
+ros2 run micro_ros_setup create_agent_ws.sh
+ros2 run micro_ros_setup build_agent.sh
+```
+- once the micro-ROS agent is built, run following command to make the serial port accessible in the host machine:
+```bash
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
 ```
 
+For wireless controll:
 
-## Kinematics Functions
-- `calculateWheelVelocity(BLA::Matrix<3> robotVelocity)`: calculates the rotational speed of the wheels in revolutions per second based on the robot's velocity in the x, y, and z directions. The input `robotVelocity` is a 3x1 matrix with elements `[vx, vy, wz]`, where `vx` and `vy` are the velocities in the x and y directions, respectively, and `wz` is the angular velocity around the z axis, all in standard units. The function returns a 4x1 matrix with elements `[v_BL, v_BR, v_FL, v_FR]`, representing the rotational speed of the back left, back right, front left, and front right wheels, respectively.
 
-- `calculateRobotVelocity(BLA::Matrix<4> wheelVelocity)`: calculates the robot's velocity in the x, y, and z directions based on the rotational speed of the wheels. The input `wheelVelocity` is a 4x1 matrix with elements `[v_BL, v_BR, v_FL, v_FR]`, representing the rotational speed of the back left, back right, front left, and front right wheels, respectively. The function returns a 3x1 matrix with elements `[vx, vy, wz]`, where `vx` and `vy` are the velocities in the x and y directions, respectively, and `wz` is the angular velocity around the z axis, all in standard units.
+```bash
+cd microros_ws
+source install/local_setup.bash
+```
 
-## Other Functions
-`masterCommunicationRoutine(void* parameters)`: a routine for handling communication with the master controller
-`motorHardwareSetup()`: a function for setting up the hardware for the motors
-`motorHardwareLoop()`: a loop for updating the motor hardware based on the PID control output
-Constants
-`M_BL_PWM_CNL`, `M_BR_PWM_CNL`, `M_FL_PWM_CNL`, `M_FR_PWM_CNL`: constants representing the channel numbers for the back left, back right, front left, and front right motors, respectively
-`M_PWM_FRQ`: constant representing the PWM frequency for the motors
-`M_PWM_RES`: constant representing the PWM resolution for the motors
-`L_X` and `L_Y`: constants representing the dimensions of the robot in the x and y directions, respectively
-`WHEELRADIUS`: constant representing the radius of the wheels
+Then start teleop to controll the robot:
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
