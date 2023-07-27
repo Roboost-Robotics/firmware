@@ -22,8 +22,14 @@ inline void error_loop()
 {
     while (1)
     {
-        Serial.print(millis());
-        Serial.println(" RC check failed. Press EN to reset.");
+        Serial.println("RC check failed. Press EN to reset.");
+        Serial.print("    Error: ");
+        Serial.println(rcutils_get_error_string().str);
+        rcutils_reset_error();
+        Serial.print("    Timestamp: ");
+        Serial.println(millis());
+        Serial.print("    Free Heap: ");
+        Serial.println(ESP.getFreeHeap());
         delay(1000);
     }
 }
