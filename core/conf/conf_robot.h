@@ -13,6 +13,12 @@
 #define CONF_ROBOT_H
 
 /**
+ * @brief ESP32 specific configs
+ *
+ */
+#define LED_BUILTIN 2
+
+/**
  * @brief Selection of robot kinematics.
  * MECANUM_4WHEEL: Kinematics of a four wheeled mecanum drive.
  * SWERVE_3WHEEL: Kinematics of a robot with three swerve drives.
@@ -31,7 +37,7 @@
 #define TRACK_WIDTH 0.32  // distance between wheel contact point in y direction
 
 //--------------------------pinout
-//definitions------------------------------------
+// definitions------------------------------------
 // motor back right
 #define M3_IN1 33
 #define M3_IN2 32
