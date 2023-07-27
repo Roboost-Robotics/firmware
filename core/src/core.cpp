@@ -37,7 +37,8 @@ SimpleMotorController controller_M2(driver_M2, 1.);
 SimpleMotorController controller_M3(driver_M3, 1.);
 
 MotorControllerManager motor_controll_manager{
-    &controller_M0}; // initializer list
+    {&controller_M0, &controller_M1, &controller_M2,
+     &controller_M3}}; // initializer list
 
 // todo initialize kinematics
 MecanumKinematics4W kinematics(WHEELRADIUS, WHEEL_BASE, TRACK_WIDTH);
@@ -62,19 +63,18 @@ void cmd_vel_subscription_callback(const void* msgin)
 {
     const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
 
-    // Convert the ROS Twist message to a BLA::Matrix<3> and call
-    // set_latest_command
+    // Convert the ROS Twist message to a BLA::Matrix<3>
     BLA::Matrix<3> cmd;
     cmd(0) = msg->linear.x;
     cmd(1) = msg->linear.y;
     cmd(2) = msg->angular.z;
 
-    Serial.print("Linear X: ");
-    Serial.println(cmd(0));
-    Serial.print("Linear >: ");
-    Serial.println(cmd(1));
-    Serial.print("Angular Z: ");
-    Serial.println(cmd(2));
+    // Serial.print("Linear X: ");
+    // Serial.println(cmd(0));
+    // Serial.print("Linear Y: ");
+    // Serial.println(cmd(1));
+    // Serial.print("Angular Z: ");
+    // Serial.println(cmd(2));
 
     robot_controller.set_latest_command(cmd);
 }
@@ -86,71 +86,72 @@ void cmd_vel_subscription_callback(const void* msgin)
 void setup()
 {
     // Configure serial transport
-    Serial.begin(115200);
-    IPAddress agent_ip(AGENT_IP);
-    size_t agent_port = AGENT_PORT;
+    // Serial.begin(115200);
 
-    Serial.print("1: ");
-    Serial.println(ESP.getFreeHeap());
+    IPAddress agent_ip(AGENT_IP);
+    uint16_t agent_port = AGENT_PORT;
 
     set_microros_wifi_transports(SSID, SSID_PW, agent_ip, agent_port);
     delay(2000);
 
-    Serial.print("2: ");
-    Serial.println(ESP.getFreeHeap());
-
     allocator = rcl_get_default_allocator();
 
-    Serial.print("3: ");
-    Serial.println(ESP.getFreeHeap());
-
     // create init_options
-    Serial.println("Creating init options...");
-    RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    // Serial.println("Creating init options...");
+    while (rclc_support_init(&support, 0, NULL, &allocator) != RCL_RET_OK)
+    {
+        // Serial.println("Failed to create init options, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    Serial.print("4: ");
-    Serial.println(ESP.getFreeHeap());
+    // Serial.println("Creating node...");
+    while (rclc_node_init_default(&node, "roboost_core_node", "", &support) !=
+           RCL_RET_OK)
+    {
+        // Serial.println("Failed to create node, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    // create node
-    Serial.println("Creating node...");
-    RCCHECK(rclc_node_init_default(&node, "roboost_core_node", "", &support));
+    // Serial.print("Creating publisher...");
+    while (rclc_publisher_init_default(
+               &publisher, &node,
+               ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
+               "odom") != RCL_RET_OK)
+    {
+        // Serial.println("Failed to create publisher, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    Serial.print("5: ");
-    Serial.println(ESP.getFreeHeap());
+    // Serial.println("Creating subscriber...");
+    while (rclc_subscription_init_default(
+               &subscriber, &node,
+               ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+               "cmd_vel") != RCL_RET_OK)
+    {
+        // Serial.println("Failed to create subscriber, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    // create subscriber
-    Serial.println("Creating subscriber...");
-    RCCHECK(rclc_subscription_init_default(
-        &subscriber, &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist), "cmd_vel"));
+    // Serial.println("Creating executor...");
+    while (rclc_executor_init(&executor, &support.context, 1, &allocator) !=
+           RCL_RET_OK)
+    {
+        // Serial.println("Failed to create executor, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    Serial.print("6: ");
-    Serial.println(ESP.getFreeHeap());
+    // Serial.println("Adding subscriber to executor...");
+    while (rclc_executor_add_subscription(&executor, &subscriber, &msg,
+                                          &cmd_vel_subscription_callback,
+                                          ON_NEW_DATA) != RCL_RET_OK)
+    {
+        // Serial.println("Failed to add subscriber to executor, retrying...");
+        delay(1000); // Wait for 1 second
+    }
 
-    // create executor
-    Serial.println("Creating executor...");
-    RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-
-    Serial.print("7: ");
-    Serial.println(ESP.getFreeHeap());
-
-    // create subscriber
-    Serial.println("Creating subscriber...");
-    RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg,
-                                           &cmd_vel_subscription_callback,
-                                           ON_NEW_DATA));
-
-    Serial.print("8: ");
-    Serial.println(ESP.getFreeHeap());
-
-    // Create publisher for odometry
-    Serial.print("Creating publisher...");
-    RCCHECK(rclc_publisher_init_default(
-        &publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
-        "odom"));
-
-    Serial.print("9: ");
-    Serial.println(ESP.getFreeHeap());
+    delay(500);
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 /**
@@ -159,8 +160,8 @@ void setup()
  */
 void loop()
 {
-    delay(100);
     // Publish the RobotController's latest odometry
+    robot_controller.update();
     BLA::Matrix<6> odometry = robot_controller.get_odometry();
 
     // Convert the odometry matrix to a nav_msgs__msg__Odometry
@@ -173,6 +174,8 @@ void loop()
     odom.twist.twist.linear.y = odometry(4);  // y linear velocity
     odom.twist.twist.angular.z = odometry(5); // z angular velocity
 
-    // RCSOFTCHECK(rcl_publish(&publisher, &odom, NULL));
+    RCSOFTCHECK(rcl_publish(&publisher, &odom, NULL));
+
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+    delay(100);
 }

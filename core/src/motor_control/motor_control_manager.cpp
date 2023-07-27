@@ -11,8 +11,7 @@
 
 #include "motor_control/motor_control_manager.hpp"
 
-MotorControllerManager::MotorControllerManager(
-    std::initializer_list<MotorController*> motor_controllers)
+MotorControllerManager::MotorControllerManager(std::initializer_list<MotorController*> motor_controllers)
 {
     for (MotorController* motor_controller : motor_controllers)
     {
@@ -28,8 +27,7 @@ MotorControllerManager::~MotorControllerManager()
     }
 }
 
-void MotorControllerManager::set_motor_speed(int motor_index,
-                                             float desired_speed)
+void MotorControllerManager::set_motor_speed(int motor_index, float desired_speed)
 {
     if (motor_index < 0 || motor_index >= motor_controllers_.size())
     {
@@ -37,6 +35,11 @@ void MotorControllerManager::set_motor_speed(int motor_index,
     }
     else
     {
+        // Serial.print("Setting motor [");
+        // Serial.print(motor_index);
+        // Serial.print("] to ");
+        // Serial.print(desired_speed);
+        // Serial.println("[rad/s]");
         motor_controllers_[motor_index].second = desired_speed;
     }
 }
@@ -62,10 +65,7 @@ float MotorControllerManager::get_motor_speed(int motor_index) const
     }
 }
 
-int MotorControllerManager::get_motor_count() const
-{
-    return motor_controllers_.size();
-}
+int MotorControllerManager::get_motor_count() const { return motor_controllers_.size(); }
 
 void MotorControllerManager::update()
 {

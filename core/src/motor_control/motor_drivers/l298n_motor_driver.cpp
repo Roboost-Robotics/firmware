@@ -18,6 +18,11 @@ L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2,
       pwm_channel_(pwm_channel)
 {
     // Initialize L298N...
+    // setting pin modes
+    pinMode(pin_in1_, OUTPUT);
+    pinMode(pin_in2_, OUTPUT);
+    pinMode(pin_ena_, OUTPUT);
+
     // setting PWM properties
     const int freq = 5000;
     const int resolution = 8;

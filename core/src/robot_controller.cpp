@@ -11,8 +11,7 @@
 
 #include "robot_controller.hpp"
 
-RobotController::RobotController(MotorControllerManager& motor_manager,
-                                 Kinematics& kinematics_model)
+RobotController::RobotController(MotorControllerManager& motor_manager, Kinematics& kinematics_model)
     : motor_manager_(motor_manager), kinematics_model_(kinematics_model)
 {
     // Initialize latestCommand and latestOdometry to default values here
@@ -22,9 +21,9 @@ RobotController::RobotController(MotorControllerManager& motor_manager,
 
 void RobotController::update()
 {
+    // TODO: implement the method so that a different number of wheels is possible
     // Use the KinematicsModel to calculate desired wheel speeds
-    BLA::Matrix<4> desired_wheel_speeds =
-        kinematics_model_.calculate_wheel_velocity(latest_command_);
+    BLA::Matrix<4> desired_wheel_speeds = kinematics_model_.calculate_wheel_velocity(latest_command_);
 
     // Check if there are enough motor controllers in the manager
     if (motor_manager_.get_motor_count() < 4)
@@ -38,6 +37,7 @@ void RobotController::update()
     {
         motor_manager_.set_motor_speed(i, desired_wheel_speeds(i));
     }
+    motor_manager_.update();
 }
 
 BLA::Matrix<6> RobotController::get_odometry()
@@ -46,7 +46,4 @@ BLA::Matrix<6> RobotController::get_odometry()
     return odometry_;
 }
 
-void RobotController::set_latest_command(const BLA::Matrix<3>& latest_command)
-{
-    latest_command_ = latest_command;
-}
+void RobotController::set_latest_command(const BLA::Matrix<3>& latest_command) { latest_command_ = latest_command; }
