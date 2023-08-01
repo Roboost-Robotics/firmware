@@ -20,7 +20,7 @@ The Entorhinal Cortex is a PlatformIO project that contains the firmware for an 
 More information can be found in the following blog post:
 - [Roboost Entorhinal Cortex Summary](https://technologiehub.at/project-posts/roboost-entorhinal-cortex/)
 
-### Biology of the Entorhinal Cortex - Explanation by ChatGPT:
+#### Biology of the Entorhinal Cortex - Explanation by ChatGPT:
 >"The entorhinal cortex is a part of the brain located in the medial temporal lobe, which is an important region involved in memory processes and navigation.
 >
 >Imagine it like a central hub or a middle-man in your brain's network. Information about what you see, hear, and experience flows into the entorhinal cortex. From there, the entorhinal cortex processes and integrates this sensory information and sends it to the hippocampus, another area of the brain that's vital for memory storage and consolidation.
@@ -40,7 +40,7 @@ The Primary Motor Cortex contains code related to the motor control of the robot
 More information can be found in the following blog post:
 - [Roboost Primary Motor Cortex Summary](https://technologiehub.at/project-posts/roboost-primary-motor-cortex/)
 
-### Biology of the Primary Motor Cortex - Explanation by ChatGPT:
+#### Biology of the Primary Motor Cortex - Explanation by ChatGPT:
 >"The primary motor cortex is like the command center that controls voluntary movements.
 >
 >The primary motor cortex is located in the frontal lobe of the brain, towards the back. It's like a programmer sitting at a keyboard, sending out commands. These commands aren't lines of code, though, but signals that direct your body to move.
