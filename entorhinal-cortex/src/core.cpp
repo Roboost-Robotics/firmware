@@ -16,40 +16,41 @@
 #define RPLIDAR_RX 16
 #define RPLIDAR_TX 17
 
+HardwareSerial RPLidarSerial(2);  // Using HardwareSerial 2
 RPLidar lidar;
 
 void setup() {
   // Initialize serial and lidar
   Serial.begin(115200);
-  lidar.begin(RPLIDAR_RX, RPLIDAR_TX);
+  RPLidarSerial.begin(115200, SERIAL_8N1, RPLIDAR_RX, RPLIDAR_TX);
 
   // Start the lidar's motor
   pinMode(RPLIDAR_MOTOR, OUTPUT);
   digitalWrite(RPLIDAR_MOTOR, HIGH);
+
+  lidar.begin(RPLidarSerial);
+  lidar.startScan();
 }
 
 void loop() {
-  // Make sure lidar is connected
-  if (lidar.isRunning()) {
-    rplidar_response_measurement_node_hq_t nodes[8192];
-    size_t count = _countof(nodes);
+  // Check if lidar is open
+  if (lidar.isOpen()) {
+    RPLidarMeasurement measurement;
+    while (lidar.waitPoint()) {
+      measurement = lidar.getCurrentPoint();
 
-    // Perform a 360 degree scan and grab the measurements
-    lidar.scan(nodes, count);
-
-    // Find the node closest to 180 degrees
-    for (int i = 0; i < count; i++) {
-      float angle = nodes[i].angle_z_q14 * 90.f / (1 << 14);
+      // measurement.angle is already in degrees
+      float angle = measurement.angle;
 
       // Print the distance at the middle point
-      if (angle >= 180.0 && angle <= 180.1) {
+      if (angle >= 180.0 && angle < 181.0) {
         Serial.print("Distance at 180 degrees: ");
-        Serial.print(nodes[i].dist_mm_q2/4.0);
+        Serial.print(measurement.distance);
         Serial.println("mm");
       }
     }
   } else {
-    Serial.println("Lidar is not running!");
+    Serial.println("Lidar is not open!");
   }
 
   // Wait a bit before the next scan
