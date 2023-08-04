@@ -1,4 +1,4 @@
-![Roboost Logo](roboost-logo.png)
+![Roboost Logo](Roboost-logo.svg)
 
 # Roboost Firmware Collection
 
