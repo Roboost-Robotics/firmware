@@ -4,7 +4,7 @@ This repository contains the codebase for multiple components of the Roboost rob
 The naming of each part of the system is based on regions of the brain that are responsible for similar tasks.
 
 Goals of the Roboost project:
-- Minimize the cost of robotic development with ROS
+- Minimize the cost of robotic development with ROS2
 - Provide an easy-to-use base for more complex systems
 - Configurable for different types of robots
 
