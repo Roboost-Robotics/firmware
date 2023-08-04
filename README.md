@@ -1,3 +1,5 @@
+![Roboost Logo](roboost-logo.png)
+
 # Roboost Firmware Collection
 
 This repository contains the codebase for multiple components of the Roboost robotic system.
