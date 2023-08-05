@@ -19,19 +19,17 @@
 #include <rclc/rclc.h>
 
 #include <sensor_msgs/msg/laser_scan.h>
+#include <std_msgs/msg/float32.h>
 
 #include "conf_network.h"
-#include "conf_robot.h"
+#include "conf_hardware.h"
 
-#define RPLIDAR_MOTOR 18
-#define RPLIDAR_RX 16
-#define RPLIDAR_TX 17
-
-HardwareSerial RPLidarSerial(2); // Using HardwareSerial 2
+HardwareSerial RPLidarSerial(2);
 RPLidar lidar;
 
 rcl_publisher_t publisher;
 sensor_msgs__msg__LaserScan scan;
+std_msgs__msg__Float32 battery_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -78,6 +76,10 @@ void setup()
     pinMode(RPLIDAR_MOTOR, OUTPUT);
     digitalWrite(RPLIDAR_MOTOR, HIGH);
 
+    // Initialize battery voltage measurement pin and LED
+    pinMode(PWR_IN, INPUT);
+    pinMode(PWR_LED, OUTPUT);
+
     lidar.begin(RPLidarSerial);
     lidar.startScan();
 
@@ -109,8 +111,17 @@ void setup()
         delay(1000);
     }
 
-    while (rclc_executor_init(&executor, &support.context, 1, &allocator) !=
-           RCL_RET_OK)
+    // Create ROS publisher for battery level
+    while (rclc_publisher_init_default(
+               &publisher, &node,
+               ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+               "battery_level") != RCL_RET_OK)
+    {
+        delay(1000);
+    }
+
+    while (rclc_executor_init(&executor, &support.context, 2, &allocator) !=
+           RCL_RET_OK) // Increase the number of handles to 2
     {
         delay(1000);
     }
@@ -128,6 +139,23 @@ void setup()
 void loop()
 {
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+
+    // Read battery voltage level
+    float battery_voltage = analogRead(PWR_IN) * (3.3 / 4095.0);
+
+    // Check if the voltage is less than 80% of 3.3V
+    if (battery_voltage < 0.8 * 3.3)
+    {
+        digitalWrite(PWR_LED, HIGH); // Turn on the PWR_LED
+    }
+    else
+    {
+        digitalWrite(PWR_LED, LOW); // Turn off the PWR_LED
+    }
+
+    // Publish battery level
+    battery_msg.data = battery_voltage;
+    RCSOFTCHECK(rcl_publish(&publisher, &battery_msg, NULL));
 
     if (lidar.isOpen())
     {
