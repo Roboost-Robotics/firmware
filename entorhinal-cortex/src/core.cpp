@@ -38,6 +38,36 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 
+void set_scan_parameters_and_publish(std::vector<float>& ranges,
+                                     std::vector<float>& intensities,
+                                     std::vector<float>& angles)
+{
+    scan.angle_min = *min_element(angles.begin(), angles.end());
+    scan.angle_max = *max_element(angles.begin(), angles.end());
+    scan.angle_increment =
+        angles.size() > 1
+            ? (scan.angle_max - scan.angle_min) / (angles.size() - 1)
+            : 0;
+    scan.range_min = *min_element(ranges.begin(), ranges.end());
+    scan.range_max = *max_element(ranges.begin(), ranges.end());
+
+    scan.ranges.size = scan.ranges.capacity = ranges.size();
+    scan.ranges.data = reinterpret_cast<float*>(
+        allocator.allocate(sizeof(float) * ranges.size(), allocator.state));
+
+    scan.intensities.size = scan.intensities.capacity = intensities.size();
+    scan.intensities.data = reinterpret_cast<float*>(allocator.allocate(
+        sizeof(float) * intensities.size(), allocator.state));
+
+    std::copy(ranges.begin(), ranges.end(), scan.ranges.data);
+    std::copy(intensities.begin(), intensities.end(), scan.intensities.data);
+
+    RCSOFTCHECK(rcl_publish(&publisher, &scan, NULL));
+
+    allocator.deallocate(scan.ranges.data, allocator.state);
+    allocator.deallocate(scan.intensities.data, allocator.state);
+}
+
 void setup()
 {
     // Initialize serial and lidar
@@ -88,71 +118,58 @@ void setup()
     delay(500);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+
+    // Set frame_id
+    scan.header.frame_id.data = (char*)"lidar";
+    scan.header.frame_id.size = strlen(scan.header.frame_id.data);
+    scan.header.frame_id.capacity = scan.header.frame_id.size + 1;
 }
 
 void loop()
 {
+    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+
     if (lidar.isOpen())
     {
-        // Collect all scanned points
-        std::vector<float> ranges;
-        std::vector<float> intensities;
+        std::vector<float> ranges, intensities, angles;
         RPLidarMeasurement measurement;
+        float start_angle = -1.0;
+        bool start_collecting = false;
 
-        // Set scan parameters
-        scan.angle_min = 0.0;
-        scan.angle_max = 360.0;
-        scan.angle_increment = 1.0;
-        scan.range_min = 0.0;
-        scan.range_max = 10.0;
-
-        // Set frame_id
-        scan.header.frame_id.data = (char*)"lidar";
-        scan.header.frame_id.size = strlen(scan.header.frame_id.data);
-        scan.header.frame_id.capacity = scan.header.frame_id.size + 1;
-
-        // TODO: remove ranges.size() fix
-        //? Why exactly does the error occur when not checking the range size?
-        while (lidar.waitPoint() == RESULT_OK && ranges.size() < 360)
+        while (lidar.waitPoint() == RESULT_OK)
         {
             measurement = lidar.getCurrentPoint();
-            Serial.println(measurement.angle);
-            ranges.push_back(measurement.distance / 1000.);
-            intensities.push_back(measurement.quality);
+
+            // If we're just starting, record the first angle and start
+            // collecting
+            if (start_angle < 0.0)
+            {
+                start_angle = measurement.angle;
+                start_collecting = true;
+            }
+            // Stop collecting after a full rotation
+            else if ((start_angle <= measurement.angle + 1) &&
+                     (start_angle >= measurement.angle - 1))
+            {
+                break;
+            }
+
+            if (start_collecting)
+            {
+                ranges.push_back(measurement.distance / 1000.);
+                intensities.push_back(measurement.quality);
+                angles.push_back(measurement.angle * (PI / 180.));
+            }
         }
 
-        // Allocate memory for ranges and intensities
-        scan.ranges.size = ranges.size();
-        scan.ranges.capacity = ranges.size();
-        scan.ranges.data = reinterpret_cast<float*>(
-            allocator.allocate(sizeof(float) * ranges.size(), allocator.state));
-
-        scan.intensities.size = intensities.size();
-        scan.intensities.capacity = intensities.size();
-        scan.intensities.data = reinterpret_cast<float*>(allocator.allocate(
-            sizeof(float) * intensities.size(), allocator.state));
-
-        // Copy data
-        for (size_t i = 0; i < ranges.size(); i++)
+        // Check if we collected any data points
+        if (start_collecting && !ranges.empty() && !intensities.empty() &&
+            !angles.empty())
         {
-            scan.ranges.data[i] = ranges[i];
-            scan.intensities.data[i] = intensities[i];
+            // Set dynamic scan parameters
+            set_scan_parameters_and_publish(ranges, intensities, angles);
         }
-
-        // Publish the scan data
-        RCSOFTCHECK(rcl_publish(&publisher, &scan, NULL));
-
-        // Free memory
-        allocator.deallocate(scan.ranges.data, allocator.state);
-        allocator.deallocate(scan.intensities.data, allocator.state);
-
-        delay(100);
-    }
-    else
-    {
-        Serial.println("Lidar is not open!");
     }
 
-    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
     delay(100);
 }
