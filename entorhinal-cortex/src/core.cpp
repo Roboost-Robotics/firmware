@@ -1,7 +1,7 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief //todo
+ * @brief //TODO: Add description
  * @version 0.1
  * @date 2023-07-06
  *
@@ -21,13 +21,14 @@
 #include <sensor_msgs/msg/laser_scan.h>
 #include <std_msgs/msg/float32.h>
 
-#include "conf_network.h"
 #include "conf_hardware.h"
+#include "conf_network.h"
 
 HardwareSerial RPLidarSerial(2);
 RPLidar lidar;
 
-rcl_publisher_t publisher;
+rcl_publisher_t scan_publisher;
+rcl_publisher_t battery_publisher;
 sensor_msgs__msg__LaserScan scan;
 std_msgs__msg__Float32 battery_msg;
 
@@ -35,6 +36,9 @@ rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
+
+unsigned long last_battery_publish_time = 0;
+const unsigned long battery_publish_interval = 2000;
 
 void set_scan_parameters_and_publish(std::vector<float>& ranges,
                                      std::vector<float>& intensities,
@@ -60,7 +64,7 @@ void set_scan_parameters_and_publish(std::vector<float>& ranges,
     std::copy(ranges.begin(), ranges.end(), scan.ranges.data);
     std::copy(intensities.begin(), intensities.end(), scan.intensities.data);
 
-    RCSOFTCHECK(rcl_publish(&publisher, &scan, NULL));
+    RCSOFTCHECK(rcl_publish(&scan_publisher, &scan, NULL));
 
     allocator.deallocate(scan.ranges.data, allocator.state);
     allocator.deallocate(scan.intensities.data, allocator.state);
@@ -102,9 +106,8 @@ void setup()
     {
         delay(1000);
     }
-
     while (rclc_publisher_init_default(
-               &publisher, &node,
+               &scan_publisher, &node,
                ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserScan),
                "scan") != RCL_RET_OK)
     {
@@ -113,7 +116,7 @@ void setup()
 
     // Create ROS publisher for battery level
     while (rclc_publisher_init_default(
-               &publisher, &node,
+               &battery_publisher, &node,
                ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
                "battery_level") != RCL_RET_OK)
     {
@@ -141,21 +144,26 @@ void loop()
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
 
     // Read battery voltage level
-    float battery_voltage = analogRead(PWR_IN) * (3.3 / 4095.0);
+    float battery_voltage = analogRead(PWR_IN) * (3.3 * PWR_FACTOR / 4095.0);
 
-    // Check if the voltage is less than 80% of 3.3V
-    if (battery_voltage < 0.8 * 3.3)
+    // Check if the voltage is less than 80% of 12.4V
+    if (battery_voltage < 0.8 * 12.4)
     {
-        digitalWrite(PWR_LED, HIGH); // Turn on the PWR_LED
+        digitalWrite(PWR_LED, HIGH);
     }
     else
     {
-        digitalWrite(PWR_LED, LOW); // Turn off the PWR_LED
+        digitalWrite(PWR_LED, LOW);
     }
 
-    // Publish battery level
-    battery_msg.data = battery_voltage;
-    RCSOFTCHECK(rcl_publish(&publisher, &battery_msg, NULL));
+    // Publish battery level every 2 seconds
+    unsigned long current_time = millis();
+    if (current_time - last_battery_publish_time >= battery_publish_interval)
+    {
+        battery_msg.data = battery_voltage;
+        RCSOFTCHECK(rcl_publish(&battery_publisher, &battery_msg, NULL));
+        last_battery_publish_time = current_time; // Update last publish time
+    }
 
     if (lidar.isOpen())
     {

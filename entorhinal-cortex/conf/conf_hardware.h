@@ -32,6 +32,6 @@
  */
 #define PWR_IN 36
 #define PWR_LED 13
-#define PWR_MAX 12.6
+#define PWR_FACTOR 4.09 // 4.09 for 11.1V LiPo
 
 #endif // CONF_HARDWARE_H
