@@ -21,7 +21,7 @@
 #include <nav_msgs/msg/odometry.h>
 
 #include "conf_network.h"
-#include "conf_robot.h"
+#include "conf_hardware.h"
 #include "motor_control/motor_drivers/l298n_motor_driver.hpp"
 #include "motor_control/simple_motor_controller.hpp"
 #include "robot_controller.hpp"
