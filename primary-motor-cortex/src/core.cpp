@@ -20,8 +20,8 @@
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
 
-#include "conf_network.h"
 #include "conf_hardware.h"
+#include "conf_network.h"
 #include "motor_control/motor_drivers/l298n_motor_driver.hpp"
 #include "motor_control/simple_motor_controller.hpp"
 #include "robot_controller.hpp"
@@ -76,6 +76,16 @@ void cmd_vel_subscription_callback(const void* msgin)
     // Serial.print("Angular Z: ");
     // Serial.println(cmd(2));
 
+    // Print wheel speeds
+    Serial.print("Wheel speed M0: ");
+    Serial.println(motor_controll_manager.get_motor_speed(0));
+    Serial.print("Wheel speed M1: ");
+    Serial.println(motor_controll_manager.get_motor_speed(1));
+    Serial.print("Wheel speed M2: ");
+    Serial.println(motor_controll_manager.get_motor_speed(2));
+    Serial.print("Wheel speed M3: ");
+    Serial.println(motor_controll_manager.get_motor_speed(3));
+
     robot_controller.set_latest_command(cmd);
 }
 
@@ -86,7 +96,7 @@ void cmd_vel_subscription_callback(const void* msgin)
 void setup()
 {
     // Configure serial transport
-    // Serial.begin(115200);
+    Serial.begin(115200);
 
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;

@@ -45,6 +45,12 @@ void L298NMotorDriver::set_motor_control(float control_value)
     digitalWrite(pin_in1_, direction ? HIGH : LOW);
     digitalWrite(pin_in2_, direction ? LOW : HIGH);
 
+    // Print direction and PWM...
+    // Serial.print("Direction: ");
+    // Serial.print(direction ? "forward" : "backward");
+    // Serial.print(", PWM: ");
+    // Serial.println(std::abs(control_value));
+
     // Set PWM for L298N...
     u_int8_t pwm = static_cast<int>(std::abs(control_value) * 255);
     ledcWrite(pwm_channel_, pwm);

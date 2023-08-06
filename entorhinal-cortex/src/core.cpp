@@ -40,36 +40,6 @@ rcl_node_t node;
 unsigned long last_battery_publish_time = 0;
 const unsigned long battery_publish_interval = 2000;
 
-void set_scan_parameters_and_publish(std::vector<float>& ranges,
-                                     std::vector<float>& intensities,
-                                     std::vector<float>& angles)
-{
-    scan.angle_min = *min_element(angles.begin(), angles.end());
-    scan.angle_max = *max_element(angles.begin(), angles.end());
-    scan.angle_increment =
-        angles.size() > 1
-            ? (scan.angle_max - scan.angle_min) / (angles.size() - 1)
-            : 0;
-    scan.range_min = *min_element(ranges.begin(), ranges.end());
-    scan.range_max = *max_element(ranges.begin(), ranges.end());
-
-    scan.ranges.size = scan.ranges.capacity = ranges.size();
-    scan.ranges.data = reinterpret_cast<float*>(
-        allocator.allocate(sizeof(float) * ranges.size(), allocator.state));
-
-    scan.intensities.size = scan.intensities.capacity = intensities.size();
-    scan.intensities.data = reinterpret_cast<float*>(allocator.allocate(
-        sizeof(float) * intensities.size(), allocator.state));
-
-    std::copy(ranges.begin(), ranges.end(), scan.ranges.data);
-    std::copy(intensities.begin(), intensities.end(), scan.intensities.data);
-
-    RCSOFTCHECK(rcl_publish(&scan_publisher, &scan, NULL));
-
-    allocator.deallocate(scan.ranges.data, allocator.state);
-    allocator.deallocate(scan.intensities.data, allocator.state);
-}
-
 void setup()
 {
     // Initialize serial and lidar
@@ -203,7 +173,32 @@ void loop()
             !angles.empty())
         {
             // Set dynamic scan parameters
-            set_scan_parameters_and_publish(ranges, intensities, angles);
+            scan.angle_min = *min_element(angles.begin(), angles.end());
+            scan.angle_max = *max_element(angles.begin(), angles.end());
+            scan.angle_increment =
+                angles.size() > 1
+                    ? (scan.angle_max - scan.angle_min) / (angles.size() - 1)
+                    : 0;
+            scan.range_min = *min_element(ranges.begin(), ranges.end());
+            scan.range_max = *max_element(ranges.begin(), ranges.end());
+
+            scan.ranges.size = scan.ranges.capacity = ranges.size();
+            scan.ranges.data = reinterpret_cast<float*>(allocator.allocate(
+                sizeof(float) * ranges.size(), allocator.state));
+
+            scan.intensities.size = scan.intensities.capacity =
+                intensities.size();
+            scan.intensities.data = reinterpret_cast<float*>(allocator.allocate(
+                sizeof(float) * intensities.size(), allocator.state));
+
+            std::copy(ranges.begin(), ranges.end(), scan.ranges.data);
+            std::copy(intensities.begin(), intensities.end(),
+                      scan.intensities.data);
+
+            RCSOFTCHECK(rcl_publish(&scan_publisher, &scan, NULL));
+
+            allocator.deallocate(scan.ranges.data, allocator.state);
+            allocator.deallocate(scan.intensities.data, allocator.state);
         }
     }
 
