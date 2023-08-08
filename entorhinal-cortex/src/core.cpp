@@ -20,6 +20,7 @@
 
 #include <sensor_msgs/msg/laser_scan.h>
 #include <std_msgs/msg/float32.h>
+#include <diagnostic_msgs/msg/diagnostic_status.h>
 
 #include "conf_hardware.h"
 #include "conf_network.h"
@@ -29,8 +30,10 @@ RPLidar lidar;
 
 rcl_publisher_t scan_publisher;
 rcl_publisher_t battery_publisher;
-sensor_msgs__msg__LaserScan scan;
+rcl_publisher_t diagnostic_publisher;
+sensor_msgs__msg__LaserScan scan_msg;
 std_msgs__msg__Float32 battery_msg;
+diagnostic_msgs__msg__DiagnosticStatus diagnostic_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -84,7 +87,6 @@ void setup()
         delay(1000);
     }
 
-    // Create ROS publisher for battery level
     while (rclc_publisher_init_default(
                &battery_publisher, &node,
                ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
@@ -93,8 +95,16 @@ void setup()
         delay(1000);
     }
 
-    while (rclc_executor_init(&executor, &support.context, 2, &allocator) !=
-           RCL_RET_OK) // Increase the number of handles to 2
+    while (rclc_publisher_init_default(
+           &diagnostic_publisher, &node,
+           ROSIDL_GET_MSG_TYPE_SUPPORT(diagnostic_msgs, msg, DiagnosticStatus),
+           "diagnostics") != RCL_RET_OK)
+    {
+        delay(1000);
+    }
+
+    while (rclc_executor_init(&executor, &support.context, 3, &allocator) !=
+           RCL_RET_OK)
     {
         delay(1000);
     }
@@ -104,9 +114,9 @@ void setup()
     digitalWrite(LED_BUILTIN, HIGH);
 
     // Set frame_id
-    scan.header.frame_id.data = (char*)"lidar";
-    scan.header.frame_id.size = strlen(scan.header.frame_id.data);
-    scan.header.frame_id.capacity = scan.header.frame_id.size + 1;
+    scan_msg.header.frame_id.data = (char*)"lidar";
+    scan_msg.header.frame_id.size = strlen(scan_msg.header.frame_id.data);
+    scan_msg.header.frame_id.capacity = scan_msg.header.frame_id.size + 1;
 }
 
 void loop()
@@ -116,15 +126,29 @@ void loop()
     // Read battery voltage level
     float battery_voltage = analogRead(PWR_IN) * (3.3 * PWR_FACTOR / 4095.0);
 
-    // Check if the voltage is less than 80% of 12.4V
+    // Populate battery voltage diagnostic
+    diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__OK;
+    diagnostic_msg.name.data = (char*)"Battery Voltage";
+    diagnostic_msg.name.size = strlen(diagnostic_msg.name.data);
+    diagnostic_msg.name.capacity = diagnostic_msg.name.size + 1;
+
     if (battery_voltage < 0.8 * 12.4)
     {
-        digitalWrite(PWR_LED, HIGH);
+            digitalWrite(PWR_LED, HIGH);
+        diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
+        diagnostic_msg.message.data = (char*)"Low Battery Voltage";
+        diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
+        diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
     }
     else
     {
-        digitalWrite(PWR_LED, LOW);
+            digitalWrite(PWR_LED, LOW);
+        diagnostic_msg.message.data = (char*)"Battery voltage is within normal range";
+        diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
+        diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
     }
+
+    RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
 
     // Publish battery level every 2 seconds
     unsigned long current_time = millis();
@@ -173,32 +197,32 @@ void loop()
             !angles.empty())
         {
             // Set dynamic scan parameters
-            scan.angle_min = *min_element(angles.begin(), angles.end());
-            scan.angle_max = *max_element(angles.begin(), angles.end());
-            scan.angle_increment =
+            scan_msg.angle_min = *min_element(angles.begin(), angles.end());
+            scan_msg.angle_max = *max_element(angles.begin(), angles.end());
+            scan_msg.angle_increment =
                 angles.size() > 1
-                    ? (scan.angle_max - scan.angle_min) / (angles.size() - 1)
+                    ? (scan_msg.angle_max - scan_msg.angle_min) / (angles.size() - 1)
                     : 0;
-            scan.range_min = *min_element(ranges.begin(), ranges.end());
-            scan.range_max = *max_element(ranges.begin(), ranges.end());
+            scan_msg.range_min = *min_element(ranges.begin(), ranges.end());
+            scan_msg.range_max = *max_element(ranges.begin(), ranges.end());
 
-            scan.ranges.size = scan.ranges.capacity = ranges.size();
-            scan.ranges.data = reinterpret_cast<float*>(allocator.allocate(
+            scan_msg.ranges.size = scan_msg.ranges.capacity = ranges.size();
+            scan_msg.ranges.data = reinterpret_cast<float*>(allocator.allocate(
                 sizeof(float) * ranges.size(), allocator.state));
 
-            scan.intensities.size = scan.intensities.capacity =
+            scan_msg.intensities.size = scan_msg.intensities.capacity =
                 intensities.size();
-            scan.intensities.data = reinterpret_cast<float*>(allocator.allocate(
+            scan_msg.intensities.data = reinterpret_cast<float*>(allocator.allocate(
                 sizeof(float) * intensities.size(), allocator.state));
 
-            std::copy(ranges.begin(), ranges.end(), scan.ranges.data);
+            std::copy(ranges.begin(), ranges.end(), scan_msg.ranges.data);
             std::copy(intensities.begin(), intensities.end(),
-                      scan.intensities.data);
+                      scan_msg.intensities.data);
 
-            RCSOFTCHECK(rcl_publish(&scan_publisher, &scan, NULL));
+            RCSOFTCHECK(rcl_publish(&scan_publisher, &scan_msg, NULL));
 
-            allocator.deallocate(scan.ranges.data, allocator.state);
-            allocator.deallocate(scan.intensities.data, allocator.state);
+            allocator.deallocate(scan_msg.ranges.data, allocator.state);
+            allocator.deallocate(scan_msg.intensities.data, allocator.state);
         }
     }
 
