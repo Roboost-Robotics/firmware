@@ -4,7 +4,7 @@
 #include <BasicLinearAlgebra.h>
 
 #include "kinematics/kinematics.hpp"
-#include "motor_control/motor_control_manager.hpp"
+#include "motor-control/motor_control_manager.hpp"
 
 /**
  * @brief //todo

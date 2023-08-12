@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
+#include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
 L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2,

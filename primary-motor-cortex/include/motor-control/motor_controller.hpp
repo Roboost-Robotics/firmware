@@ -11,7 +11,7 @@
 #ifndef MOTOR_CONTROLLER_H
 #define MOTOR_CONTROLLER_H
 
-#include "motor_control/motor_drivers/motor_driver.hpp"
+#include "motor-control/motor-drivers/motor_driver.hpp"
 
 /**
  * @brief //todo

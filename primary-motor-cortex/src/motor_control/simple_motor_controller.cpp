@@ -9,7 +9,7 @@
  *
  */
 
-#include "motor_control/simple_motor_controller.hpp"
+#include "motor-control/simple_motor_controller.hpp"
 #include <algorithm> // for std::clamp
 
 SimpleMotorController::SimpleMotorController(MotorDriver& motor_driver,

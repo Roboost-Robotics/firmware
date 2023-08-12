@@ -55,6 +55,81 @@ More information can be found in the following blog post:
 >
 >So, in the language of computer engineering, you could say that the primary motor cortex is a kind of sophisticated, dynamic programming system for movement, generating complex 'scripts' that control the 'hardware' of your body."
 
+## Project Structure
+
+|--entorhinal-cortex
+|  |-README.md
+|  |--conf
+|  |  |-README.md
+|  |  |-conf_hardware.h
+|  |  |-conf_network_example.h
+|  |  |-conf_network.h
+|  |--doc
+|  |  |-README.md
+|  |--include
+|  |  |-README.md
+|  |  |-rcl_checks.h
+|  |--lib
+|  |  |-README.md
+|  |--res
+|  |  |-README.md
+|  |  |-kinematics_calculations.mcdx
+|  |--src
+|  |  |-README.md
+|  |  |-core.cpp
+|  |-.clang-format
+|  |-.gitignore
+|  |-Doxyfile
+|  |-platformio.ini
+|--primary-motor-cortex
+|  |-README.md
+|  |--conf
+|  |  |-README.md
+|  |  |-conf_hardware.h
+|  |  |-conf_network_example.h
+|  |  |-conf_network.h
+|  |--doc
+|  |  |-README.md
+|  |--include
+|  |  |-README.md
+|  |  |--kinematics
+|  |  |  |-kinematics.hpp
+|  |  |--motor-control
+|  |  |  |--motor-drivers
+|  |  |  |  |-motor_driver.hpp
+|  |  |  |  |-l298n_motor_driver.hpp
+|  |  |  |-encoder.hpp
+|  |  |  |-motor_control_manager.hpp
+|  |  |  |-motor_controller.hpp
+|  |  |  |-pid.hpp
+|  |  |  |-simple_motor_controller.hpp
+|  |  |-rcl_checks.h
+|  |  |-robot_controller.hpp
+|  |--lib
+|  |  |-README.md
+|  |--res
+|  |  |-README.md
+|  |  |-kinematics_calculations.mcdx
+|  |--src
+|  |  |-README.md
+|  |  |--kinematics
+|  |  |  |-mecanum_kinematics_4w.cpp
+|  |  |--motor-control
+|  |  |  |--motor-drivers
+|  |  |  |  |-l298n_motor_driver.cpp
+|  |  |  |-encoder.cpp
+|  |  |  |-motor_control_manager.cpp
+|  |  |  |-pid.cpp
+|  |  |  |-simple_motor_controller.cpp
+|  |  |-core.cpp
+|  |  |-robot_controller.cpp
+|  |-.clang-format
+|  |-.gitignore
+|  |-Doxyfile
+|  |-platformio.ini
+|-README.md
+|-Roboost-logo.svg
 
 ## TODO
 - Add references for PCBs and used electrical components
+- Share CAD files for the robot projects

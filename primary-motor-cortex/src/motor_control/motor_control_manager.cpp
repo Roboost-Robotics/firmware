@@ -9,9 +9,10 @@
  *
  */
 
-#include "motor_control/motor_control_manager.hpp"
+#include "motor-control/motor_control_manager.hpp"
 
-MotorControllerManager::MotorControllerManager(std::initializer_list<MotorController*> motor_controllers)
+MotorControllerManager::MotorControllerManager(
+    std::initializer_list<MotorController*> motor_controllers)
 {
     for (MotorController* motor_controller : motor_controllers)
     {
@@ -27,7 +28,8 @@ MotorControllerManager::~MotorControllerManager()
     }
 }
 
-void MotorControllerManager::set_motor_speed(int motor_index, float desired_speed)
+void MotorControllerManager::set_motor_speed(int motor_index,
+                                             float desired_speed)
 {
     if (motor_index < 0 || motor_index >= motor_controllers_.size())
     {
@@ -65,7 +67,10 @@ float MotorControllerManager::get_motor_speed(int motor_index) const
     }
 }
 
-int MotorControllerManager::get_motor_count() const { return motor_controllers_.size(); }
+int MotorControllerManager::get_motor_count() const
+{
+    return motor_controllers_.size();
+}
 
 void MotorControllerManager::update()
 {

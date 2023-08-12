@@ -22,8 +22,8 @@
 
 #include "conf_hardware.h"
 #include "conf_network.h"
-#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
-#include "motor_control/simple_motor_controller.hpp"
+#include "motor-control/motor-drivers/l298n_motor_driver.hpp"
+#include "motor-control/simple_motor_controller.hpp"
 #include "robot_controller.hpp"
 
 L298NMotorDriver driver_M0(M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL);
