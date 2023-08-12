@@ -1,0 +1,6 @@
+.pio
+.vscode
+
+# exclude doxygen documentation
+doc/html
+doc/latex

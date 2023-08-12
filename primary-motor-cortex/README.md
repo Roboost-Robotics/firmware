@@ -1,4 +1,4 @@
-# README
+# Primary Motor Cortex Documentation
 
 ## System Design
 
@@ -65,6 +65,7 @@ For wireless controll:
 ```bash
 cd microros_ws
 source install/local_setup.bash
+ros2 run micro_ros_agent micro_ros_agent udp4 -p 8888
 ```
 
 Then start teleop to controll the robot:
