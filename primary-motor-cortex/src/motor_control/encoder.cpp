@@ -9,7 +9,7 @@
  *
  */
 
-#include "motor_control/encoder.hpp"
+#include "motor-control/encoder.hpp"
 
 Encoder::Encoder(int pin_A, int pin_B) : pin_A_(pin_A), pin_B_(pin_B)
 {

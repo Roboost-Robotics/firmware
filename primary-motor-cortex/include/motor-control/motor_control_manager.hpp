@@ -11,7 +11,7 @@
 #ifndef MOTOR_CONTROLLER_MANAGER_H
 #define MOTOR_CONTROLLER_MANAGER_H
 
-#include "motor_control/motor_controller.hpp"
+#include "motor-control/motor_controller.hpp"
 #include <BasicLinearAlgebra.h>
 #include <vector>
 

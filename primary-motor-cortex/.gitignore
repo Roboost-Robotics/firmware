@@ -8,4 +8,5 @@
 conf/conf_network.h
 
 # exclude doxygen documentation
-doc/*
+doc/html
+doc/latex
