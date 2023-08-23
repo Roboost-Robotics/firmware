@@ -1,19 +1,12 @@
-/**
- * @mainpage Roboost Documentation
- *
- * This is the main documentation page for the Roboost project.
- *
- * @section intro Introduction
- * ...
- */
- 
 # Roboost Documentation
+![Roboost Logo](Roboost-logo.svg)
+
+# Roboost Firmware Collection
 
 This repository contains the codebase for multiple components of the Roboost robotic system.
 The naming of each part of the system is based on regions of the brain that are responsible for similar tasks.
 
 Goals of the Roboost project:
-
 - Minimize the cost of robotic development with ROS2
 - Provide an easy-to-use base for more complex systems
 - Configurable for different types of robots
