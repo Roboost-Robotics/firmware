@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include "motor_control/motor_drivers/l298n_motor_driver.hpp"
+#include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
 L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2,
@@ -44,6 +44,12 @@ void L298NMotorDriver::set_motor_control(float control_value)
     bool direction = control_value >= 0;
     digitalWrite(pin_in1_, direction ? HIGH : LOW);
     digitalWrite(pin_in2_, direction ? LOW : HIGH);
+
+    // Print direction and PWM...
+    // Serial.print("Direction: ");
+    // Serial.print(direction ? "forward" : "backward");
+    // Serial.print(", PWM: ");
+    // Serial.println(std::abs(control_value));
 
     // Set PWM for L298N...
     u_int8_t pwm = static_cast<int>(std::abs(control_value) * 255);

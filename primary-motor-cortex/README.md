@@ -1,8 +1,14 @@
-# README
+/**
+ * @subpage primary-motor-cortex
+ *
+ * This is the main documentation page for the Roboost project.
+ *
+ * @section intro Introduction
+ * ...
+ */
+# Primary Motor Cortex Documentation
 
-## System Design:
-
-![System Design](doc/SystemDesign.svg)
+## System Design
 
 - *MotorController*: This is an abstract base class that provides an interface for controlling a motor. It has a method for setting the control value for a motor (such as set_motor_control). The control value is a normalized value between -1 and 1.
 
@@ -20,13 +26,14 @@ In the main loop of your program, you would call the update() method of the Robo
 
 This design allows you to easily switch out different components (like different MotorController or KinematicsModel implementations) and keeps the ROS-specific code separated from the rest of your robot code. It's modular, which promotes reusability, and it's flexible, allowing for various robot configurations and control strategies.
 
-
 Data Storage:
 
 todo GPIO pins will vary depending on the motor controller, so it does not make sense to store them at the base class.
+
 - *MotorController*: This class would store the GPIO pin numbers associated with each motor control function (PWM, IN1, IN2). It would also store the current control value for the motor.
 
 todo
+
 - *SimpleMotorController*: In addition to the data stored by the MotorController base class, SimpleMotorController would store the max velocity for the motor.
 
 - *MotorControllerManager*: This class would store a collection of MotorController objects. This could be an array, a vector, or some other container, depending on what makes sense for your setup.
@@ -40,33 +47,37 @@ todo
 ## Usage
 
 nices tutorial:
-https://micro.ros.org/docs/tutorials/core/first_application_linux/
+<https://micro.ros.org/docs/tutorials/core/first_application_linux/>
 
 to run:
 
 - upload code
 - press EN pin
 - build micro-ROS agent:
+
 ```bash
 # cd into git-cloned micro-ROS project folder
 source install/local_setup.bash
 ros2 run micro_ros_setup create_agent_ws.sh
 ros2 run micro_ros_setup build_agent.sh
 ```
+
 - once the micro-ROS agent is built, run following command to make the serial port accessible in the host machine:
+
 ```bash
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
 ```
 
 For wireless controll:
 
-
 ```bash
 cd microros_ws
 source install/local_setup.bash
+ros2 run micro_ros_agent micro_ros_agent udp4 -p 8888
 ```
 
 Then start teleop to controll the robot:
+
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```

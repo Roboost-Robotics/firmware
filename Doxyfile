@@ -1,0 +1,49 @@
+# Doxyfile for Project Documentation
+
+# Specify the main page title
+MAIN_PROJECT_NAME = "Roboost"
+
+# Specify the main page (use the outermost README.md)
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# Specify the top-level directory
+INPUT = primary-motor-cortex entorhinal-cortex README.md
+
+# Output directory for the generated documentation
+OUTPUT_DIRECTORY = doc
+
+# Use Markdown support for documentation
+MARKDOWN_SUPPORT = YES
+
+# Recurse through subdirectories
+RECURSIVE = YES
+
+# Exclude files or directories from the documentation
+EXCLUDE = lib res .git
+
+# Set the output format to HTML
+GENERATE_HTML = YES
+
+# Set the title and header for the generated documentation
+PROJECT_NAME = "Roboost"
+PROJECT_BRIEF = "Codebase for software components of the Roboost robotic system."
+
+# Specify additional file extensions to parse as source code
+FILE_PATTERNS = *.c *.cpp *.h *.hpp *.md
+
+# Sort members alphabetically in the documentation
+ALPHABETICAL_INDEX = YES
+
+# Include all README.md files in the documentation
+README_INCLUDE = YES
+
+# Exclude files and directories from the dot graphs
+EXCLUDE_PATTERNS = */lib/* */res/*
+
+# Set up dot (Graphviz) support for class diagrams
+HAVE_DOT = YES
+UML_LOOK = YES
+CLASS_DIAGRAMS = YES
+
+# Enable detailed documentation for undocumented members
+EXTRACT_ALL = YES

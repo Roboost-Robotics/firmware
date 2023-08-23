@@ -9,7 +9,7 @@
  *
  */
 
-#include "motor_control/pid.hpp"
+#include "motor-control/pid.hpp"
 
 PIDController::PIDController(float kp, float ki, float kd)
     : kp_(kp), ki_(ki), kd_(kd), integral_(0), previous_error_(0)

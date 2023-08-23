@@ -1,5 +1,5 @@
 /**
- * @file config.h
+ * @file conf_hardware.h
  * @author Friedl Jakob (friedl.jak@gmail.com)
  * @brief Configuration file for the Roboost firmware.
  * @version 0.1
@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef CONF_ROBOT_H
-#define CONF_ROBOT_H
+#ifndef CONF_HARDWARE_H
+#define CONF_HARDWARE_H
 
 /**
  * @brief ESP32 specific configs
@@ -121,4 +121,4 @@ void IRAM_ATTR function_ISR_EC_FR() { count_FR++; }
 
 #endif
 
-#endif // CONF_ROBOT_H
+#endif // CONF_HARDWARE_H
