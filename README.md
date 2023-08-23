@@ -1,3 +1,12 @@
+/**
+ * @mainpage Roboost Documentation
+ *
+ * This is the main documentation page for the Roboost project.
+ *
+ * @section intro Introduction
+ * ...
+ */
+ 
 # Roboost Documentation
 
 This repository contains the codebase for multiple components of the Roboost robotic system.

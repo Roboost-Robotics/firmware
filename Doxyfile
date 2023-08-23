@@ -4,10 +4,10 @@
 MAIN_PROJECT_NAME = "Roboost"
 
 # Specify the main page (use the outermost README.md)
-USE_MDFILE_AS_MAINPAGE = doc/README.md
+USE_MDFILE_AS_MAINPAGE = README.md
 
 # Specify the top-level directory
-INPUT = primary-motor-cortex entorhinal-cortex doc/README.md
+INPUT = primary-motor-cortex entorhinal-cortex README.md
 
 # Output directory for the generated documentation
 OUTPUT_DIRECTORY = doc

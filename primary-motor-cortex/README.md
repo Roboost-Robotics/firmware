@@ -1,3 +1,11 @@
+/**
+ * @subpage primary-motor-cortex
+ *
+ * This is the main documentation page for the Roboost project.
+ *
+ * @section intro Introduction
+ * ...
+ */
 # Primary Motor Cortex Documentation
 
 ## System Design

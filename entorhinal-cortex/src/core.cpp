@@ -18,9 +18,9 @@
 #include <rclc/executor.h>
 #include <rclc/rclc.h>
 
+#include <diagnostic_msgs/msg/diagnostic_status.h>
 #include <sensor_msgs/msg/laser_scan.h>
 #include <std_msgs/msg/float32.h>
-#include <diagnostic_msgs/msg/diagnostic_status.h>
 
 #include "conf_hardware.h"
 #include "conf_network.h"
@@ -95,10 +95,11 @@ void setup()
         delay(1000);
     }
 
-    while (rclc_publisher_init_default(
-           &diagnostic_publisher, &node,
-           ROSIDL_GET_MSG_TYPE_SUPPORT(diagnostic_msgs, msg, DiagnosticStatus),
-           "diagnostics") != RCL_RET_OK)
+    while (
+        rclc_publisher_init_default(
+            &diagnostic_publisher, &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(diagnostic_msgs, msg, DiagnosticStatus),
+            "diagnostics") != RCL_RET_OK)
     {
         delay(1000);
     }
@@ -134,7 +135,7 @@ void loop()
 
     if (battery_voltage < 0.8 * 12.4)
     {
-            digitalWrite(PWR_LED, HIGH);
+        digitalWrite(PWR_LED, HIGH);
         diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
         diagnostic_msg.message.data = (char*)"Low Battery Voltage";
         diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
@@ -142,8 +143,9 @@ void loop()
     }
     else
     {
-            digitalWrite(PWR_LED, LOW);
-        diagnostic_msg.message.data = (char*)"Battery voltage is within normal range";
+        digitalWrite(PWR_LED, LOW);
+        diagnostic_msg.message.data =
+            (char*)"Battery voltage is within normal range";
         diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
         diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
     }
@@ -200,9 +202,9 @@ void loop()
             scan_msg.angle_min = *min_element(angles.begin(), angles.end());
             scan_msg.angle_max = *max_element(angles.begin(), angles.end());
             scan_msg.angle_increment =
-                angles.size() > 1
-                    ? (scan_msg.angle_max - scan_msg.angle_min) / (angles.size() - 1)
-                    : 0;
+                angles.size() > 1 ? (scan_msg.angle_max - scan_msg.angle_min) /
+                                        (angles.size() - 1)
+                                  : 0;
             scan_msg.range_min = *min_element(ranges.begin(), ranges.end());
             scan_msg.range_max = *max_element(ranges.begin(), ranges.end());
 
@@ -212,8 +214,9 @@ void loop()
 
             scan_msg.intensities.size = scan_msg.intensities.capacity =
                 intensities.size();
-            scan_msg.intensities.data = reinterpret_cast<float*>(allocator.allocate(
-                sizeof(float) * intensities.size(), allocator.state));
+            scan_msg.intensities.data =
+                reinterpret_cast<float*>(allocator.allocate(
+                    sizeof(float) * intensities.size(), allocator.state));
 
             std::copy(ranges.begin(), ranges.end(), scan_msg.ranges.data);
             std::copy(intensities.begin(), intensities.end(),
@@ -224,6 +227,29 @@ void loop()
             allocator.deallocate(scan_msg.ranges.data, allocator.state);
             allocator.deallocate(scan_msg.intensities.data, allocator.state);
         }
+        diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__OK;
+        diagnostic_msg.name.data = (char*)"LiDAR Status";
+        diagnostic_msg.name.size = strlen(diagnostic_msg.name.data);
+        diagnostic_msg.name.capacity = diagnostic_msg.name.size + 1;
+
+        // Check LiDAR status and set diagnostic level and message accordingly
+        if (!lidar.isOpen())
+        {
+            diagnostic_msg.level =
+                diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+            diagnostic_msg.message.data = (char*)"LiDAR not open";
+        }
+        else if (ranges.empty() || intensities.empty() || angles.empty())
+        {
+            diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
+            diagnostic_msg.message.data = (char*)"No LiDAR data collected";
+        }
+        else
+        {
+            diagnostic_msg.message.data = (char*)"LiDAR data collected";
+        }
+
+        RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
     }
 
     delay(100);
