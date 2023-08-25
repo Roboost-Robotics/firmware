@@ -25,6 +25,24 @@ The software accomplishes these goals through several key features:
 - The code is written with readability, maintainability, and scalability in mind.
 - Comprehensive Doxygen documentation is available for all projects (and soon, hardware files too).
 
+## Primary Motor Cortex Module
+🧠 Primary Motor Cortex: Low-Level Motion Control 🏃‍♂️
+
+🤖 **Features:**
+- Configurable for various hardware setups
+- Communication options include UDP or UART, with or without a board computer
+- Virtual base classes streamline the implementation of essential robot design aspects like kinematics and motor control.
+
+The Primary Motor Cortex contains code related to the motor control of the robotic system. It is also based on a PlatformIO project for an ESP32 and listens to the /cmd_vel topic in the ROS network. The received messages then are converted into individual motor speeds which then are used to control the given motors.
+
+More information can be found in the following blog post:
+
+- [Roboost Primary Motor Cortex Summary](https://technologiehub.at/project-posts/roboost-primary-motor-cortex/)
+
+### Biology of the Primary Motor Cortex - Explanation by ChatGPT
+
+>"The primary motor cortex serves as a command center in the brain for controlling voluntary movements. Located in the frontal lobe, it functions like a programmer sending out signals that guide body actions. When making a voluntary movement, the primary motor cortex receives information from the frontal brain areas, develops a movement plan, and transmits this plan as signals down the spinal cord to muscles, functioning akin to dynamic programming for movement control."
+
 ## Entorhinal Cortex Module
 🧠 Entorhinal Cortex: Navigation Sensor Data Processing 🛰️
 
@@ -44,25 +62,6 @@ More information can be found in the following blog post:
 ### Biology of the Entorhinal Cortex - Explanation by ChatGPT
 
 >"The entorhinal cortex, located in the brain's medial temporal lobe, serves as a central hub for processing sensory information. It filters and integrates data from various senses before sending it to the hippocampus for memory storage. This region also aids in spatial memory and navigation, utilizing grid cells to create mental maps of environments, and its interaction with the hippocampus has been compared to computer data management, highlighting the brain's complexity and flexibility."
-
-## Primary Motor Cortex Module
-🧠 Primary Motor Cortex: Low-Level Motion Control 🏃‍♂️
-
-🤖 **Features:**
-- Configurable for various hardware setups
-- Communication options include UDP or UART, with or without a board computer
-- Virtual base classes streamline the implementation of essential robot design aspects like kinematics and motor control.
-
-The Primary Motor Cortex contains code related to the motor control of the robotic system. It is also based on a PlatformIO project for an ESP32 and listens to the /cmd_vel topic in the ROS network. The received messages then are converted into individual motor speeds which then are used to control the given motors.
-
-More information can be found in the following blog post:
-
-- [Roboost Primary Motor Cortex Summary](https://technologiehub.at/project-posts/roboost-primary-motor-cortex/)
-
-### Biology of the Primary Motor Cortex - Explanation by ChatGPT
-
->"The primary motor cortex serves as a command center in the brain for controlling voluntary movements. Located in the frontal lobe, it functions like a programmer sending out signals that guide body actions. When making a voluntary movement, the primary motor cortex receives information from the frontal brain areas, develops a movement plan, and transmits this plan as signals down the spinal cord to muscles, functioning akin to dynamic programming for movement control."
-
 
 ## TODO
 
