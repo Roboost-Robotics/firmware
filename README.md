@@ -20,7 +20,7 @@ More information can be found on the dedicated blog posts:
 
 Here is a little teaser of the Roboost V2 robot:
 
-![Roboost V2](Roboost\docs\Roboost-Demo.gif)
+![](docs\Roboost-Demo.gif)
 
 ## Key Features
 
