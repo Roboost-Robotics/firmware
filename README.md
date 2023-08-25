@@ -18,9 +18,9 @@ More information can be found on the dedicated blog posts:
 - [Roboost V2 Showcase](https://technologiehub.at/project-posts/roboost-v2/)
 - ...
 
-Here is a little teaser of the Roboost V2 robot:
+Here is a little teaser of the Roboost V2 robot with vector control:
 
-![](docs\Roboost-Demo.gif)
+![](docs/Roboost-Demo.gif)
 
 ## Key Features
 
