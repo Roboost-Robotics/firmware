@@ -9,7 +9,7 @@
  *
  */
 
-#include <BasicLinearAlgebra.h>
+#include <ArduinoEigen.h>
 
 #ifndef KINEMATICS_H
 #define KINEMATICS_H
@@ -27,19 +27,19 @@ public:
      * @brief Calculate robot velocity based on wheel velocities.
      *
      * @param wheel_velocity The velocities of individual wheels.
-     * @return BLA::Matrix<3> The calculated robot velocity.
+     * @return Eigen::Vector3d The calculated robot velocity.
      */
-    virtual BLA::Matrix<3>
-    calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) = 0;
+    virtual Eigen::Vector3d
+    calculate_robot_velocity(const Eigen::VectorXd& wheel_velocity) = 0;
 
     /**
      * @brief Calculate wheel velocities based on robot velocity.
      *
      * @param robot_velocity The velocity of the robot.
-     * @return BLA::Matrix<4> The calculated wheel velocities.
+     * @return Eigen::VectorXd The calculated wheel velocities.
      */
-    virtual BLA::Matrix<4>
-    calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) = 0;
+    virtual Eigen::VectorXd
+    calculate_wheel_velocity(const Eigen::Vector3d& robot_velocity) = 0;
 };
 
 /**
@@ -69,19 +69,19 @@ public:
      * @brief Calculate robot velocity based on wheel velocities.
      *
      * @param wheel_velocity The velocities of individual wheels.
-     * @return BLA::Matrix<3> The calculated robot velocity.
+     * @return Eigen::Vector3d The calculated robot velocity.
      */
-    BLA::Matrix<3>
-    calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) override;
+    Eigen::Vector3d
+    calculate_robot_velocity(const Eigen::VectorXd& wheel_velocity) override;
 
     /**
      * @brief Calculate wheel velocities based on robot velocity.
      *
      * @param robot_velocity The velocity of the robot.
-     * @return BLA::Matrix<4> The calculated wheel velocities.
+     * @return Eigen::VectorXd The calculated wheel velocities.
      */
-    BLA::Matrix<4>
-    calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) override;
+    Eigen::VectorXd
+    calculate_wheel_velocity(const Eigen::Vector3d& robot_velocity) override;
 
 private:
     double wheel_radius_; // Radius of the wheels.
@@ -93,4 +93,4 @@ private:
 
 // Add more kinematics definitions here
 
-#endif // KINEMATICS_H"
+#endif // KINEMATICS_H

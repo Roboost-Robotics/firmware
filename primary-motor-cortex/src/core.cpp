@@ -11,6 +11,7 @@
  */
 
 #include <Arduino.h>
+#include <ArduinoEigen.h> // Include the ArduinoEigen library
 #include <micro_ros_platformio.h>
 
 #include "rcl_checks.h"
@@ -37,13 +38,13 @@ SimpleMotorController controller_M1(driver_M1, 1.);
 SimpleMotorController controller_M2(driver_M2, 1.);
 SimpleMotorController controller_M3(driver_M3, 1.);
 
-MotorControllerManager motor_controll_manager{
+MotorControllerManager motor_control_manager{
     {&controller_M0, &controller_M1, &controller_M2,
      &controller_M3}}; // initializer list
 
 // todo initialize kinematics
-MecanumKinematics4W kinematics(WHEELRADIUS, WHEEL_BASE, TRACK_WIDTH);
-RobotController robot_controller(motor_controll_manager, kinematics);
+MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
+RobotController robot_controller(motor_control_manager, &kinematics);
 
 rcl_subscription_t subscriber;
 rcl_publisher_t publisher;
@@ -65,8 +66,8 @@ void cmd_vel_subscription_callback(const void* msgin)
 {
     const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
 
-    // Convert the ROS Twist message to a BLA::Matrix<3>
-    BLA::Matrix<3> cmd;
+    // Convert the ROS Twist message to an Eigen::Matrix<double, 3, 1>
+    Eigen::Matrix<double, 3, 1> cmd;
     cmd(0) = msg->linear.x;
     cmd(1) = msg->linear.y;
     cmd(2) = msg->angular.z;
@@ -80,13 +81,13 @@ void cmd_vel_subscription_callback(const void* msgin)
 
     // Print wheel speeds
     // Serial.print("Wheel speed M0: ");
-    // Serial.println(motor_controll_manager.get_motor_speed(0));
+    // Serial.println(motor_control_manager.get_motor_speed(0));
     // Serial.print("Wheel speed M1: ");
-    // Serial.println(motor_controll_manager.get_motor_speed(1));
+    // Serial.println(motor_control_manager.get_motor_speed(1));
     // Serial.print("Wheel speed M2: ");
-    // Serial.println(motor_controll_manager.get_motor_speed(2));
+    // Serial.println(motor_control_manager.get_motor_speed(2));
     // Serial.print("Wheel speed M3: ");
-    // Serial.println(motor_controll_manager.get_motor_speed(3));
+    // Serial.println(motor_control_manager.get_motor_speed(3));
 
     robot_controller.set_latest_command(cmd);
 }
@@ -167,14 +168,15 @@ void setup()
 }
 
 /**
- * @brief Main loop for continuously updating and publishing robot's odometry.
+ * @brief Main loop for continuously updating and publishing the robot's
+ * odometry.
  *
  */
 void loop()
 {
     // Publish the RobotController's latest odometry
     robot_controller.update();
-    BLA::Matrix<6> odometry = robot_controller.get_odometry();
+    Eigen::Matrix<double, 6, 1> odometry = robot_controller.get_odometry();
 
     // Convert the odometry matrix to a nav_msgs__msg__Odometry
     odom.pose.pose.position.x = odometry(0); // x position

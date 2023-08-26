@@ -32,9 +32,9 @@
  * degree.
  *
  */
-#define WHEELRADIUS 0.075 // radius of wheels
-#define WHEEL_BASE 0.38   // distance between wheel contact point in x direction
-#define TRACK_WIDTH 0.32  // distance between wheel contact point in y direction
+#define WHEEL_RADIUS 0.075 // radius of wheels
+#define WHEEL_BASE 0.38  // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.32 // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------

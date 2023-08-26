@@ -33,15 +33,10 @@ void MotorControllerManager::set_motor_speed(int motor_index,
 {
     if (motor_index < 0 || motor_index >= motor_controllers_.size())
     {
-        // Handle invalid index error here...
+        Serial.println("Invalid motor index");
     }
     else
     {
-        // Serial.print("Setting motor [");
-        // Serial.print(motor_index);
-        // Serial.print("] to ");
-        // Serial.print(desired_speed);
-        // Serial.println("[rad/s]");
         motor_controllers_[motor_index].second = desired_speed;
     }
 }
@@ -58,8 +53,8 @@ float MotorControllerManager::get_motor_speed(int motor_index) const
 {
     if (motor_index < 0 || motor_index >= motor_controllers_.size())
     {
-        // Handle invalid index error here...
-        return 0.0f; // Or some other default value.
+        Serial.println("Invalid motor index");
+        return 0.0f;
     }
     else
     {
