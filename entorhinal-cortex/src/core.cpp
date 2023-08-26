@@ -49,13 +49,15 @@ void setup()
     Serial.begin(115200);
     RPLidarSerial.begin(115200, SERIAL_8N1, RPLIDAR_RX, RPLIDAR_TX);
 
-    // Start the lidar's motor
+    // Initialize the lidar's motor control pin
     pinMode(RPLIDAR_MOTOR, OUTPUT);
-    digitalWrite(RPLIDAR_MOTOR, HIGH);
 
     // Initialize battery voltage measurement pin and LED
     pinMode(PWR_IN, INPUT);
     pinMode(PWR_LED, OUTPUT);
+
+    // Initialize the status LED
+    pinMode(LED_BUILTIN, OUTPUT);
 
     lidar.begin(RPLidarSerial);
     lidar.startScan();
@@ -111,8 +113,8 @@ void setup()
     }
 
     delay(500);
-    pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(RPLIDAR_MOTOR, HIGH);
 
     // Set frame_id
     scan_msg.header.frame_id.data = (char*)"lidar";
