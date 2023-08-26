@@ -1,8 +1,8 @@
 /**
- * @file mecanum_kinematics_4w.cpp //todo
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
+ * @file mecanum_kinematics_4w.cpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief Implementation of MecanumKinematics4W class.
+ * @version 1.1
  * @date 2023-07-06
  *
  * @copyright Copyright (c) 2023

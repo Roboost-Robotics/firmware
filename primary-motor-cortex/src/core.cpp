@@ -1,9 +1,10 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief //todo
- * @version 0.1
- * @date 2023-07-06
+ * @brief This file contains the main functionality for controlling a mecanum
+ * robot using micro-ROS via UDP.
+ * @version 1.1
+ * @date 2023-08-21
  *
  * @copyright Copyright (c) 2023
  *
@@ -55,9 +56,10 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 
 /**
- * @brief
+ * @brief Callback function for handling incoming cmd_vel (velocity command)
+ * messages.
  *
- * @param msgin
+ * @param msgin Pointer to the received geometry_msgs__msg__Twist message.
  */
 void cmd_vel_subscription_callback(const void* msgin)
 {
@@ -77,26 +79,26 @@ void cmd_vel_subscription_callback(const void* msgin)
     // Serial.println(cmd(2));
 
     // Print wheel speeds
-    Serial.print("Wheel speed M0: ");
-    Serial.println(motor_controll_manager.get_motor_speed(0));
-    Serial.print("Wheel speed M1: ");
-    Serial.println(motor_controll_manager.get_motor_speed(1));
-    Serial.print("Wheel speed M2: ");
-    Serial.println(motor_controll_manager.get_motor_speed(2));
-    Serial.print("Wheel speed M3: ");
-    Serial.println(motor_controll_manager.get_motor_speed(3));
+    // Serial.print("Wheel speed M0: ");
+    // Serial.println(motor_controll_manager.get_motor_speed(0));
+    // Serial.print("Wheel speed M1: ");
+    // Serial.println(motor_controll_manager.get_motor_speed(1));
+    // Serial.print("Wheel speed M2: ");
+    // Serial.println(motor_controll_manager.get_motor_speed(2));
+    // Serial.print("Wheel speed M3: ");
+    // Serial.println(motor_controll_manager.get_motor_speed(3));
 
     robot_controller.set_latest_command(cmd);
 }
 
 /**
- * @brief //todo
+ * @brief Setup function for initializing micro-ROS, pin modes, etc.
  *
  */
 void setup()
 {
     // Configure serial transport
-    Serial.begin(115200);
+    Serial.begin(115200); // disable in production
 
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;
@@ -165,7 +167,7 @@ void setup()
 }
 
 /**
- * @brief //todo
+ * @brief Main loop for continuously updating and publishing robot's odometry.
  *
  */
 void loop()
@@ -187,5 +189,5 @@ void loop()
     RCSOFTCHECK(rcl_publish(&publisher, &odom, NULL));
 
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
-    delay(100);
+    delay(10);
 }

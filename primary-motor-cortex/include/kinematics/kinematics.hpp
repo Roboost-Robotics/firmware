@@ -1,9 +1,9 @@
 /**
  * @file kinematics.hpp
- * @author your name (you@domain.com) //todo
- * @brief
- * @version 0.1
- * @date 2023-07-06
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief Kinematics base class definitions.
+ * @version 1.1
+ * @date 2023-08-21
  *
  * @copyright Copyright (c) 2023
  *
@@ -15,70 +15,82 @@
 #define KINEMATICS_H
 
 /**
- * @brief //todo
+ * @brief Abstract base class for defining kinematics calculations.
  *
+ * This class provides an interface for calculating robot velocity and wheel
+ * velocity based on the kinematic properties of the robot.
  */
 class Kinematics
 {
 public:
     /**
-     * @brief //todo
+     * @brief Calculate robot velocity based on wheel velocities.
      *
-     * @param wheel_velocity
-     * @return BLA::Matrix<3>
+     * @param wheel_velocity The velocities of individual wheels.
+     * @return BLA::Matrix<3> The calculated robot velocity.
      */
     virtual BLA::Matrix<3>
     calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) = 0;
+
     /**
-     * @brief //todo
+     * @brief Calculate wheel velocities based on robot velocity.
      *
-     * @param robot_velocity
-     * @return BLA::Matrix<4>
+     * @param robot_velocity The velocity of the robot.
+     * @return BLA::Matrix<4> The calculated wheel velocities.
      */
     virtual BLA::Matrix<4>
     calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) = 0;
 };
 
 /**
- * @brief //todo
+ * @brief Mecanum kinematics for a 4-wheel robot.
  *
+ * This class implements the kinematics calculations for a 4-wheel mecanum drive
+ * robot. It takes into account the wheel radius, wheel base, and track width of
+ * the robot.
  */
 class MecanumKinematics4W : public Kinematics
 {
 public:
     /**
-     * @brief Construct a new Mecanum Kinematics 4 W object //todo
+     * @brief Construct a new Mecanum Kinematics 4W object with given
+     * parameters.
      *
-     * @param wheel_radius
-     * @param wheel_base
-     * @param track_width
+     * @param wheel_radius The radius of the wheels.
+     * @param wheel_base The distance between wheel contact points in the x
+     * direction.
+     * @param track_width The distance between wheel contact points in the y
+     * direction.
      */
     MecanumKinematics4W(double wheel_radius, double wheel_base,
                         double track_width);
 
     /**
-     * @brief //todo
+     * @brief Calculate robot velocity based on wheel velocities.
      *
-     * @param wheel_velocity
-     * @return BLA::Matrix<3>
+     * @param wheel_velocity The velocities of individual wheels.
+     * @return BLA::Matrix<3> The calculated robot velocity.
      */
     BLA::Matrix<3>
     calculate_robot_velocity(const BLA::Matrix<4>& wheel_velocity) override;
+
     /**
-     * @brief //todo
+     * @brief Calculate wheel velocities based on robot velocity.
      *
-     * @param robot_velocity
-     * @return BLA::Matrix<4>
+     * @param robot_velocity The velocity of the robot.
+     * @return BLA::Matrix<4> The calculated wheel velocities.
      */
     BLA::Matrix<4>
     calculate_wheel_velocity(const BLA::Matrix<3>& robot_velocity) override;
 
 private:
-    double wheel_radius_; // radius of wheels
-    double wheel_base_;   // distance between wheel contact point in x direction
-    double track_width_;  // distance between wheel contact point in y direction
+    double wheel_radius_; // Radius of the wheels.
+    double wheel_base_;   // Distance between wheel contact points in the x
+                          // direction.
+    double track_width_;  // Distance between wheel contact points in the y
+                          // direction.
 };
 
-// todo add SwerveKinematics3W implementation
+// Add more kinematics definitions here
 
-#endif // KINEMATICS_H
+#endif // KINEMATICS_H"
