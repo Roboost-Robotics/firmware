@@ -1,7 +1,7 @@
 /**
- * @file motor_control_manager.hpp //todo
- * @author your name (you@domain.com)
- * @brief
+ * @file motor_control_manager.hpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief A manager for controlling motors and managing their speeds.
  * @version 0.1
  * @date 2023-07-06
  *
@@ -12,70 +12,63 @@
 #define MOTOR_CONTROLLER_MANAGER_H
 
 #include "motor-control/motor_controller.hpp"
-#include <BasicLinearAlgebra.h>
+#include <ArduinoEigen.h>
 #include <vector>
 
 /**
- * @brief //todo
- *
+ * @brief The MotorControllerManager class manages a collection of motors and
+ *        their desired speeds.
  */
 class MotorControllerManager
 {
 public:
-    // Constructor that accepts a list of MotorControllers.
     /**
-     * @brief Construct a new Motor Controller Manager object //todo
+     * @brief Construct a new Motor Controller Manager object.
      *
-     * @param motor_controllers
+     * @param motor_controllers An initializer list of MotorController pointers.
      */
     MotorControllerManager(
         std::initializer_list<MotorController*> motor_controllers);
 
-    // Set the desired speed for a specific motor.
     /**
-     * @brief Set the motor speed object //todo
+     * @brief Set the desired speed for a specific motor.
      *
-     * @param motor_index
-     * @param desired_speed
+     * @param motor_index The index of the motor.
+     * @param desired_speed The desired speed value.
      */
     void set_motor_speed(int motor_index, float desired_speed);
 
-    // Set the desired speed for all motors.
     /**
-     * @brief Set the all motor speeds object //todo
+     * @brief Set the desired speed for all motors.
      *
-     * @param desired_speed
+     * @param desired_speed The desired speed value.
      */
     void set_all_motor_speeds(float desired_speed);
 
-    // Get the desired speed of a specific motor.
     /**
-     * @brief Get the motor speed object //todo
+     * @brief Get the desired speed of a specific motor.
      *
-     * @param motor_index
-     * @return float
+     * @param motor_index The index of the motor.
+     * @return float The desired speed value.
      */
     float get_motor_speed(int motor_index) const;
 
-    // Get the number of MotorControllers in the manager.
     /**
-     * @brief Get the motor count object //todo
+     * @brief Get the number of MotorControllers in the manager.
      *
-     * @return int
+     * @return int The number of motors.
      */
     int get_motor_count() const;
 
-    // Update the MotorControllers to set the new desired rotational speed.
     /**
-     * @brief //todo
-     *
+     * @brief Update the MotorControllers to set the new desired rotational
+     * speed.
      */
     void update();
 
-    // Destructor to free up the memory of MotorControllers
     /**
-     * @brief Destroy the Motor Controller Manager object //todo
-     *
+     * @brief Destroy the Motor Controller Manager object and free up the
+     * memory.
      */
     ~MotorControllerManager();
 

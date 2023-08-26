@@ -1,8 +1,8 @@
 /**
- * @file mecanum_kinematics_4w.cpp //todo
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
+ * @file mecanum_kinematics_4w.cpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief Implementation of MecanumKinematics4W class.
+ * @version 1.1
  * @date 2023-07-06
  *
  * @copyright Copyright (c) 2023
@@ -17,32 +17,34 @@ MecanumKinematics4W::MecanumKinematics4W(double wheel_radius, double wheel_base,
 {
 }
 
-BLA::Matrix<3> MecanumKinematics4W::calculate_robot_velocity(
-    const BLA::Matrix<4>& wheel_velocity)
+Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(
+    const Eigen::VectorXd& wheel_velocity)
 {
-    BLA::Matrix<3> robot_velocity;
+    Eigen::Vector3d robot_velocity;
 
+    Eigen::Matrix<double, 3, 4> inverseKinematicsModel;
     // clang-format off
-    BLA::Matrix<3, 4> inverseKinematicsModel = { 1, 1, 1, 1, 
-                                                -1, 1, 1, -1, 
-                                                -1/(wheel_base_ + track_width_), 1/(wheel_base_ + track_width_), -1/(wheel_base_ + track_width_), 1/(wheel_base_ + track_width_)};
+    inverseKinematicsModel << 1, 1, 1, 1, 
+                             -1, 1, 1, -1, 
+                             -1/(wheel_base_ + track_width_), 1/(wheel_base_ + track_width_), -1/(wheel_base_ + track_width_), 1/(wheel_base_ + track_width_);
     // clang-format on
     robot_velocity = inverseKinematicsModel * wheel_velocity;
-    robot_velocity *= wheel_radius_ / 4;
+    robot_velocity *= wheel_radius_ / 4.0;
 
     return robot_velocity;
 }
 
-BLA::Matrix<4> MecanumKinematics4W::calculate_wheel_velocity(
-    const BLA::Matrix<3>& robot_velocity)
+Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(
+    const Eigen::Vector3d& robot_velocity)
 {
-    BLA::Matrix<4> wheel_velocity;
+    Eigen::VectorXd wheel_velocity(4);
 
+    Eigen::Matrix<double, 4, 3> forwardKinematicsModel;
     // clang-format off
-    BLA::Matrix<4, 3> forwardKinematicsModel = { 1, -1, -(wheel_base_ + track_width_),
-                                                1, 1, wheel_base_ + track_width_,
-                                                1, 1, -(wheel_base_ + track_width_),
-                                                1, -1, wheel_base_ + track_width_};
+    forwardKinematicsModel << 1, -1, -(wheel_base_ + track_width_),
+                             1, 1, wheel_base_ + track_width_,
+                             1, 1, -(wheel_base_ + track_width_),
+                             1, -1, wheel_base_ + track_width_;
     // clang-format on
 
     wheel_velocity = forwardKinematicsModel * robot_velocity;

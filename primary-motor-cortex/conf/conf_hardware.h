@@ -32,9 +32,9 @@
  * degree.
  *
  */
-#define WHEELRADIUS 0.075 // radius of wheels
-#define WHEEL_BASE 0.38   // distance between wheel contact point in x direction
-#define TRACK_WIDTH 0.32  // distance between wheel contact point in y direction
+#define WHEEL_RADIUS 0.075 // radius of wheels
+#define WHEEL_BASE 0.38  // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.32 // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
@@ -58,10 +58,10 @@
 #define M1_IN2 14
 #define M1_ENA 19
 // PWM config
-#define M3_PWM_CNL 0
-#define M2_PWM_CNL 0
 #define M0_PWM_CNL 0
-#define M1_PWM_CNL 0
+#define M1_PWM_CNL 1
+#define M2_PWM_CNL 2
+#define M3_PWM_CNL 3
 
 #define M_PWM_FRQ 1000 // Hz
 #define M_PWM_RES 8    // 2^n Bits
