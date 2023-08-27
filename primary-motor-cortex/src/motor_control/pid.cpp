@@ -24,5 +24,3 @@ float PIDController::calculate(float setpoint, float actual_value)
     previous_error_ = error;
     return kp_ * error + ki_ * integral_ + kd_ * derivative;
 }
-
-// Other PID-related function implementations...

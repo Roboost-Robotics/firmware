@@ -26,6 +26,11 @@ float Encoder::read_velocity()
     int current_state_A = digitalRead(pin_A_);
     int current_state_B = digitalRead(pin_B_);
 
+    Serial.print("A: ");
+    Serial.print(current_state_A);
+    Serial.print(" B: ");
+    Serial.println(current_state_B);
+
     if (current_state_A != last_state_A_)
     {
         int current_time = micros();
@@ -34,12 +39,10 @@ float Encoder::read_velocity()
         last_state_A_ = current_state_A;
         last_state_B_ = current_state_B;
 
-        int direction =
-            (current_state_B == HIGH) ? 1 : -1; // Clockwise or counterclockwise
+        int direction = (current_state_B == HIGH) ? 1 : -1;
 
-        float velocity = (2.0 * PI * direction * resolution_) /
-                         (float)dt; // Velocity in rad/s
+        float velocity = (2.0 * PI * direction * resolution_) / (float)dt;
         return velocity;
     }
-    return 0.0; // No change in state, so no velocity
+    return 0.0;
 }
