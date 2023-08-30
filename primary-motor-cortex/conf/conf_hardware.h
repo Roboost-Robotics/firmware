@@ -38,15 +38,6 @@
 
 //--------------------------pinout
 // definitions------------------------------------
-// motor back right
-#define M3_IN1 33
-#define M3_IN2 32
-#define M3_ENA 25
-
-// motor back left
-#define M2_IN1 26
-#define M2_IN2 27
-#define M2_ENA 13
 
 // motor front left
 #define M0_IN1 23
@@ -57,6 +48,17 @@
 #define M1_IN1 18
 #define M1_IN2 14
 #define M1_ENA 19
+
+// motor back left
+#define M2_IN1 26
+#define M2_IN2 27
+#define M2_ENA 13
+
+// motor back right
+#define M3_IN1 33
+#define M3_IN2 32
+#define M3_ENA 25
+
 // PWM config
 #define M0_PWM_CNL 0
 #define M1_PWM_CNL 1
@@ -68,24 +70,28 @@
 #endif
 
 // Uncomment if encoders should be used in the system
-// #define ENCODERS
+#define ENCODERS
 #ifdef ENCODERS
 
-// encoder back right
-#define EC_BR_A 39
-#define EC_BR_B 36
-
-// encoder back left
-#define EC_BL_A 35
-#define EC_BL_B 34
-
 // encoder front left
-#define EC_FL_A 5
-#define EC_FL_B 15
+#define EC_M0_A 5
+#define EC_M0_B 15
+#define EC_M0_RES 360
 
 // encoder front right
-#define EC_FR_A 17
-#define EC_FR_B 16
+#define EC_M1_A 17
+#define EC_M1_B 16
+#define EC_M1_RES 600
+
+// encoder back left
+#define EC_M2_A 35
+#define EC_M2_B 34
+#define EC_M2_RES 360
+
+// encoder back right
+#define EC_M3_A 39
+#define EC_M3_B 36
+#define EC_M3_RES 360
 
 #endif
 

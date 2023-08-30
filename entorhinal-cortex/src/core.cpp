@@ -1,7 +1,9 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief //TODO: Add description
+ * @brief Core file handling ROS communication, initialization and distribution
+ * of relevant objects. Currently it supports the Roboost-V2 sensorshield
+ * hardware.
  * @version 0.1
  * @date 2023-07-06
  *
@@ -10,7 +12,6 @@
  */
 
 #include <Arduino.h>
-#include <RPLidar.h>
 #include <micro_ros_platformio.h>
 
 #include "rcl_checks.h"

@@ -1,7 +1,7 @@
 /**
- * @file motor_control_manager.cpp
- * @author your name (you@domain.com)
- * @brief
+ * @file motor_control_manager.hpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief A manager for controlling motors and managing their speeds.
  * @version 0.1
  * @date 2023-07-06
  *

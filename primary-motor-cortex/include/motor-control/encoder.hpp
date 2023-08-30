@@ -14,40 +14,24 @@
 
 #include <Arduino.h>
 
-/**
- * @class Encoder
- * @brief Represents an encoder for rotational velocity measurement.
- *
- * This class provides functionality to read the rotational velocity from an
- * encoder with two input pins (A and B). It calculates the rotational velocity
- * based on changes in encoder state over time.
- */
 class Encoder
 {
 public:
-    /**
-     * @brief Constructor for creating an Encoder object.
-     *
-     * @param pin_A The pin connected to the A channel of the encoder.
-     * @param pin_B The pin connected to the B channel of the encoder.
-     * @param resolution_ Resolution of the encoder in steops per revolution.
-     */
     Encoder(const int pin_A, const int pin_B, const int resolution);
 
-    /**
-     * @brief Read and calculate the rotational velocity from the encoder.
-     *
-     * This method reads the state changes of the encoder and calculates the
-     * rotational velocity based on the time between state changes and the
-     * encoder's resolution.
-     *
-     * @return The calculated velocity in some appropriate units.
-     */
     float read_velocity();
 
+    const inline int get_pin_A() const { return pin_A_; }
+    const inline int get_pin_B() const { return pin_B_; }
+
 private:
+    void IRAM_ATTR function_ISR_EC_A();
+    void IRAM_ATTR function_ISR_EC_B();
+
     const int pin_A_, pin_B_;
     const int resolution_;
+    volatile uint16_t count_A = 0;
+    volatile uint16_t count_B = 0;
     int last_state_A_;
     int last_state_B_;
     unsigned long last_time_;

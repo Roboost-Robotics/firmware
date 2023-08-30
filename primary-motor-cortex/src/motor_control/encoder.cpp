@@ -1,21 +1,12 @@
-/**
- * @file encoder.cpp
- * @author Jakob Friedl (friedl.jak@gmail.com)
- * @brief Implementation of Encoder class.
- * @version 0.1
- * @date 2023-07-06
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include "motor-control/encoder.hpp"
+
+Encoder* Encoder::instance_ptr = nullptr;
 
 Encoder::Encoder(const int pin_A, const int pin_B, const int resolution)
     : pin_A_(pin_A), pin_B_(pin_B), resolution_(resolution)
 {
-    pinMode(pin_A_, INPUT);
-    pinMode(pin_B_, INPUT);
+    pinMode(pin_A_, INPUT_PULLUP);
+    pinMode(pin_B_, INPUT_PULLUP);
     last_state_A_ = digitalRead(pin_A_);
     last_state_B_ = digitalRead(pin_B_);
     last_time_ = micros();
@@ -23,26 +14,21 @@ Encoder::Encoder(const int pin_A, const int pin_B, const int resolution)
 
 float Encoder::read_velocity()
 {
-    int current_state_A = digitalRead(pin_A_);
-    int current_state_B = digitalRead(pin_B_);
+    noInterrupts();
+    int count_A_local = count_A;
+    int count_B_local = count_B;
+    count_A = 0;
+    count_B = 0;
+    interrupts();
 
-    Serial.print("A: ");
-    Serial.print(current_state_A);
-    Serial.print(" B: ");
-    Serial.println(current_state_B);
+    int direction = (count_B_local >= 0) ? 1 : -1;
+    int dt = micros() - last_time_;
+    last_time_ = micros();
 
-    if (current_state_A != last_state_A_)
-    {
-        int current_time = micros();
-        int dt = current_time - last_time_;
-        last_time_ = current_time;
-        last_state_A_ = current_state_A;
-        last_state_B_ = current_state_B;
-
-        int direction = (current_state_B == HIGH) ? 1 : -1;
-
-        float velocity = (2.0 * PI * direction * resolution_) / (float)dt;
-        return velocity;
-    }
-    return 0.0;
+    float velocity = (direction * resolution_ * count_A_local) / (float)dt;
+    return velocity;
 }
+
+void IRAM_ATTR Encoder::function_ISR_EC_A() { count_A++; }
+
+void IRAM_ATTR Encoder::function_ISR_EC_B() { count_B++; }

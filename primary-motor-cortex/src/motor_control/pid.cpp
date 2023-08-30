@@ -1,7 +1,8 @@
 /**
- * @file pid.cpp //todo
- * @author your name (you@domain.com)
- * @brief
+ * @file pid.hpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief Implementation of a Proportional-Integral-Derivative (PID) controller
+ * for versitile usage.
  * @version 0.1
  * @date 2023-07-06
  *

@@ -1,8 +1,8 @@
 /**
- * @file simple_motor_controller.hpp
+ * @file pid_motor_controller.hpp
  * @author Jakob Friedl (friedl.jak@gmail.com)
- * @brief Definition of MotorController, which sets the control output
- * directy to the motor driver without feedback loop.
+ * @brief Implementation of MotorController, which sets the control output
+ * directy to the motor driver with encoder feedback and PID control.
  * @version 0.1
  * @date 2023-07-06
  *
@@ -10,16 +10,17 @@
  *
  */
 
-#ifndef SIMPLE_MOTOR_CONTROLLER_H
-#define SIMPLE_MOTOR_CONTROLLER_H
+#ifndef PID_MOTOR_CONTROLLER_H
+#define PID_MOTOR_CONTROLLER_H
 
+#include "motor-control/encoder.hpp"
 #include "motor_controller.hpp"
 
 /**
- * @brief Motor controller without encoder feedback or PID
+ * @brief Motor controller with encoder feedback and PID
  *
  */
-class SimpleMotorController : public MotorController
+class PIDMotorController : public MotorController
 {
 public:
     /**
@@ -29,7 +30,8 @@ public:
      * @param max_rotation_speed Max rotational speed motor driver can output in
      * rad/sec
      */
-    SimpleMotorController(MotorDriver& motor_driver, float max_rotation_speed);
+    PIDMotorController(MotorDriver& motor_driver, float max_rotation_speed,
+                       Encoder& encoder);
 
     /**
      * @brief Set the rotation speed of the motor
@@ -39,7 +41,8 @@ public:
     void set_rotation_speed(float desired_rotation_speed);
 
 private:
+    Encoder encoder_;
     float max_rotation_speed_;
 };
 
-#endif // SIMPLE_MOTOR_CONTROLLER_H
+#endif // PID_MOTOR_CONTROLLER_H
