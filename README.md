@@ -26,12 +26,12 @@ Here is a little teaser of the Roboost V2 robot with vector control:
 
 The software accomplishes these goals through several key features:
 
-- The core firmware is designed to run on an ESP32. ROS2 integration enables UDP communication over WiFi, eliminating the need for an expensive onboard processor.
+- The core firmware is designed to run on an ESP32. ROS2 integration is enabled by UDP communication over WiFi, eliminating the need for an expensive onboard processor.
 - The software architecture is modular, making it effortless to swap and configure components based on the robot's hardware.
 - Firmware projects are built using PlatformIO, an accessible and user-friendly framework.
 - Seamless integration with ROS2 allows the utilization of existing packages for complex systems.
 - The code is written with readability, maintainability, and scalability in mind.
-- Comprehensive Doxygen documentation is available for all projects (and soon, hardware files too).
+- Comprehensive documentation is (more or less in the current state) available for all projects (and soon, hardware files too).
 
 ## Primary Motor Cortex Module
 
@@ -43,7 +43,7 @@ The software accomplishes these goals through several key features:
 - Communication options include UDP or UART, with or without a board computer
 - Virtual base classes streamline the implementation of essential robot design aspects like kinematics and motor control.
 
-The Primary Motor Cortex contains code related to the motor control of the robotic system. It is also based on a PlatformIO project for an ESP32 and listens to the /cmd_vel topic in the ROS network. The received messages then are converted into individual motor speeds which then are used to control the given motors.
+The Primary Motor Cortex contains code related to the motor control of the robotic system. It is based on a PlatformIO project for an ESP32 and listens to the /cmd_vel topic in the ROS network. The received messages then are converted into individual motor speeds which then are used to control the given motors.
 
 More information can be found in the following blog post:
 
