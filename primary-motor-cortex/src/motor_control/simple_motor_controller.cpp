@@ -20,6 +20,9 @@ SimpleMotorController::SimpleMotorController(MotorDriver& motor_driver,
 {
 }
 
+// TODO: change behavior and function of desired_rotation_speed
+//? desired_rotation_speed is now a value between -1 and 1, which does not make
+//? sense
 void SimpleMotorController::set_rotation_speed(float desired_rotation_speed)
 {
     desired_rotation_speed = std::clamp(

@@ -15,9 +15,10 @@
 
 #include "motor-control/encoder.hpp"
 #include "motor_controller.hpp"
+#include <PID_v1.h>
 
 /**
- * @brief Motor controller with encoder feedback and PID
+ * @brief Motor controller with encoder feedback and PID // TODO: a lot
  *
  */
 class PIDMotorController : public MotorController
@@ -30,8 +31,7 @@ public:
      * @param max_rotation_speed Max rotational speed motor driver can output in
      * rad/sec
      */
-    PIDMotorController(MotorDriver& motor_driver, float max_rotation_speed,
-                       Encoder& encoder);
+    PIDMotorController(MotorDriver& motor_driver, Encoder& encoder);
 
     /**
      * @brief Set the rotation speed of the motor
@@ -42,7 +42,7 @@ public:
 
 private:
     Encoder encoder_;
-    float max_rotation_speed_;
+    PID pid_;
 };
 
 #endif // PID_MOTOR_CONTROLLER_H

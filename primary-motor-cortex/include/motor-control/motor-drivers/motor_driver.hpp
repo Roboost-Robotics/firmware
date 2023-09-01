@@ -32,11 +32,6 @@ public:
      * @param control_value The control value for the motor.
      */
     virtual void set_motor_control(float control_value) = 0;
-
-    /**
-     * @brief Destructor for the Motor Driver object.
-     */
-    virtual ~MotorDriver() {}
 };
 
 #endif // MOTOR_DRIVER_H

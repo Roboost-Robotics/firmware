@@ -1,8 +1,7 @@
 /**
  * @file encoder.hpp
  * @author Jakob Friedl (friedl.jak@gmail.com)
- * @brief Defines the Encoder class, which provides rotational velocity reading
- * from an encoder.
+ * @brief //TODO
  * @version 0.1
  * @date 2023-07-06
  *
@@ -12,29 +11,82 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
-#include <Arduino.h>
+#include <ESP32Encoder.h>
 
+#define PI 3.1415926535897932384626433832795
+
+/**
+ * @brief Abstract base class for reading encoder values. //TODO
+ *
+ */
 class Encoder
 {
 public:
-    Encoder(const int pin_A, const int pin_B, const int resolution);
+    /**
+     * @brief //TODO
+     *
+     * @return float
+     */
+    virtual float get_velocity() = 0;
 
-    float read_velocity();
+    /**
+     * @brief //TODO
+     *
+     * @return float
+     */
+    virtual float get_position() = 0;
 
-    const inline int get_pin_A() const { return pin_A_; }
-    const inline int get_pin_B() const { return pin_B_; }
+    /**
+     * @brief //TODO
+     *
+     */
+    virtual void update() = 0;
+};
+
+/**
+ * @brief //TODO
+ *
+ */
+class HalfQuadEncoder : public Encoder
+{
+public:
+    /**
+     * @brief Construct a new Half Quad Encoder object //TODO
+     *
+     * @param pin_A
+     * @param pin_B
+     * @param resolution
+     */
+    HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution);
+
+    /**
+     * @brief //TODO
+     *
+     * @return float
+     */
+    float get_velocity() override;
+
+    /**
+     * @brief //TODO
+     *
+     * @return float
+     */
+    float get_position() override;
+
+    /**
+     * @brief //TODO
+     *
+     */
+    void update() override;
 
 private:
-    void IRAM_ATTR function_ISR_EC_A();
-    void IRAM_ATTR function_ISR_EC_B();
-
-    const int pin_A_, pin_B_;
-    const int resolution_;
-    volatile uint16_t count_A = 0;
-    volatile uint16_t count_B = 0;
+    ESP32Encoder encoder_;
     int last_state_A_;
     int last_state_B_;
-    unsigned long last_time_;
+    const int resolution_;
+    float position_ = 0;      // in radians
+    float velocity_ = 0;      // in radians per second
+    unsigned long last_time_; // in microseconds
 };
 
 #endif // ENCODER_H

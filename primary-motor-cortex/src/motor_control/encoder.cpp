@@ -1,34 +1,35 @@
 #include "motor-control/encoder.hpp"
 
-Encoder* Encoder::instance_ptr = nullptr;
-
-Encoder::Encoder(const int pin_A, const int pin_B, const int resolution)
-    : pin_A_(pin_A), pin_B_(pin_B), resolution_(resolution)
+HalfQuadEncoder::HalfQuadEncoder(const int pin_A, const int pin_B,
+                                 const int resolution)
+    : resolution_(resolution)
 {
-    pinMode(pin_A_, INPUT_PULLUP);
-    pinMode(pin_B_, INPUT_PULLUP);
-    last_state_A_ = digitalRead(pin_A_);
-    last_state_B_ = digitalRead(pin_B_);
-    last_time_ = micros();
+    ESP32Encoder::useInternalWeakPullResistors = DOWN;
+    encoder_.attachHalfQuad(pin_A, pin_B);
 }
 
-float Encoder::read_velocity()
+float HalfQuadEncoder::get_position() { return position_; }
+
+float HalfQuadEncoder::get_velocity() { return velocity_; }
+
+void HalfQuadEncoder::update()
 {
-    noInterrupts();
-    int count_A_local = count_A;
-    int count_B_local = count_B;
-    count_A = 0;
-    count_B = 0;
-    interrupts();
+    unsigned long current_time = micros();
+    float elapsed_time =
+        (current_time - last_time_) / 1000000.0; // Convert to seconds
 
-    int direction = (count_B_local >= 0) ? 1 : -1;
-    int dt = micros() - last_time_;
-    last_time_ = micros();
+    velocity_ = encoder_.getCount() / (resolution_ * elapsed_time);
+    encoder_.clearCount();
 
-    float velocity = (direction * resolution_ * count_A_local) / (float)dt;
-    return velocity;
+    position_ += velocity_ * elapsed_time;
+    if (position_ > 2 * PI)
+    {
+        position_ -= 2 * PI;
+    }
+    else if (position_ < 0)
+    {
+        position_ += 2 * PI;
+    }
+
+    last_time_ = current_time;
 }
-
-void IRAM_ATTR Encoder::function_ISR_EC_A() { count_A++; }
-
-void IRAM_ATTR Encoder::function_ISR_EC_B() { count_B++; }
