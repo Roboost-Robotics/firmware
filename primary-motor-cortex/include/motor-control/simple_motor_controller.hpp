@@ -1,7 +1,8 @@
 /**
- * @file simple_motor_controller.hpp //todo
- * @author your name (you@domain.com)
- * @brief
+ * @file simple_motor_controller.hpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief Definition of MotorController, which sets the control output
+ * directy to the motor driver without feedback loop.
  * @version 0.1
  * @date 2023-07-06
  *

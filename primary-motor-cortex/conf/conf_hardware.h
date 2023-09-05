@@ -33,20 +33,11 @@
  *
  */
 #define WHEEL_RADIUS 0.075 // radius of wheels
-#define WHEEL_BASE 0.38  // distance between wheel contact point in x direction
-#define TRACK_WIDTH 0.32 // distance between wheel contact point in y direction
+#define WHEEL_BASE 0.38    // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.32   // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
-// motor back right
-#define M3_IN1 33
-#define M3_IN2 32
-#define M3_ENA 25
-
-// motor back left
-#define M2_IN1 26
-#define M2_IN2 27
-#define M2_ENA 13
 
 // motor front left
 #define M0_IN1 23
@@ -57,6 +48,17 @@
 #define M1_IN1 18
 #define M1_IN2 14
 #define M1_ENA 19
+
+// motor back left
+#define M2_IN1 26
+#define M2_IN2 27
+#define M2_ENA 13
+
+// motor back right
+#define M3_IN1 33
+#define M3_IN2 32
+#define M3_ENA 25
+
 // PWM config
 #define M0_PWM_CNL 0
 #define M1_PWM_CNL 1
@@ -68,24 +70,28 @@
 #endif
 
 // Uncomment if encoders should be used in the system
-// #define ENCODERS
+#define ENCODERS
 #ifdef ENCODERS
 
-// encoder back right
-#define EC_BR_A 39
-#define EC_BR_B 36
-
-// encoder back left
-#define EC_BL_A 35
-#define EC_BL_B 34
-
 // encoder front left
-#define EC_FL_A 5
-#define EC_FL_B 15
+#define M0_ENC_A 5
+#define M0_ENC_B 15
+#define M0_ENC_RESOLUTION 360
 
 // encoder front right
-#define EC_FR_A 17
-#define EC_FR_B 16
+#define M1_ENC_A 17
+#define M1_ENC_B 16
+#define M1_ENC_RESOLUTION 600
+
+// encoder back left
+#define M2_ENC_A 35
+#define M2_ENC_B 34
+#define M2_ENC_RESOLUTION 360
+
+// encoder back right
+#define M3_ENC_A 39
+#define M3_ENC_B 36
+#define M3_ENC_RESOLUTION 360
 
 #endif
 

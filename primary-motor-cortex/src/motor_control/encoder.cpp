@@ -1,25 +1,32 @@
-/**
- * @file encoder.cpp
- * @author your name (you@domain.com)
- * @brief
- * @version 0.1
- * @date 2023-07-06
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include "motor-control/encoder.hpp"
 
-Encoder::Encoder(int pin_A, int pin_B) : pin_A_(pin_A), pin_B_(pin_B)
+HalfQuadEncoder::HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution) : resolution_(resolution)
 {
-    // Initialize encoder reading...
+    ESP32Encoder::useInternalWeakPullResistors = DOWN;
+    encoder_.attachHalfQuad(pin_A, pin_B);
 }
 
-float Encoder::read_velocity()
-{
-    // Read from the encoder and calculate the current velocity...
-    return 0;
-}
+float HalfQuadEncoder::get_position() { return position_; }
 
-// Other encoder-related function implementations...
+float HalfQuadEncoder::get_velocity() { return velocity_; }
+
+void HalfQuadEncoder::update()
+{
+    unsigned long current_time = micros();
+    float elapsed_time = (current_time - last_time_) / 1000000.0; // Convert to seconds
+
+    velocity_ = encoder_.getCount() / (resolution_ * elapsed_time);
+    encoder_.clearCount();
+
+    position_ += velocity_ * elapsed_time;
+    if (position_ > 2 * PI)
+    {
+        position_ -= 2 * PI;
+    }
+    else if (position_ < 0)
+    {
+        position_ += 2 * PI;
+    }
+
+    last_time_ = current_time;
+}
