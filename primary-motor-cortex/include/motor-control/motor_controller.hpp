@@ -33,11 +33,6 @@ public:
     MotorController(MotorDriver& motor_driver) : motor_driver_(motor_driver) {}
 
     /**
-     * @brief Destructor for the Motor Controller object.
-     */
-    virtual ~MotorController() {}
-
-    /**
      * @brief Set the desired rotation speed of the motor.
      *
      * This method allows setting the desired rotation speed for the motor

@@ -11,11 +11,9 @@
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
-L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2,
-                                   unsigned int pin_ena,
+L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena,
                                    unsigned int pwm_channel)
-    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena),
-      pwm_channel_(pwm_channel)
+    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena), pwm_channel_(pwm_channel)
 {
     // Initialize L298N...
     // setting pin modes
@@ -48,18 +46,4 @@ void L298NMotorDriver::set_motor_control(float control_value)
     // Set PWM for L298N...
     u_int8_t pwm = static_cast<int>(std::abs(control_value) * 255);
     ledcWrite(pwm_channel_, pwm);
-
-    // Print direction and PWM...
-    // Serial.print("pin_in1_: ");
-    // Serial.print(pin_in1_);
-    // Serial.print(" ");
-    // Serial.print(direction ? "HIGH" : "LOW");
-    // Serial.print(", pin_in2_: ");
-    // Serial.print(pin_in2_);
-    // Serial.print(" ");
-    // Serial.print(direction ? "LOW" : "HIGH");
-    // Serial.print(", control_value: ");
-    // Serial.print(control_value);
-    // Serial.print(", pwm: ");
-    // Serial.println(pwm);
 }

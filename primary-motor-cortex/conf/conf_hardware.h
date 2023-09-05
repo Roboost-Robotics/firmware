@@ -33,8 +33,8 @@
  *
  */
 #define WHEEL_RADIUS 0.075 // radius of wheels
-#define WHEEL_BASE 0.38  // distance between wheel contact point in x direction
-#define TRACK_WIDTH 0.32 // distance between wheel contact point in y direction
+#define WHEEL_BASE 0.38    // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.32   // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
@@ -74,24 +74,24 @@
 #ifdef ENCODERS
 
 // encoder front left
-#define EC_M0_A 5
-#define EC_M0_B 15
-#define EC_M0_RES 360
+#define M0_ENC_A 5
+#define M0_ENC_B 15
+#define M0_ENC_RESOLUTION 360
 
 // encoder front right
-#define EC_M1_A 17
-#define EC_M1_B 16
-#define EC_M1_RES 600
+#define M1_ENC_A 17
+#define M1_ENC_B 16
+#define M1_ENC_RESOLUTION 600
 
 // encoder back left
-#define EC_M2_A 35
-#define EC_M2_B 34
-#define EC_M2_RES 360
+#define M2_ENC_A 35
+#define M2_ENC_B 34
+#define M2_ENC_RESOLUTION 360
 
 // encoder back right
-#define EC_M3_A 39
-#define EC_M3_B 36
-#define EC_M3_RES 360
+#define M3_ENC_A 39
+#define M3_ENC_B 36
+#define M3_ENC_RESOLUTION 360
 
 #endif
 

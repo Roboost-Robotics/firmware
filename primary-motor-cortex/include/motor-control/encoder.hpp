@@ -11,6 +11,7 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
+#include <Arduino.h>
 #include <ESP32Encoder.h>
 
 #define PI 3.1415926535897932384626433832795

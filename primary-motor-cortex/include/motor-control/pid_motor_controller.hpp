@@ -41,8 +41,14 @@ public:
     void set_rotation_speed(float desired_rotation_speed);
 
 private:
-    Encoder encoder_;
+    Encoder& encoder_;
     PID pid_;
+
+    // input is the measured rotation speed of the motor, output is the control signal,
+    // setpoint is the desired rotation speed
+    double input_, output_, setpoint_;
+
+    double kp_ = 0.5, ki_ = 0.1, kd_ = 0.0;
 };
 
 #endif // PID_MOTOR_CONTROLLER_H
