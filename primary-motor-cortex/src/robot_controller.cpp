@@ -11,8 +11,7 @@
 
 #include "robot_controller.hpp"
 
-RobotController::RobotController(MotorControllerManager& motor_manager,
-                                 Kinematics* kinematics_model)
+RobotController::RobotController(MotorControllerManager& motor_manager, Kinematics* kinematics_model)
     : motor_manager_(motor_manager), kinematics_model_(kinematics_model)
 {
     // Initialize latest_command and odometry_ to default values here
@@ -23,8 +22,7 @@ RobotController::RobotController(MotorControllerManager& motor_manager,
 void RobotController::update()
 {
     // Calculate the desired wheel speeds using the KinematicsModel
-    Eigen::VectorXd desired_wheel_speeds =
-        kinematics_model_->calculate_wheel_velocity(latest_command_);
+    Eigen::VectorXd desired_wheel_speeds = kinematics_model_->calculate_wheel_velocity(latest_command_);
 
     // Check if there are enough motor controllers in the manager
     int motor_count = motor_manager_.get_motor_count();
@@ -48,7 +46,4 @@ Eigen::Vector<double, 6> RobotController::get_odometry()
     return odometry_;
 }
 
-void RobotController::set_latest_command(const Eigen::Vector3d& latest_command)
-{
-    latest_command_ = latest_command;
-}
+void RobotController::set_latest_command(const Eigen::Vector3d& latest_command) { latest_command_ = latest_command; }

@@ -67,9 +67,9 @@ void MotorControllerManager::update()
     int i = 0;
     for (auto& pair : motor_controllers_)
     {
-        Serial.print("Motor ");
-        Serial.print(i++);
-        Serial.println(":");
+        // Serial.print("Motor ");
+        // Serial.print(i++);
+        // Serial.println(":");
         pair.first->set_rotation_speed(pair.second);
     }
 }

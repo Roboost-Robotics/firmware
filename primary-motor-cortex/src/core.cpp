@@ -35,9 +35,9 @@ L298NMotorDriver driver_M1(M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL);
 L298NMotorDriver driver_M2(M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL);
 L298NMotorDriver driver_M3(M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL);
 
-HalfQuadEncoder encoder_M0(M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION);
+HalfQuadEncoder encoder_M0(M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION, true);
 HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION);
-HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
+HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION, true);
 HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
 PIDMotorController controller_M0(driver_M0, encoder_M0);
@@ -50,16 +50,15 @@ PIDMotorController controller_M3(driver_M3, encoder_M3);
 // SimpleMotorController controller_M2(driver_M2, 0.5);
 // SimpleMotorController controller_M3(driver_M3, 0.5);
 
-MotorControllerManager motor_control_manager{
-    {&controller_M0, &controller_M1, &controller_M2, &controller_M3}}; // initializer list
+MotorControllerManager motor_control_manager{{&controller_M0, &controller_M1, &controller_M2, &controller_M3}};
 
 MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
 RobotController robot_controller(motor_control_manager, &kinematics);
 
-rcl_subscription_t subscriber;
-rcl_publisher_t publisher;
-geometry_msgs__msg__Twist msg;
-nav_msgs__msg__Odometry odom;
+rcl_subscription_t cmd_vel_subscriber;
+rcl_publisher_t odom_publisher;
+geometry_msgs__msg__Twist twist_msg;
+nav_msgs__msg__Odometry odom_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -105,40 +104,73 @@ void setup()
     // create init_options
     while (rclc_support_init(&support, 0, NULL, &allocator) != RCL_RET_OK)
     {
-        // Serial.println("Failed to create init options, retrying...");
+        Serial.println("Failed to create init options, retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+
         delay(1000);
     }
 
     while (rclc_node_init_default(&node, "roboost_core_node", "", &support) != RCL_RET_OK)
     {
-        // Serial.println("Failed to create node, retrying...");
+        Serial.println("Failed to create node, retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
         delay(1000);
     }
 
-    while (rclc_publisher_init_default(&publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
+    while (rclc_publisher_init_default(&odom_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
                                        "odom") != RCL_RET_OK)
     {
-        // Serial.println("Failed to create publisher, retrying...");
+        Serial.println("Failed to create odom publisher, retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
         delay(1000);
     }
 
-    while (rclc_subscription_init_default(&subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+    while (rclc_subscription_init_default(&cmd_vel_subscriber, &node,
+                                          ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
                                           "cmd_vel") != RCL_RET_OK)
     {
-        // Serial.println("Failed to create subscriber, retrying...");
+        Serial.println("Failed to create cmd_vel subscriber, retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
         delay(1000);
     }
 
-    while (rclc_executor_init(&executor, &support.context, 1, &allocator) != RCL_RET_OK)
+    // 2 is the number of subscriptions that will be added to the executor.
+    while (rclc_executor_init(&executor, &support.context, 2, &allocator) != RCL_RET_OK)
     {
-        // Serial.println("Failed to create executor, retrying...");
+        Serial.println("Failed to create executor, retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
         delay(1000);
     }
 
-    while (rclc_executor_add_subscription(&executor, &subscriber, &msg, &cmd_vel_subscription_callback, ON_NEW_DATA) !=
-           RCL_RET_OK)
+    while (rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &twist_msg, &cmd_vel_subscription_callback,
+                                          ON_NEW_DATA) != RCL_RET_OK)
     {
-        // Serial.println("Failed to add subscriber to executor,retrying...");
+        Serial.println("Failed to add cmd_vel subscriber to executor,retrying...");
+        // Print heap usage
+        Serial.print("Free heap: ");
+        Serial.print(xPortGetFreeHeapSize());
+        Serial.print("Free stack: ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
         delay(1000);
     }
 
@@ -154,20 +186,20 @@ void setup()
  */
 void loop()
 {
+    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
+
     robot_controller.update();
     Eigen::Matrix<double, 6, 1> odometry = robot_controller.get_odometry();
 
-    odom.pose.pose.position.x = odometry(0);
-    odom.pose.pose.position.y = odometry(1);
-    odom.pose.pose.orientation.z = odometry(2);
+    odom_msg.pose.pose.position.x = odometry(0);
+    odom_msg.pose.pose.position.y = odometry(1);
+    odom_msg.pose.pose.orientation.z = odometry(2);
 
-    odom.twist.twist.linear.x = odometry(3);
-    odom.twist.twist.linear.y = odometry(4);
-    odom.twist.twist.angular.z = odometry(5);
+    odom_msg.twist.twist.linear.x = odometry(3);
+    odom_msg.twist.twist.linear.y = odometry(4);
+    odom_msg.twist.twist.angular.z = odometry(5);
 
-    RCSOFTCHECK(rcl_publish(&publisher, &odom, NULL));
-
-    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+    RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 
     delay(10);
 }

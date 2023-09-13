@@ -38,8 +38,19 @@ public:
      */
     void set_rotation_speed(float desired_rotation_speed);
 
+    /**
+     * @brief Get the rotation speed of the motor
+     *
+     * @return float rotation speed in rad/sec
+     *
+     * @note This is not the actual rotation speed of the motor, but the
+     * rotation speed that was set using set_rotation_speed.
+     */
+    float get_rotation_speed();
+
 private:
-    float max_rotation_speed_;
+    const float max_rotation_speed_;
+    float setpoint_;
 };
 
 #endif // SIMPLE_MOTOR_CONTROLLER_H

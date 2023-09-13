@@ -18,37 +18,45 @@
 #include <PID_v1.h>
 
 /**
- * @brief Motor controller with encoder feedback and PID // TODO: a lot
+ * @brief Implementation of MotorController, which sets the control output
+ * directy to the motor driver with encoder feedback and PID control.
  *
  */
 class PIDMotorController : public MotorController
 {
 public:
     /**
-     * @brief Construct a new Simple Motor Controller object
+     * @brief Construct a new PIDMotorController object
      *
-     * @param motor_driver Motor driver to be used
-     * @param max_rotation_speed Max rotational speed motor driver can output in
-     * rad/sec
+     * @param motor_driver The motor driver to be controlled.
+     * @param encoder The encoder to be used for feedback.
+     * @param kp The proportional gain of the PID controller.
+     * @param ki The integral gain of the PID controller.
+     * @param kd The derivative gain of the PID controller.
      */
-    PIDMotorController(MotorDriver& motor_driver, Encoder& encoder);
+    PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, double kp = 0.1, double ki = 0.8,
+                       double kd = 0.001);
 
     /**
-     * @brief Set the rotation speed of the motor
+     * @brief Set the rotation speed of the motor.
      *
-     * @param desired_rotation_speed desired rotation speed in rad/sec
+     * @param desired_rotation_speed The desired rotation speed in rad/s.
      */
     void set_rotation_speed(float desired_rotation_speed);
+
+    /**
+     * @brief Get the rotation speed of the motor.
+     *
+     * @return float The rotation speed in rad/s.
+     */
+    float get_rotation_speed();
 
 private:
     Encoder& encoder_;
     PID pid_;
 
-    // input is the measured rotation speed of the motor, output is the control signal,
-    // setpoint is the desired rotation speed
     double input_, output_, setpoint_;
-
-    double kp_ = 0.5, ki_ = 0.1, kd_ = 0.0;
+    double kp_, ki_, kd_;
 };
 
 #endif // PID_MOTOR_CONTROLLER_H
