@@ -1,6 +1,7 @@
 #include "motor-control/encoder.hpp"
 
-HalfQuadEncoder::HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution) : resolution_(resolution)
+HalfQuadEncoder::HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution, const bool reverse)
+    : resolution_(resolution), reverse_(reverse)
 {
     ESP32Encoder::useInternalWeakPullResistors = DOWN;
     encoder_.attachHalfQuad(pin_A, pin_B);
@@ -15,7 +16,7 @@ void HalfQuadEncoder::update()
     unsigned long current_time = micros();
     float elapsed_time = (current_time - last_time_) / 1000000.0; // Convert to seconds
 
-    velocity_ = encoder_.getCount() / (resolution_ * elapsed_time);
+    velocity_ = (encoder_.getCount() / (resolution_ * elapsed_time)) * (reverse_ ? -1 : 1);
     encoder_.clearCount();
 
     position_ += velocity_ * elapsed_time;

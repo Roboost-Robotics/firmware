@@ -74,23 +74,23 @@
 #ifdef ENCODERS
 
 // encoder front left
-#define M0_ENC_A 5
-#define M0_ENC_B 15
-#define M0_ENC_RESOLUTION 360
+#define M0_ENC_A 17
+#define M0_ENC_B 16
+#define M0_ENC_RESOLUTION 600
 
 // encoder front right
-#define M1_ENC_A 17
-#define M1_ENC_B 16
-#define M1_ENC_RESOLUTION 600
+#define M1_ENC_A 5
+#define M1_ENC_B 15
+#define M1_ENC_RESOLUTION 360
 
 // encoder back left
-#define M2_ENC_A 35
-#define M2_ENC_B 34
+#define M2_ENC_A 39
+#define M2_ENC_B 36
 #define M2_ENC_RESOLUTION 360
 
 // encoder back right
-#define M3_ENC_A 39
-#define M3_ENC_B 36
+#define M3_ENC_A 35
+#define M3_ENC_B 34
 #define M3_ENC_RESOLUTION 360
 
 #endif

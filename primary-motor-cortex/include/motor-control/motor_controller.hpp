@@ -17,7 +17,7 @@
 /**
  * @brief Abstract base class for controlling motors.
  *
- * This class defines an interface for controlling motors using a MotorDriver.
+ * @note This class defines an interface for controlling motors using a MotorDriver.
  * Subclasses of MotorController are expected to implement the
  * set_rotation_speed method to set the desired rotation speed of the motor.
  */
@@ -35,13 +35,24 @@ public:
     /**
      * @brief Set the desired rotation speed of the motor.
      *
-     * This method allows setting the desired rotation speed for the motor
+     * @param desired_rotation_speed The desired rotation speed for the motor.
+     *
+     * @note This method allows setting the desired rotation speed for the motor
      * controlled by the MotorDriver. The actual behavior of the motor may
      * depend on the implementation of the MotorDriver.
-     *
-     * @param desired_rotation_speed The desired rotation speed for the motor.
      */
     virtual void set_rotation_speed(float desired_rotation_speed) = 0;
+
+    /**
+     * @brief Get the current rotation speed of the motor.
+     *
+     * @return float
+     *
+     * @note This method returns the current rotation speed of the motor. The actual
+     * behavior of the motor may depend on the implementation of the
+     * MotorDriver.
+     */
+    virtual float get_rotation_speed() = 0;
 
 protected:
     MotorDriver& motor_driver_;
