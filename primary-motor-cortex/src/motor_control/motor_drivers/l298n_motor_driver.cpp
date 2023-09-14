@@ -1,7 +1,7 @@
 /**
- * @file l298n_motor_driver.cpp //todo
- * @author your name (you@domain.com)
- * @brief
+ * @file l298n_motor_driver.cpp
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief This file contains the implementation of the L298N motor driver.
  * @version 0.1
  * @date 2023-07-06
  *

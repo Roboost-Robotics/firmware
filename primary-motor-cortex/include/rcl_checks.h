@@ -1,7 +1,7 @@
 /**
- * @file rcl_checks.h //todo
- * @author your name (you@domain.com)
- * @brief
+ * @file rcl_checks.h
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief This file contains the rcl checks for the micro-ROS communication.
  * @version 0.1
  * @date 2023-07-06
  *
@@ -13,10 +13,11 @@
 
 #include <Arduino.h>
 
-// Error handle loop
 /**
- * @brief //todo
+ * @brief This function is used to check the return value of rcl functions.
+ * If the return value is not RCL_RET_OK, the error_loop() function is called.
  *
+ * @param fn The function to be checked.
  */
 inline void error_loop()
 {
@@ -34,20 +35,20 @@ inline void error_loop()
     }
 }
 
-#define RCCHECK(fn)                                                            \
-    {                                                                          \
-        rcl_ret_t temp_rc = fn;                                                \
-        if ((temp_rc != RCL_RET_OK))                                           \
-        {                                                                      \
-            error_loop();                                                      \
-        }                                                                      \
+#define RCCHECK(fn)                                                                                                    \
+    {                                                                                                                  \
+        rcl_ret_t temp_rc = fn;                                                                                        \
+        if ((temp_rc != RCL_RET_OK))                                                                                   \
+        {                                                                                                              \
+            error_loop();                                                                                              \
+        }                                                                                                              \
     }
-#define RCSOFTCHECK(fn)                                                        \
-    {                                                                          \
-        rcl_ret_t temp_rc = fn;                                                \
-        if ((temp_rc != RCL_RET_OK))                                           \
-        {                                                                      \
-        }                                                                      \
+#define RCSOFTCHECK(fn)                                                                                                \
+    {                                                                                                                  \
+        rcl_ret_t temp_rc = fn;                                                                                        \
+        if ((temp_rc != RCL_RET_OK))                                                                                   \
+        {                                                                                                              \
+        }                                                                                                              \
     }
 
 #endif // RCL_CHECKS_H
