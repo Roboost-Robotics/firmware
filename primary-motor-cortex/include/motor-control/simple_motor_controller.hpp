@@ -29,14 +29,14 @@ public:
      * @param max_rotation_speed Max rotational speed motor driver can output in
      * rad/sec
      */
-    SimpleMotorController(MotorDriver& motor_driver, float max_rotation_speed);
+    SimpleMotorController(MotorDriver& motor_driver, const float max_rotation_speed);
 
     /**
      * @brief Set the rotation speed of the motor
      *
      * @param desired_rotation_speed desired rotation speed in rad/sec
      */
-    void set_rotation_speed(float desired_rotation_speed);
+    void set_rotation_speed(const float desired_rotation_speed);
 
     /**
      * @brief Get the rotation speed of the motor

@@ -11,8 +11,8 @@
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
-L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, unsigned int pin_ena,
-                                   unsigned int pwm_channel)
+L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1, const uint8_t& pin_in2, const uint8_t& pin_ena,
+                                   const uint8_t& pwm_channel)
     : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena), pwm_channel_(pwm_channel)
 {
     // Initialize L298N...
@@ -22,8 +22,8 @@ L298NMotorDriver::L298NMotorDriver(unsigned int pin_in1, unsigned int pin_in2, u
     pinMode(pin_ena_, OUTPUT);
 
     // setting PWM properties
-    const int freq = 5000;
-    const int resolution = 8;
+    const uint16_t freq = 5000;
+    const uint8_t resolution = 8;
 
     // configure PWM functionalities
     ledcSetup(pwm_channel_, freq, resolution);

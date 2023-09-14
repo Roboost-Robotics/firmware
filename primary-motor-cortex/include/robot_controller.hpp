@@ -21,8 +21,7 @@ public:
      * @param kinematics_model The kinematics model used for odometry
      * calculations.
      */
-    RobotController(MotorControllerManager& motor_manager,
-                    Kinematics* kinematics_model);
+    RobotController(MotorControllerManager& motor_manager, Kinematics* kinematics_model);
 
     /**
      * @brief Update the robot's control loop. This method should be called
@@ -49,9 +48,8 @@ public:
     void set_latest_command(const Eigen::Vector3d& latest_command);
 
 private:
-    MotorControllerManager&
-        motor_manager_;            // Reference to the motor control manager.
-    Kinematics* kinematics_model_; // Pointer to the kinematics model.
+    MotorControllerManager& motor_manager_; // Reference to the motor control manager.
+    Kinematics* kinematics_model_;          // Pointer to the kinematics model.
 
     Eigen::Vector3d latest_command_;    // Latest motion control command.
     Eigen::Vector<double, 6> odometry_; // Current odometry estimation.

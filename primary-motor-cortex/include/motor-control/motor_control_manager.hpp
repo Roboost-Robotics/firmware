@@ -28,8 +28,7 @@ public:
      *
      * @param motor_controllers An initializer list of MotorController pointers.
      */
-    MotorControllerManager(
-        std::initializer_list<MotorController*> motor_controllers);
+    MotorControllerManager(std::initializer_list<MotorController*> motor_controllers);
 
     /**
      * @brief Set the desired speed for a specific motor.
@@ -37,14 +36,14 @@ public:
      * @param motor_index The index of the motor.
      * @param desired_speed The desired speed value.
      */
-    void set_motor_speed(int motor_index, float desired_speed);
+    void set_motor_speed(const uint8_t motor_index, float desired_speed);
 
     /**
      * @brief Set the desired speed for all motors.
      *
      * @param desired_speed The desired speed value.
      */
-    void set_all_motor_speeds(float desired_speed);
+    void set_all_motor_speeds(const float desired_speed);
 
     /**
      * @brief Get the desired speed of a specific motor.
@@ -52,14 +51,14 @@ public:
      * @param motor_index The index of the motor.
      * @return float The desired speed value.
      */
-    float get_motor_speed(int motor_index) const;
+    float get_motor_speed(const uint8_t motor_index) const;
 
     /**
      * @brief Get the number of MotorControllers in the manager.
      *
-     * @return int The number of motors.
+     * @return uint8_t The number of motors.
      */
-    int get_motor_count() const;
+    uint8_t get_motor_count() const;
 
     /**
      * @brief Update the MotorControllers to set the new desired rotational
@@ -74,9 +73,8 @@ public:
     ~MotorControllerManager();
 
 private:
-    std::vector<std::pair<MotorController*, float>>
-        motor_controllers_; // Vector to hold MotorController pointers and
-                            // desired speeds.
+    std::vector<std::pair<MotorController*, float>> motor_controllers_; // Vector to hold MotorController pointers and
+                                                                        // desired speeds.
 };
 
 #endif // MOTOR_CONTROLLER_MANAGER_H

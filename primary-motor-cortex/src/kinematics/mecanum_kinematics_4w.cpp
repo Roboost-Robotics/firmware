@@ -10,15 +10,12 @@
  */
 #include "kinematics/kinematics.hpp"
 
-MecanumKinematics4W::MecanumKinematics4W(double wheel_radius, double wheel_base,
-                                         double track_width)
-    : wheel_radius_(wheel_radius), wheel_base_(wheel_base),
-      track_width_(track_width)
+MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius, const float& wheel_base, const float& track_width)
+    : wheel_radius_(wheel_radius), wheel_base_(wheel_base), track_width_(track_width)
 {
 }
 
-Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(
-    const Eigen::VectorXd& wheel_velocity)
+Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(const Eigen::VectorXd& wheel_velocity)
 {
     Eigen::Vector3d robot_velocity;
 
@@ -34,8 +31,7 @@ Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(
     return robot_velocity;
 }
 
-Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(
-    const Eigen::Vector3d& robot_velocity)
+Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(const Eigen::Vector3d& robot_velocity)
 {
     Eigen::VectorXd wheel_velocity(4);
 

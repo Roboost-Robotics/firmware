@@ -1,6 +1,7 @@
 #include "motor-control/encoder.hpp"
 
-HalfQuadEncoder::HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution, const bool reverse)
+HalfQuadEncoder::HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B, const u_int16_t& resolution,
+                                 const bool reverse)
     : resolution_(resolution), reverse_(reverse)
 {
     ESP32Encoder::useInternalWeakPullResistors = DOWN;

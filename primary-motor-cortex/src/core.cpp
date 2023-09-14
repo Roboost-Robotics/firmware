@@ -84,6 +84,14 @@ void cmd_vel_subscription_callback(const void* msgin)
     robot_controller.set_latest_command(cmd);
 }
 
+void inline print_debug_info()
+{
+    Serial.print("Free heap: ");
+    Serial.print(xPortGetFreeHeapSize());
+    Serial.print("Free stack: ");
+    Serial.print(uxTaskGetStackHighWaterMark(NULL));
+}
+
 /**
  * @brief Setup function for initializing micro-ROS, pin modes, etc.
  *
@@ -96,7 +104,7 @@ void setup()
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;
 
-    set_microros_wifi_transports(SSID, SSID_PW, agent_ip, agent_port);
+    set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip, agent_port);
     delay(2000);
 
     allocator = rcl_get_default_allocator();
@@ -105,23 +113,14 @@ void setup()
     while (rclc_support_init(&support, 0, NULL, &allocator) != RCL_RET_OK)
     {
         Serial.println("Failed to create init options, retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
-
+        print_debug_info();
         delay(1000);
     }
 
     while (rclc_node_init_default(&node, "roboost_core_node", "", &support) != RCL_RET_OK)
     {
         Serial.println("Failed to create node, retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+        print_debug_info();
         delay(1000);
     }
 
@@ -129,11 +128,7 @@ void setup()
                                        "odom") != RCL_RET_OK)
     {
         Serial.println("Failed to create odom publisher, retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+        print_debug_info();
         delay(1000);
     }
 
@@ -142,11 +137,7 @@ void setup()
                                           "cmd_vel") != RCL_RET_OK)
     {
         Serial.println("Failed to create cmd_vel subscriber, retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+        print_debug_info();
         delay(1000);
     }
 
@@ -154,11 +145,7 @@ void setup()
     while (rclc_executor_init(&executor, &support.context, 2, &allocator) != RCL_RET_OK)
     {
         Serial.println("Failed to create executor, retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+        print_debug_info();
         delay(1000);
     }
 
@@ -166,11 +153,7 @@ void setup()
                                           ON_NEW_DATA) != RCL_RET_OK)
     {
         Serial.println("Failed to add cmd_vel subscriber to executor,retrying...");
-        // Print heap usage
-        Serial.print("Free heap: ");
-        Serial.print(xPortGetFreeHeapSize());
-        Serial.print("Free stack: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
+        print_debug_info();
         delay(1000);
     }
 

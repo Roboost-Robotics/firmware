@@ -60,7 +60,8 @@ public:
      * @param resolution The resolution of the encoder.
      * @param reverse Whether the encoder is reversed.
      */
-    HalfQuadEncoder(const int pin_A, const int pin_B, const int resolution, const bool reverse = false);
+    HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B, const u_int16_t& resolution,
+                    const bool reverse = false);
 
     /**
      * @brief Get the velocity of the encoder.
@@ -85,9 +86,7 @@ public:
 
 private:
     ESP32Encoder encoder_;
-    int last_state_A_;
-    int last_state_B_;
-    const int resolution_;
+    const u_int16_t resolution_;
     const bool reverse_;
     float position_ = 0;      // in radians
     float velocity_ = 0;      // in radians per second

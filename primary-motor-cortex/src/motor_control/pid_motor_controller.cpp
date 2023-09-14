@@ -12,7 +12,8 @@
 #include "motor-control/pid_motor_controller.hpp"
 #include <Arduino.h>
 
-PIDMotorController::PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, double kp, double ki, double kd)
+PIDMotorController::PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, const double kp, const double ki,
+                                       const double kd)
     : kp_(kp), ki_(ki), kd_(kd), MotorController(motor_driver), encoder_(encoder),
       pid_(&input_, &output_, &setpoint_, kp_, ki_, kd_, DIRECT)
 {
@@ -21,7 +22,7 @@ PIDMotorController::PIDMotorController(MotorDriver& motor_driver, Encoder& encod
     pid_.SetOutputLimits(-1, 1);
 }
 
-void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
+void PIDMotorController::set_rotation_speed(const float desired_rotation_speed)
 {
     encoder_.update();
 

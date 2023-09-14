@@ -1,7 +1,8 @@
 /**
  * @file conf_network_example.h
- * @author your name (you@domain.com) //todo
- * @brief
+ * @author Jakob Friedl (friedl.jak@gmail.com)
+ * @brief This file contains the network parameters for the micro-ROS
+ * communication.
  * @version 0.1
  * @date 2023-07-06
  *
@@ -12,12 +13,12 @@
 #define CONF_NETWORK_H
 
 /**
- * @brief //todo
+ * @brief Definition of the network parameters
  *
  */
-#define SSID "your_ssid"
-#define SSID_PW "your_password"
-#define AGENT_IP "your_agent_ip" // IP of the ROS2 messages recceiver
-#define AGENT_PORT 8888          // AGENT port number
+const char* SSID = "your_ssid";
+const char* SSID_PW = "your_password";
+const uint16_t AGENT_PORT = 8888; // AGENT port number
+#define AGENT_IP 0, 0, 0, 0       // Change to IP of the ROS2 messages recceiver
 
 #endif
