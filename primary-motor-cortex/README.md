@@ -1,66 +1,54 @@
 # Primary Motor Cortex Documentation
 
-## System Design
+## Description
 
-- *MotorController*: This is an abstract base class that provides an interface for controlling a motor. It has a method for setting the control value for a motor (such as set_motor_control). The control value is a normalized value between -1 and 1.
+This repository contains the code for the primary motor cortex of the robot. It is responsible for the control of the robot's motors. It is a PlatformIO project written using the [micro-ROS](https://micro.ros.org/) framework.
 
-- *SimpleMotorController*: This is a subclass of MotorController that provides a simple implementation. It uses a max velocity and maps this to the normalized control value.
+## Installation
 
-- *MotorControllerManager*: This class contains a collection of MotorController objects, one for each wheel on the robot. It has methods for controlling all motors at once, which it delegates to each individual MotorController.
+### Prerequisites
 
-- *KinematicsModel*: This is an abstract base class that represents a kinematic model for the robot. It has a method to calculate the desired wheel speeds given a robot velocity and rotation speed.
+- [VSCode](https://code.visualstudio.com/)
+- [PlatformIO](https://platformio.org/)
+- [ROS2 Humble](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
+- [micro-ROS Agent](https://micro.ros.org/docs/tutorials/core/first_application_linux/)
 
-- *RobotController*: This class uses a MotorControllerManager and a KinematicsModel to control the robot. It has an update() method that uses the KinematicsModel to calculate desired wheel speeds and the MotorControllerManager to set these speeds. It also has a get_odometry() method to provide odometry data for the robot.
+### Building
 
-- *ROSHandler*: This is a class that handles ROS communication. It uses a RobotController to control the robot based on incoming ROS messages and publishes the robot's odometry data. This class should be separated from the robot control logic for modularity and reusability.
-
-In the main loop of your program, you would call the update() method of the RobotController to update the state of the robot based on the latest ROS messages, and use the get_odometry() method to provide odometry data to the ROS publisher.
-
-This design allows you to easily switch out different components (like different MotorController or KinematicsModel implementations) and keeps the ROS-specific code separated from the rest of your robot code. It's modular, which promotes reusability, and it's flexible, allowing for various robot configurations and control strategies.
-
-Data Storage:
-
-todo GPIO pins will vary depending on the motor controller, so it does not make sense to store them at the base class.
-
-- *MotorController*: This class would store the GPIO pin numbers associated with each motor control function (PWM, IN1, IN2). It would also store the current control value for the motor.
-
-todo
-
-- *SimpleMotorController*: In addition to the data stored by the MotorController base class, SimpleMotorController would store the max velocity for the motor.
-
-- *MotorControllerManager*: This class would store a collection of MotorController objects. This could be an array, a vector, or some other container, depending on what makes sense for your setup.
-
-- *KinematicsModel*: The data stored by this class would depend on the specifics of the kinematics model. For example, a differential drive kinematics model might store the wheelbase and wheel radius, while an omni-directional model might store different parameters.
-
-- *RobotController*: This class would store an instance of MotorControllerManager and KinematicsModel. It could also store the current state of the robot (position, orientation, velocity, etc.), depending on how your system is set up.
-
-- *ROSHandler*: This class would store the RobotController instance it's using to control the robot. It would also store any ROS-related data it needs, such as the topics it's subscribing to/publishing on, the current state of the ROS node, etc.
+To install the project, clone the repository and open it in VSCode. The project is written for the [ESP32](https://www.espressif.com/en/products/socs/esp32) microcontroller, so you will need to install the [PlatformIO](https://platformio.org/) extension for VSCode. Once installed, you can build and upload the code to the microcontroller using the PlatformIO extension. All dependencies will be installed automatically.
 
 ## Usage
 
-nices tutorial:
-<https://micro.ros.org/docs/tutorials/core/first_application_linux/>
+To use the project, you will need to build the micro-ROS agent and run it on your host machine. The agent will communicate with the microcontroller via a wifi or serial connection. The agent will then publish and subscribe to ROS2 topics, which can be used to control the robot.
 
-to run:
-
-- upload code
-- press EN pin
-- build micro-ROS agent:
+### Micro-ROS Agent Installation
 
 ```bash
-# cd into git-cloned micro-ROS project folder
+# Source the ROS 2 installation
+source /opt/ros/$ROS_DISTRO/setup.bash
+
+# Create a workspace and download the micro-ROS tools
+mkdir microros_ws
+cd microros_ws
+git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+
+# Update dependencies using rosdep
+sudo apt update && rosdep update
+rosdep install --from-paths src --ignore-src -y
+
+# Build micro-ROS tools and source them
+colcon build
 source install/local_setup.bash
+
+# Download micro-ROS-Agent packages
 ros2 run micro_ros_setup create_agent_ws.sh
+
+# Build step
 ros2 run micro_ros_setup build_agent.sh
+source install/local_setup.bash 
 ```
 
-- once the micro-ROS agent is built, run following command to make the serial port accessible in the host machine:
-
-```bash
-ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
-```
-
-For wireless controll:
+Once the micro-ROS agent is built, run following command to make the robot accessible over the network:
 
 ```bash
 cd microros_ws
@@ -68,8 +56,20 @@ source install/local_setup.bash
 ros2 run micro_ros_agent micro_ros_agent udp4 -p 8888
 ```
 
-Then start teleop to controll the robot:
+Alternatively, you can use the following command to use a serial connection:
+
+```bash
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
+```
+
+Note that depending on the communication method, you will need to modify the firmware of the microcontroller. Per default, the firmware is configured to use UDP over wifi.
+
+### Running the Robot
+
+Once the micro-ROS agent is running, you can run the robot using the following command:
 
 ```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```
+
+This will allow you to control the robot using the keyboard. You can also use any other ROS2 node to control the robot. Per default, the robot will subscribe to the `/cmd_vel` topic and publish to the `/odom` topic.
