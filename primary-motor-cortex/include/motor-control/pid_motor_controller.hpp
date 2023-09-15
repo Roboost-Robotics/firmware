@@ -34,7 +34,7 @@ public:
      * @param ki The integral gain of the PID controller.
      * @param kd The derivative gain of the PID controller.
      */
-    PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, const double kp = 0.2, const double ki = 0.8,
+    PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, const double kp = 0.1, const double ki = 0.8,
                        const double kd = 0.001);
 
     /**
@@ -42,7 +42,7 @@ public:
      *
      * @param desired_rotation_speed The desired rotation speed in rad/s.
      */
-    void set_rotation_speed(const float desired_rotation_speed);
+    void set_rotation_speed(float desired_rotation_speed);
 
     /**
      * @brief Get the rotation speed of the motor.

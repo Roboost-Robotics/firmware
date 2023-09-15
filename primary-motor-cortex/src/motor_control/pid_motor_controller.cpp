@@ -22,7 +22,7 @@ PIDMotorController::PIDMotorController(MotorDriver& motor_driver, Encoder& encod
     pid_.SetOutputLimits(-1, 1);
 }
 
-void PIDMotorController::set_rotation_speed(const float desired_rotation_speed)
+void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 {
     encoder_.update();
 
