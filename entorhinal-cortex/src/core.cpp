@@ -23,6 +23,8 @@
 #include <sensor_msgs/msg/laser_scan.h>
 #include <std_msgs/msg/float32.h>
 
+#include <RPLidar.h>
+
 #include "conf_hardware.h"
 #include "conf_network.h"
 
@@ -43,6 +45,15 @@ rcl_node_t node;
 
 unsigned long last_battery_publish_time = 0;
 const unsigned long battery_publish_interval = 2000;
+
+// Variables for calculating scan time
+unsigned long scan_start_time = 0;
+
+// Define global constants for maximum measurements and measurement buffers
+const size_t max_measurements = 500;
+float ranges_buffer[max_measurements];
+float intensities_buffer[max_measurements];
+size_t num_measurements = 0;
 
 void setup()
 {
@@ -67,27 +78,32 @@ void setup()
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;
 
-    set_microros_wifi_transports(SSID, SSID_PW, agent_ip, agent_port);
+    set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip,
+                                 agent_port);
     delay(2000);
 
     allocator = rcl_get_default_allocator();
 
     while (rclc_support_init(&support, 0, NULL, &allocator) != RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println("Error initializing rclc_support, trying again...");
+        delay(100);
     }
 
     while (rclc_node_init_default(&node, "lidar_node", "", &support) !=
            RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println("Error initializing rclc_node, trying again...");
+        delay(100);
     }
+
     while (rclc_publisher_init_default(
                &scan_publisher, &node,
                ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, LaserScan),
                "scan") != RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println("Error initializing scan_publisher, trying again...");
+        delay(100);
     }
 
     while (rclc_publisher_init_default(
@@ -95,7 +111,8 @@ void setup()
                ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
                "battery_level") != RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println("Error initializing battery_publisher, trying again...");
+        delay(100);
     }
 
     while (
@@ -104,13 +121,16 @@ void setup()
             ROSIDL_GET_MSG_TYPE_SUPPORT(diagnostic_msgs, msg, DiagnosticStatus),
             "diagnostics") != RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println(
+            "Error initializing diagnostic_publisher, trying again...");
+        delay(100);
     }
 
-    while (rclc_executor_init(&executor, &support.context, 3, &allocator) !=
+    while (rclc_executor_init(&executor, &support.context, 1, &allocator) !=
            RCL_RET_OK)
     {
-        delay(1000);
+        Serial.println("Error initializing rclc_executor, trying again...");
+        delay(100);
     }
 
     delay(500);
@@ -121,39 +141,39 @@ void setup()
     scan_msg.header.frame_id.data = (char*)"lidar";
     scan_msg.header.frame_id.size = strlen(scan_msg.header.frame_id.data);
     scan_msg.header.frame_id.capacity = scan_msg.header.frame_id.size + 1;
+
+    scan_msg.range_min = 0.15;
+    scan_msg.range_max = 16.0;
+
+    // Allocate memory for scan message data
+    scan_msg.ranges.data = ranges_buffer;
+    scan_msg.ranges.size = 0;
+    scan_msg.ranges.capacity = max_measurements;
+    scan_msg.intensities.data = intensities_buffer;
+    scan_msg.intensities.size = 0;
+    scan_msg.intensities.capacity = max_measurements;
 }
 
 void loop()
 {
-    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
 
     // Read battery voltage level
     float battery_voltage = analogRead(PWR_IN) * (3.3 * PWR_FACTOR / 4095.0);
 
-    // Populate battery voltage diagnostic
-    diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__OK;
-    diagnostic_msg.name.data = (char*)"Battery Voltage";
-    diagnostic_msg.name.size = strlen(diagnostic_msg.name.data);
-    diagnostic_msg.name.capacity = diagnostic_msg.name.size + 1;
-
-    if (battery_voltage < 0.8 * 12.4)
+    if (battery_voltage < 0.85 * 12.4) // 12.4 * 0.85 = 10.54 V
     {
         digitalWrite(PWR_LED, HIGH);
         diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
         diagnostic_msg.message.data = (char*)"Low Battery Voltage";
         diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
         diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
+
+        RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
     }
     else
     {
         digitalWrite(PWR_LED, LOW);
-        diagnostic_msg.message.data =
-            (char*)"Battery voltage is within normal range";
-        diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
-        diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
     }
-
-    RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
 
     // Publish battery level every 2 seconds
     unsigned long current_time = millis();
@@ -166,94 +186,65 @@ void loop()
 
     if (lidar.isOpen())
     {
-        std::vector<float> ranges, intensities, angles;
-        RPLidarMeasurement measurement;
-        float start_angle = -1.0;
-        bool start_collecting = false;
+        std::vector<RPLidarMeasurement> measurements;
 
-        while (lidar.waitPoint() == RESULT_OK)
+        // Read lidar measurements
+        while (true)
         {
-            measurement = lidar.getCurrentPoint();
-
-            // If we're just starting, record the first angle and start
-            // collecting
-            if (start_angle < 0.0)
+            lidar.waitPoint();
+            if (lidar.getCurrentPoint().startBit)
             {
-                start_angle = measurement.angle;
-                start_collecting = true;
-            }
-            // Stop collecting after a full rotation
-            else if ((start_angle <= measurement.angle + 1) &&
-                     (start_angle >= measurement.angle - 1))
-            {
-                break;
-            }
-
-            if (start_collecting)
-            {
-                ranges.push_back(measurement.distance / 1000.);
-                intensities.push_back(measurement.quality);
-                angles.push_back(measurement.angle * (PI / 180.));
+                scan_start_time = millis();
+                break; // Start bit detected
             }
         }
 
-        // Check if we collected any data points
-        if (start_collecting && !ranges.empty() && !intensities.empty() &&
-            !angles.empty())
+        do
         {
-            // Set dynamic scan parameters
-            scan_msg.angle_min = *min_element(angles.begin(), angles.end());
-            scan_msg.angle_max = *max_element(angles.begin(), angles.end());
-            scan_msg.angle_increment =
-                angles.size() > 1 ? (scan_msg.angle_max - scan_msg.angle_min) /
-                                        (angles.size() - 1)
-                                  : 0;
-            scan_msg.range_min = *min_element(ranges.begin(), ranges.end());
-            scan_msg.range_max = *max_element(ranges.begin(), ranges.end());
+            measurements.push_back(lidar.getCurrentPoint());
+            lidar.waitPoint();
+        } while (!lidar.getCurrentPoint().startBit);
 
-            scan_msg.ranges.size = scan_msg.ranges.capacity = ranges.size();
-            scan_msg.ranges.data = reinterpret_cast<float*>(allocator.allocate(
-                sizeof(float) * ranges.size(), allocator.state));
+        unsigned long scan_end_time = millis();
 
-            scan_msg.intensities.size = scan_msg.intensities.capacity =
-                intensities.size();
-            scan_msg.intensities.data =
-                reinterpret_cast<float*>(allocator.allocate(
-                    sizeof(float) * intensities.size(), allocator.state));
+        // Order the measurements by angle.
+        std::sort(measurements.begin(), measurements.end(),
+                  [](const RPLidarMeasurement& a, const RPLidarMeasurement& b)
+                  { return a.angle < b.angle; });
 
-            std::copy(ranges.begin(), ranges.end(), scan_msg.ranges.data);
-            std::copy(intensities.begin(), intensities.end(),
-                      scan_msg.intensities.data);
+        // Update scan message data
+        num_measurements = measurements.size();
+        scan_msg.angle_min = measurements.front().angle * DEG_TO_RAD;
+        scan_msg.angle_max = measurements.back().angle * DEG_TO_RAD;
+        scan_msg.angle_increment =
+            (scan_msg.angle_max - scan_msg.angle_min) / (num_measurements - 1);
+        scan_msg.scan_time = (scan_end_time - scan_start_time) / 1000.0;
+        scan_msg.time_increment = scan_msg.scan_time / (num_measurements - 1);
 
-            RCSOFTCHECK(rcl_publish(&scan_publisher, &scan_msg, NULL));
-
-            allocator.deallocate(scan_msg.ranges.data, allocator.state);
-            allocator.deallocate(scan_msg.intensities.data, allocator.state);
-        }
-        diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__OK;
-        diagnostic_msg.name.data = (char*)"LiDAR Status";
-        diagnostic_msg.name.size = strlen(diagnostic_msg.name.data);
-        diagnostic_msg.name.capacity = diagnostic_msg.name.size + 1;
-
-        // Check LiDAR status and set diagnostic level and message accordingly
-        if (!lidar.isOpen())
+        // Populate scan message data
+        for (size_t i = 0; i < num_measurements; i++)
         {
-            diagnostic_msg.level =
-                diagnostic_msgs__msg__DiagnosticStatus__ERROR;
-            diagnostic_msg.message.data = (char*)"LiDAR not open";
+            scan_msg.ranges.data[i] = measurements[i].distance / 1000.0;
+            scan_msg.intensities.data[i] = measurements[i].quality;
         }
-        else if (ranges.empty() || intensities.empty() || angles.empty())
-        {
-            diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
-            diagnostic_msg.message.data = (char*)"No LiDAR data collected";
-        }
-        else
-        {
-            diagnostic_msg.message.data = (char*)"LiDAR data collected";
-        }
+
+        // Update scan message size
+        scan_msg.ranges.size = num_measurements;
+        scan_msg.intensities.size = num_measurements;
+
+        // Publish the scan message
+        RCSOFTCHECK(rcl_publish(&scan_publisher, &scan_msg, NULL));
+    }
+    else
+    {
+        // Publish diagnostics message
+        diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__WARN;
+        diagnostic_msg.message.data = (char*)"Lidar not connected";
+        diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
+        diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
 
         RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
     }
 
-    delay(100);
+    RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
 }
