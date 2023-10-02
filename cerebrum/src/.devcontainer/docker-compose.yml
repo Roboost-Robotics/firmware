@@ -1,0 +1,10 @@
+version: '3'
+services:
+  micro-ros-agent:
+    image: microros/micro-ros-agent:humble
+    command: udp4 -p 8888
+    network_mode: host
+  ros2_node:
+    image: ros:humble-ros-core
+    command: ros2 topic list
+    network_mode: host
