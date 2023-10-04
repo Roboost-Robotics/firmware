@@ -18,7 +18,7 @@ The primary motor cortex is designed to be modular. This means that the code can
 
 #### Motor Drivers
 
-- [L298N]
+- L298N
 - [VESCs](https://vesc-project.com/) (Currently in development)
 
 #### Motor Controllers
