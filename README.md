@@ -1,81 +1,113 @@
-# Roboost Robotics Software Stack
+# Primary Motor Cortex Documentation
 
-🤖 Roboost - Affordable and Accessible Robotics Development 🚀
+This repository is part of the Roboost project. For more information visit the [project website](https://www.technologiehub.at/Roboost) and the [Roboost GitHub organization](https://github.com/Roboost-Robotics).
 
-Welcome to the Roboost repository! This is the heart of a modular robotics software stack designed to make robotic development cost-effective and user-friendly. Originally named after my robot models (Roboost V1 and V2), I've expanded its scope. The entire software framework, detached from specific hardware, is now referred to as Roboost. 🌐
+## Description
 
-This repository contains the codebase for multiple components of the Roboost robotic system. Each Roboost component mimics a brain region with a similar function. For instance, the low-level motor control component aligns with the Primary Motor Cortex in the brain. Just as this brain region handles executing motion commands from higher-level functions, this component manages the intricacies of motion execution.
+This repository contains the code for the primary motor cortex of the robot. It is a PlatformIO project responsible for the control of a robot's motors. The [micro-ROS](https://micro.ros.org/) framework is used to connect the robot to a [ROS2](https://docs.ros.org/en/foxy/Installation.html) network. The robot can then be controlled using any ROS2 node publishing to /cmd_vel, such as the teleop_twist_keyboard.
 
-Goals of the Roboost project:
+## Configuration
 
-- Minimize the cost of robotic development with ROS2
-- Provide an easy-to-use base for more complex systems
-- Configurable for different types of robots
+For pin and hardware configuration, changes can be made in the [conf_hardware.h](conf/conf_hardware.h) file. To change the hardware drivers, the [core.cpp](src/core.cpp) file needs to be modified. The [conf_network_example.h](conf/conf_network_example.h) file can be used to configure the network settings. Rename the file to `conf_network.h` and fill in the apropriate values to use it.
 
-More information can be found on the dedicated blog posts:
+As mentioned in the [Installation](#installation) section, the micro-ROS agent can be configured to use either a wifi or serial connection. The default configuration is to use a wifi connection. To use a serial connection, the [platformio.ini](platformio.ini) file needs to be modified. Remove `board_microros_transport = wifi` and adapt the [core.cpp](src/core.cpp) file to use the serial connection.
 
-- [Roboost V2 Robot Summary](https://jakobfriedl.tech/project-summary/)
-- [Roboost V2 Showcase](https://technologiehub.at/project-posts/roboost-v2/)
-- ...
+### Supported Hardware
 
-Here is a little teaser of the Roboost V2 robot with vector control:
+The primary motor cortex is designed to be modular. This means that the code can be easily adapted to different hardware configurations. The following components can be configured:
 
-![](docs/Roboost-Demo.gif)
+#### Motor Drivers
 
-## Key Features
+- [L298N](https://www.amazon.de/dp/B07Q2YX2YR/ref=cm_sw_em_r_mt_dp_8QJQFbZQZQYQK)
+- [VESCs](https://vesc-project.com/) (Currently in development)
 
-The software accomplishes these goals through several key features:
+#### Motor Controllers
 
-- The core firmware is designed to run on an ESP32. ROS2 integration is enabled by UDP communication over WiFi, eliminating the need for an expensive onboard processor.
-- The software architecture is modular, making it effortless to swap and configure components based on the robot's hardware.
-- Firmware projects are built using PlatformIO, an accessible and user-friendly framework.
-- Seamless integration with ROS2 allows the utilization of existing packages for complex systems.
-- The code is written with readability, maintainability, and scalability in mind.
-- Comprehensive documentation is (more or less in the current state) available for all projects (and soon, hardware files too).
+- Simple Controller
+  - Directly controlling the motors
+- PID Controller
+  - Using half quad encoders as feedback
+  - Different tuning methods (Currently in development)
 
-## Primary Motor Cortex Module
+#### Kinematics
 
-🧠 Primary Motor Cortex: Low-Level Motion Control 🏃‍♂️
+- 4-Wheeled Meccanum Drive
+- 3-Wheeled swerve drive (Currently in development)
 
-🤖 **Features:**
+## Installation
 
-- Configurable for various hardware setups
-- Communication options include UDP or UART, with or without a board computer
-- Virtual base classes streamline the implementation of essential robot design aspects like kinematics and motor control.
+The project can be installed as a standalone project or as part of the [Roboost-Cerebrum](TODO) repository. In case of the latter, the micro-ROS agent will be executed automatically as a Docker container. If you only want to use the primary motor cortex, you can install it as a standalone project. In this case, you will need to install the micro-ROS agent manually.
 
-The Primary Motor Cortex contains code related to the motor control of the robotic system. It is based on a PlatformIO project for an ESP32 and listens to the /cmd_vel topic in the ROS network. The received messages then are converted into individual motor speeds which then are used to control the given motors.
+### Standalone Installation
 
-More information can be found in the following blog post:
+#### Prerequisites
 
-- [Roboost Primary Motor Cortex Summary](https://technologiehub.at/project-posts/roboost-primary-motor-cortex/)
+- [VSCode](https://code.visualstudio.com/)
+- [PlatformIO](https://platformio.org/)
+- [ROS2 Humble](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
+- [micro-ROS Agent](https://micro.ros.org/docs/tutorials/core/first_application_linux/)
 
-### Biology of the Primary Motor Cortex - Explanation by ChatGPT
+#### Building
 
->"The primary motor cortex serves as a command center in the brain for controlling voluntary movements. Located in the frontal lobe, it functions like a programmer sending out signals that guide body actions. When making a voluntary movement, the primary motor cortex receives information from the frontal brain areas, develops a movement plan, and transmits this plan as signals down the spinal cord to muscles, functioning akin to dynamic programming for movement control."
+To install the project, clone the repository and open it in VSCode. The project is written for the [ESP32](https://www.espressif.com/en/products/socs/esp32) microcontroller, so you will need to install the [PlatformIO](https://platformio.org/) extension for VSCode. Once installed, you can build and upload the code to the microcontroller using the PlatformIO extension. All dependencies will be installed automatically.
 
-## Entorhinal Cortex Module
+#### Usage
 
-🧠 Entorhinal Cortex: Navigation Sensor Data Processing 🛰️
+To use the project, you will need to build the micro-ROS agent and run it on your host machine. The agent will communicate with the microcontroller via a wifi or serial connection. The agent will then publish and subscribe to ROS2 topics, which can be used to control the robot.
 
-🤖 **Features:**
+##### Micro-ROS Agent Installation
 
-- Designed as a PlatformIO project for seamless development on an ESP32.
-- Specialized in reading data from navigation-centric sensors like LiDAR and IMU.
-- Publishes processed sensor data onto corresponding ROS topics.
-- Ensures reliable and consistent navigation data for higher-level decision-making.
-- Configurable to adapt to various robot configurations and sensor setups.
+```bash
+# Source the ROS 2 installation
+source /opt/ros/$ROS_DISTRO/setup.bash
 
-The Entorhinal Cortex is a PlatformIO project that contains the firmware for an ESP32. It is responsible for reading navigation-specific sensor data (for example LiDAR and IMU sensors) and publishing it onto the corresponding ROS topics.
+# Create a workspace and download the micro-ROS tools
+mkdir microros_ws
+cd microros_ws
+git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
 
-More information can be found in the following blog post:
+# Update dependencies using rosdep
+sudo apt update && rosdep update
+rosdep install --from-paths src --ignore-src -y
 
-- [Roboost Entorhinal Cortex Summary](https://technologiehub.at/project-posts/roboost-entorhinal-cortex/)
+# Build micro-ROS tools and source them
+colcon build
+source install/local_setup.bash
 
-### Biology of the Entorhinal Cortex - Explanation by ChatGPT
+# Download micro-ROS-Agent packages
+ros2 run micro_ros_setup create_agent_ws.sh
 
->"The entorhinal cortex, located in the brain's medial temporal lobe, serves as a central hub for processing sensory information. It filters and integrates data from various senses before sending it to the hippocampus for memory storage. This region also aids in spatial memory and navigation, utilizing grid cells to create mental maps of environments, and its interaction with the hippocampus has been compared to computer data management, highlighting the brain's complexity and flexibility."
+# Build step
+ros2 run micro_ros_setup build_agent.sh
+source install/local_setup.bash 
+```
 
-## TODO
+Once the micro-ROS agent is built, run following command to make the robot accessible over the network:
 
-- Add references for PCBs and used electrical components
-- Share CAD files for the robot projects
+```bash
+cd microros_ws
+source install/local_setup.bash
+ros2 run micro_ros_agent micro_ros_agent udp4 -p 8888
+```
+
+Alternatively, you can use the following command to use a serial connection:
+
+```bash
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
+```
+
+Note that depending on the communication method, you will need to modify the firmware of the microcontroller. Per default, the firmware is configured to use UDP over wifi.
+
+#### Running the Robot
+
+Once the micro-ROS agent is running, you can run the robot using the following command:
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+This will allow you to control the robot using the keyboard. You can also use any other ROS2 node to control the robot. Per default, the robot will subscribe to the `/cmd_vel` topic and publish to the `/odom` topic.
+
+### Roboost-Cerebrum Installation
+
+When installing the project as part of the [Roboost-Cerebrum](TODO) repository, the micro-ROS agent will be executed automatically as a Docker container. This means that you will not need to install the agent manually. In this case, you only need to adapt the project according to your hardware configuration, upload the code to the microcontroller and run the Roboost-Cerebrum Docker container. For more information, visit the [Roboost-Cerebrum](TODO) repository.

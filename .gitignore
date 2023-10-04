@@ -1,6 +1,1 @@
-.pio
-.vscode
-
-# exclude doxygen documentation
-doc/html
-doc/latex
+conf/conf_network.h
