@@ -111,3 +111,7 @@ This will allow you to control the robot using the keyboard. You can also use an
 ### Roboost-Cerebrum Installation
 
 When installing the project as part of the [Roboost-Cerebrum](TODO) repository, the micro-ROS agent will be executed automatically as a Docker container. This means that you will not need to install the agent manually. In this case, you only need to adapt the project according to your hardware configuration, upload the code to the microcontroller and run the Roboost-Cerebrum Docker container. For more information, visit the [Roboost-Cerebrum](TODO) repository.
+
+## TODO
+
+- Add documentation of the motor shield PCB
