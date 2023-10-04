@@ -8,7 +8,7 @@ This repository contains the code for the primary motor cortex of the robot. It 
 
 ## Configuration
 
-For pin and hardware configuration, changes can be made in the [conf_hardware.h](conf/conf_hardware.h) file. To change the hardware drivers, the [core.cpp](src/core.cpp) file needs to be modified. The [conf_network_example.h](conf/conf_network_example.h) file can be used to configure the network settings. Rename the file to `conf_network.h` and fill in the apropriate values to use it.
+For pin and hardware configuration (things like wheel dimensions, track width, etc.), changes can be made in the [conf_hardware.h](conf/conf_hardware.h) file. To change the hardware drivers, the [core.cpp](src/core.cpp) file needs to be modified. The [conf_network_example.h](conf/conf_network_example.h) file can be used to configure the network settings. Rename the file to `conf_network.h` and fill in the apropriate values to use it.
 
 As mentioned in the [Installation](#installation) section, the micro-ROS agent can be configured to use either a wifi or serial connection. The default configuration is to use a wifi connection. To use a serial connection, the [platformio.ini](platformio.ini) file needs to be modified. Remove `board_microros_transport = wifi` and adapt the [core.cpp](src/core.cpp) file to use the serial connection.
 
@@ -115,3 +115,4 @@ When installing the project as part of the [Roboost-Cerebrum](TODO) repository, 
 ## TODO
 
 - Add documentation of the motor shield PCB
+- Add URDF listener (if not available, use configuration file)
