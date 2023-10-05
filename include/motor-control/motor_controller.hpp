@@ -17,8 +17,8 @@
 /**
  * @brief Abstract base class for controlling motors.
  *
- * @note This class defines an interface for controlling motors using a MotorDriver.
- * Subclasses of MotorController are expected to implement the
+ * @note This class defines an interface for controlling motors using a
+ * MotorDriver. Subclasses of MotorController are expected to implement the
  * set_rotation_speed method to set the desired rotation speed of the motor.
  */
 class MotorController
@@ -48,14 +48,24 @@ public:
      *
      * @return float
      *
-     * @note This method returns the current rotation speed of the motor. The actual
-     * behavior of the motor may depend on the implementation of the
+     * @note This method returns the current rotation speed of the motor. The
+     * actual behavior of the motor may depend on the implementation of the
      * MotorDriver.
      */
     virtual float get_rotation_speed() = 0;
 
+    /**
+     * @brief Set the print debug object
+     *
+     * @param print_debug Whether to print debug information.
+     *
+     * @note The debug output is formatted for Teleplot.
+     */
+    void print_debug(bool print_debug) { print_debug_ = print_debug; }
+
 protected:
     MotorDriver& motor_driver_;
+    bool print_debug_ = false;
 };
 
 #endif // MOTOR_CONTROLLER_H

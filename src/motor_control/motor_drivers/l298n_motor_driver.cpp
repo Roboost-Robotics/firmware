@@ -11,9 +11,12 @@
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
-L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1, const uint8_t& pin_in2, const uint8_t& pin_ena,
+L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1,
+                                   const uint8_t& pin_in2,
+                                   const uint8_t& pin_ena,
                                    const uint8_t& pwm_channel)
-    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena), pwm_channel_(pwm_channel)
+    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena),
+      pwm_channel_(pwm_channel)
 {
     // Initialize L298N...
     // setting pin modes

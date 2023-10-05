@@ -7,10 +7,10 @@
 #include "motor-control/motor_control_manager.hpp"
 
 /**
- * @brief The RobotController class manages the control of a robot's motors and
+ * @brief The VelocityController class manages the control of a robot's motors and
  *        implements odometry calculations based on its kinematics model.
  */
-class RobotController
+class JointStateController
 {
 public:
     /**
@@ -18,10 +18,9 @@ public:
      *
      * @param motor_manager The motor control manager responsible for motor
      *                      control.
-     * @param kinematics_model The kinematics model used for odometry
-     * calculations.
+     * @param joint_state The joint state vector to be updated.
      */
-    RobotController(MotorControllerManager& motor_manager, Kinematics* kinematics_model);
+    JointStateController(MotorControllerManager& motor_manager, Eigen::VectorXd& joint_state);
 
     /**
      * @brief Update the robot's control loop. This method should be called

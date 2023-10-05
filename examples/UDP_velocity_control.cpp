@@ -1,15 +1,12 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief This file contains the main functionality for controlling a mecanum
- * robot using micro-ROS via UDP.
+ * @brief This is an example on how to use the Roboost Primary Motor Cortex to
+ * control a mecanum robot using micro-ROS via /cmd_vel over UDP.
  * @version 1.1
- * @date 2023-08-21
+ * @date 2023-10-05
  *
  * @copyright Copyright (c) 2023
- *
- * @todo Refactor the code to use ROS data types instead of Eigen.
- * @todo Add joint state controller (similar to velocity controller).
  *
  */
 
@@ -57,20 +54,15 @@ VelocityController robot_controller(motor_control_manager, &kinematics);
 
 rcl_subscription_t cmd_vel_subscriber;
 rcl_publisher_t odom_publisher;
-// rcl_publisher_t joint_state_publisher;
+rcl_publisher_t joint_state_publisher;
 geometry_msgs__msg__Twist twist_msg;
 nav_msgs__msg__Odometry odom_msg;
-// sensor_msgs__msg__JointState joint_state_msg;
+sensor_msgs__msg__JointState joint_state_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
-
-// Delta time for odometry calculation
-unsigned long last_time = 0;
-// Pose part of odometry
-Eigen::Vector3d pose = Eigen::Vector3d::Zero();
 
 /**
  * @brief Callback function for handling incoming cmd_vel (velocity command)
@@ -154,14 +146,15 @@ void setup()
         delay(1000);
     }
 
-    // while (rclc_publisher_init_default(
-    //            &joint_state_publisher, &node,
-    //            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
-    //            "joint_states") != RCL_RET_OK)
-    // {
-    //     Serial.println("Failed to create joint_state publisher,
-    //     retrying..."); print_debug_info(); delay(1000);
-    // }
+    while (rclc_publisher_init_default(
+               &joint_state_publisher, &node,
+               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
+               "joint_states") != RCL_RET_OK)
+    {
+        Serial.println("Failed to create joint_state publisher, retrying...");
+        print_debug_info();
+        delay(1000);
+    }
 
     while (rclc_subscription_init_default(
                &cmd_vel_subscriber, &node,
@@ -198,11 +191,27 @@ void setup()
 
     // Initialize the odometry message
     odom_msg.header.frame_id.data = "odom";
-    odom_msg.header.frame_id.size = strlen(odom_msg.header.frame_id.data);
-    odom_msg.header.frame_id.capacity = odom_msg.header.frame_id.size + 1;
     odom_msg.child_frame_id.data = "base_link";
-    odom_msg.child_frame_id.size = strlen(odom_msg.child_frame_id.data);
-    odom_msg.child_frame_id.capacity = odom_msg.child_frame_id.size + 1;
+
+    // Initialize the joint state message
+    rosidl_runtime_c__String__Sequence joint_names;
+    joint_names.data =
+        (rosidl_runtime_c__String*)malloc(sizeof(rosidl_runtime_c__String) * 4);
+    joint_names.size = 4;
+    joint_names.capacity = 4;
+    joint_names.data[0].data = "wheel_1_joint";
+    joint_names.data[1].data = "wheel_2_joint";
+    joint_names.data[2].data = "wheel_3_joint";
+    joint_names.data[3].data = "wheel_4_joint";
+
+    joint_state_msg.name = joint_names;
+    joint_state_msg.position.data[1] = 0.0;
+    joint_state_msg.position.data[2] = 0.0;
+    joint_state_msg.position.data[3] = 0.0;
+    joint_state_msg.velocity.data[0] = 0.0;
+    joint_state_msg.velocity.data[1] = 0.0;
+    joint_state_msg.velocity.data[2] = 0.0;
+    joint_state_msg.velocity.data[3] = 0.0;
 }
 
 /**
@@ -215,45 +224,18 @@ void loop()
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 
     robot_controller.update();
+    Eigen::Matrix<double, 6, 1> odometry =
+        robot_controller.get_robot_velocity();
 
-    Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
+    odom_msg.pose.pose.position.x = odometry(0);
+    odom_msg.pose.pose.position.y = odometry(1);
+    odom_msg.pose.pose.orientation.z = odometry(2);
 
-    // Calculate the delta time for odometry calculation
-    unsigned long now = millis();
-    double dt = (now - last_time) / 1000.0;
-    last_time = now;
-
-    pose(0) += robot_velocity(0) * cos(pose(2)) * dt -
-               robot_velocity(1) * sin(pose(2)) * dt;
-    pose(1) += robot_velocity(0) * sin(pose(2)) * dt +
-               robot_velocity(1) * cos(pose(2)) * dt;
-    pose(2) += robot_velocity(2) * dt;
-    pose(2) = atan2(sin(pose(2)), cos(pose(2)));
-
-    odom_msg.pose.pose.position.x = pose(0);
-    odom_msg.pose.pose.position.y = pose(1);
-    // Orientation in quaternion notation
-    odom_msg.pose.pose.orientation.w = cos(pose(2) / 2.0);
-    odom_msg.pose.pose.orientation.z = sin(pose(2) / 2.0);
-
-    odom_msg.twist.twist.linear.x = robot_velocity(0);
-    odom_msg.twist.twist.linear.y = robot_velocity(1);
-    odom_msg.twist.twist.angular.z = robot_velocity(2);
-
-    // Serial.print("Pose:");
-    // Serial.print("\tx: ");
-    // Serial.print(pose(0));
-    // Serial.print(", y: ");
-    // Serial.print(pose(1));
-    // Serial.print(", theta: ");
-    // Serial.print(pose(2));
-    // Serial.print("\tVelocity:");
-    // Serial.print("\tvx: ");
-    // Serial.print(robot_velocity(0));
-    // Serial.print(", vy: ");
-    // Serial.print(robot_velocity(1));
-    // Serial.print(", vtheta: ");
-    // Serial.println(robot_velocity(2));
+    odom_msg.twist.twist.linear.x = odometry(3);
+    odom_msg.twist.twist.linear.y = odometry(4);
+    odom_msg.twist.twist.angular.z = odometry(5);
 
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+
+    delay(10);
 }

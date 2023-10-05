@@ -30,13 +30,14 @@ public:
      * @param pin_ena The pin number of the enable pin.
      * @param pwm_channel The PWM channel to be used.
      */
-    L298NMotorDriver(const uint8_t& pin_in1, const uint8_t& pin_in2, const uint8_t& pin_ena,
-                     const uint8_t& pwm_channel);
+    L298NMotorDriver(const uint8_t& pin_in1, const uint8_t& pin_in2,
+                     const uint8_t& pin_ena, const uint8_t& pwm_channel);
 
     /**
      * @brief Set the motor control object
      *
-     * @param control_value The control value to be set. Should be between -1 and 1.
+     * @param control_value The control value to be set. Should be between -1
+     * and 1.
      */
     void set_motor_control(float control_value);
 
