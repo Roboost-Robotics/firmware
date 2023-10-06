@@ -240,20 +240,10 @@ void loop()
     odom_msg.twist.twist.linear.y = robot_velocity(1);
     odom_msg.twist.twist.angular.z = robot_velocity(2);
 
-    // Serial.print("Pose:");
-    // Serial.print("\tx: ");
-    // Serial.print(pose(0));
-    // Serial.print(", y: ");
-    // Serial.print(pose(1));
-    // Serial.print(", theta: ");
-    // Serial.print(pose(2));
-    // Serial.print("\tVelocity:");
-    // Serial.print("\tvx: ");
-    // Serial.print(robot_velocity(0));
-    // Serial.print(", vy: ");
-    // Serial.print(robot_velocity(1));
-    // Serial.print(", vtheta: ");
-    // Serial.println(robot_velocity(2));
+    // Print pose in Teleoplot format:
+    Serial.print(">theta:");
+    Serial.println(pose(2));
 
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+    delay(10);
 }
