@@ -34,9 +34,11 @@ const uint8_t LED_BUILTIN = 2;
  * degree.
  *
  */
-const float WHEEL_RADIUS = 0.075; // radius of wheels
-const float WHEEL_BASE = 0.38;    // distance between wheel contact point in x direction
-const float TRACK_WIDTH = 0.32;   // distance between wheel contact point in y direction
+const float WHEEL_RADIUS = 0.0625; // radius of wheels
+const float WHEEL_BASE =
+    0.385; // distance between wheel contact point in x direction
+const float TRACK_WIDTH =
+    0.315; // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------

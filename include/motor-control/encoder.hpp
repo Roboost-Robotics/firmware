@@ -40,7 +40,8 @@ public:
     /**
      * @brief Update the encoder values.
      *
-     * @note This function should be called regularly to update the encoder values.
+     * @note This function should be called regularly to update the encoder
+     * values.
      */
     virtual void update() = 0;
 };
@@ -60,8 +61,8 @@ public:
      * @param resolution The resolution of the encoder.
      * @param reverse Whether the encoder is reversed.
      */
-    HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B, const u_int16_t& resolution,
-                    const bool reverse = false);
+    HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B,
+                    const u_int16_t& resolution, const bool reverse = false);
 
     /**
      * @brief Get the velocity of the encoder.
@@ -80,7 +81,8 @@ public:
     /**
      * @brief Update the encoder values.
      *
-     * @note This function should be called regularly to update the encoder values.
+     * @note This function should be called regularly to update the encoder
+     * values.
      */
     void update() override;
 

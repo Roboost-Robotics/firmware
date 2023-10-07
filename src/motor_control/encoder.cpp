@@ -1,6 +1,7 @@
 #include "motor-control/encoder.hpp"
 
-HalfQuadEncoder::HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B, const u_int16_t& resolution,
+HalfQuadEncoder::HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B,
+                                 const u_int16_t& resolution,
                                  const bool reverse)
     : resolution_(resolution), reverse_(reverse)
 {
@@ -15,9 +16,11 @@ float HalfQuadEncoder::get_velocity() { return velocity_; }
 void HalfQuadEncoder::update()
 {
     unsigned long current_time = micros();
-    float elapsed_time = (current_time - last_time_) / 1000000.0; // Convert to seconds
+    float elapsed_time =
+        (current_time - last_time_) / 1000000.0; // Convert to seconds
 
-    velocity_ = (encoder_.getCount() / (resolution_ * elapsed_time)) * (reverse_ ? -1 : 1);
+    velocity_ = (encoder_.getCount() / (resolution_ * elapsed_time)) *
+                (reverse_ ? -1 : 1);
     encoder_.clearCount();
 
     position_ += velocity_ * elapsed_time;

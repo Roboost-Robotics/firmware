@@ -70,21 +70,17 @@ uint8_t MotorControllerManager::get_motor_count() const
 void MotorControllerManager::update()
 {
     int i = 0;
-    motor_controllers_[1].first->print_debug(true);
+    // motor_controllers_[1].first->print_debug(true);
     for (std::pair<MotorController*, float>& pair : motor_controllers_)
     {
-
-        if (i == 1)
-        {
-            Serial.print(">motor ");
-            Serial.print(i);
-            Serial.print(" setpoint:");
-            Serial.println(pair.second);
-            Serial.print(">motor ");
-            Serial.print(i);
-            Serial.print(" measured:");
-            Serial.println(pair.first->get_rotation_speed());
-        }
+        Serial.print(">motor ");
+        Serial.print(i);
+        Serial.print(" setpoint:");
+        Serial.println(pair.second);
+        Serial.print(">motor ");
+        Serial.print(i);
+        Serial.print(" measured:");
+        Serial.println(pair.first->get_rotation_speed());
 
         pair.first->set_rotation_speed(pair.second);
         i++;
