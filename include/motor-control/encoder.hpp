@@ -74,7 +74,7 @@ public:
     /**
      * @brief Get the position of the encoder.
      *
-     * @return float The position in rad.
+     * @return float The position in rad (0 to 2*PI).
      */
     float get_position() override;
 

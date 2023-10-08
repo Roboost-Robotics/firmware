@@ -17,18 +17,21 @@ MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
       track_width_(track_width)
 {
 
+    // r is the distance from the turning center to the wheel
+    // in the current configuration, r is always in the center of the robot
+    // TODO: dynamic r
     const double r =
-        sqrt(wheel_base_ * wheel_base_ + track_width_ * track_width_);
+        sqrt(pow(wheel_base_ / 2.0, 2) + pow(track_width_ / 2.0, 2));
 
     // clang-format off
     forward_kinematics_ << 1, -1, -r,
-                           1, 1, r,
+                           -1, -1, -r,
                            1, 1, -r,
-                           1, -1, r;
+                           -1, 1, -r;
 
-    inverse_kinematics_ << 1, 1, 1, 1, 
-                           -1, 1, 1, -1, 
-                           -1/r, 1/r, -1/r, 1/r;
+    inverse_kinematics_ << 1, -1, -1, -1, 
+                           -1, -1, 1, 1, 
+                           -1/r, -1/r, -1/r, -1/r;
     // clang-format on
 }
 

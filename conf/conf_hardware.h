@@ -36,9 +36,9 @@ const uint8_t LED_BUILTIN = 2;
  */
 const float WHEEL_RADIUS = 0.0625; // radius of wheels
 const float WHEEL_BASE =
-    0.385; // distance between wheel contact point in x direction
+    0.3465; // distance between wheel contact point in x direction
 const float TRACK_WIDTH =
-    0.315; // distance between wheel contact point in y direction
+    0.2835; // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
@@ -49,8 +49,8 @@ const uint8_t M0_IN2 = 22;
 const uint8_t M0_ENA = 21;
 
 // motor front right
-const uint8_t M1_IN1 = 18;
-const uint8_t M1_IN2 = 14;
+const uint8_t M1_IN1 = 14;
+const uint8_t M1_IN2 = 18;
 const uint8_t M1_ENA = 19;
 
 // motor back left
@@ -59,8 +59,8 @@ const uint8_t M2_IN2 = 27;
 const uint8_t M2_ENA = 13;
 
 // motor back right
-const uint8_t M3_IN1 = 33;
-const uint8_t M3_IN2 = 32;
+const uint8_t M3_IN1 = 32;
+const uint8_t M3_IN2 = 33;
 const uint8_t M3_ENA = 25;
 
 // PWM config

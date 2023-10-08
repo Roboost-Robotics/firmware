@@ -70,7 +70,6 @@ uint8_t MotorControllerManager::get_motor_count() const
 void MotorControllerManager::update()
 {
     int i = 0;
-    // motor_controllers_[1].first->print_debug(true);
     for (std::pair<MotorController*, float>& pair : motor_controllers_)
     {
         Serial.print(">motor ");
