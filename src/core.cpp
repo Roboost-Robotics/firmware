@@ -20,7 +20,9 @@
 #include "rcl_checks.h"
 #include <rcl/rcl.h>
 #include <rclc/executor.h>
+
 #include <rclc/rclc.h>
+#include <rosidl_runtime_c/string_functions.h>
 
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
@@ -42,9 +44,9 @@ L298NMotorDriver driver_M3(M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL);
 // Encoder direction needs to be reversed, as the encoder sits on the mirrored
 // side of the motor
 HalfQuadEncoder encoder_M0(M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION);
-HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION, true);
+HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
-HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION, true);
+HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
 PIDMotorController controller_M0(driver_M0, encoder_M0);
 PIDMotorController controller_M1(driver_M1, encoder_M1);
@@ -59,19 +61,17 @@ VelocityController robot_controller(motor_control_manager, &kinematics);
 
 rcl_subscription_t cmd_vel_subscriber;
 rcl_publisher_t odom_publisher;
-// rcl_publisher_t joint_state_publisher;
+rcl_publisher_t joint_state_publisher;
 geometry_msgs__msg__Twist twist_msg;
 nav_msgs__msg__Odometry odom_msg;
-// sensor_msgs__msg__JointState joint_state_msg;
+sensor_msgs__msg__JointState joint_state_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 
-// Delta time for odometry calculation
 unsigned long last_time = 0;
-// Pose part of odometry
 Eigen::Vector3d pose = Eigen::Vector3d::Zero();
 
 /**
@@ -106,9 +106,9 @@ void cmd_vel_subscription_callback(const void* msgin)
  */
 void inline print_debug_info()
 {
-    Serial.print("Free heap: ");
-    Serial.print(xPortGetFreeHeapSize());
-    Serial.print(", Free stack: ");
+    Serial.print(">Free heap:");
+    Serial.println(xPortGetFreeHeapSize());
+    Serial.print(">Free stack:");
     Serial.println(uxTaskGetStackHighWaterMark(NULL));
 }
 
@@ -156,14 +156,15 @@ void setup()
         delay(1000);
     }
 
-    // while (rclc_publisher_init_default(
-    //            &joint_state_publisher, &node,
-    //            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
-    //            "joint_states") != RCL_RET_OK)
-    // {
-    //     Serial.println("Failed to create joint_state publisher,
-    //     retrying..."); print_debug_info(); delay(1000);
-    // }
+    while (rclc_publisher_init_default(
+               &joint_state_publisher, &node,
+               ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
+               "joint_states") != RCL_RET_OK)
+    {
+        Serial.println("Failed to create joint_state publisher, retrying...");
+        print_debug_info();
+        delay(1000);
+    }
 
     while (rclc_subscription_init_default(
                &cmd_vel_subscriber, &node,
@@ -175,8 +176,8 @@ void setup()
         delay(1000);
     }
 
-    // 2 is the number of subscriptions that will be added to the executor.
-    while (rclc_executor_init(&executor, &support.context, 2, &allocator) !=
+    // 1 is the number of subscriptions that will be added to the executor.
+    while (rclc_executor_init(&executor, &support.context, 1, &allocator) !=
            RCL_RET_OK)
     {
         Serial.println("Failed to create executor, retrying...");
@@ -205,6 +206,30 @@ void setup()
     odom_msg.child_frame_id.data = "base_link";
     odom_msg.child_frame_id.size = strlen(odom_msg.child_frame_id.data);
     odom_msg.child_frame_id.capacity = odom_msg.child_frame_id.size + 1;
+
+    // Initialize the joint state message
+    joint_state_msg.header.frame_id.data = "base_link";
+    rosidl_runtime_c__String__Sequence__init(&joint_state_msg.name, 4);
+    rosidl_runtime_c__String__assign(&joint_state_msg.name.data[0],
+                                     "wheel_front_left");
+    rosidl_runtime_c__String__assign(&joint_state_msg.name.data[1],
+                                     "wheel_front_right");
+    rosidl_runtime_c__String__assign(&joint_state_msg.name.data[2],
+                                     "wheel_back_left");
+    rosidl_runtime_c__String__assign(&joint_state_msg.name.data[3],
+                                     "wheel_back_right");
+    joint_state_msg.name.size = 4;
+    joint_state_msg.name.capacity = 4;
+
+    joint_state_msg.position.data = (double*)malloc(4 * sizeof(double));
+    joint_state_msg.position.size = 4;
+    joint_state_msg.position.capacity = 4;
+
+    joint_state_msg.velocity.data = (double*)malloc(4 * sizeof(double));
+    joint_state_msg.velocity.size = 4;
+    joint_state_msg.velocity.capacity = 4;
+
+    // Array of joint efforts is left empty
 }
 
 /**
@@ -243,9 +268,34 @@ void loop()
     odom_msg.twist.twist.angular.z = robot_velocity(2);
 
     // Print pose in Teleoplot format:
+    Serial.print(">x:");
+    Serial.println(pose(0));
+    Serial.print(">y:");
+    Serial.println(pose(1));
     Serial.print(">theta:");
     Serial.println(pose(2));
 
+    // Print robot velocity in Teleoplot format:
+    Serial.print(">vx:");
+    Serial.println(robot_velocity(0));
+    Serial.print(">vy:");
+    Serial.println(robot_velocity(1));
+    Serial.print(">vtheta:");
+    Serial.println(robot_velocity(2));
+
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+
+    // Update the joint state message
+    joint_state_msg.position.data[0] = encoder_M0.get_position();
+    joint_state_msg.position.data[1] = encoder_M1.get_position();
+    joint_state_msg.position.data[2] = encoder_M2.get_position();
+    joint_state_msg.position.data[3] = encoder_M3.get_position();
+
+    joint_state_msg.velocity.data[0] = encoder_M0.get_velocity();
+    joint_state_msg.velocity.data[1] = encoder_M1.get_velocity();
+    joint_state_msg.velocity.data[2] = encoder_M2.get_velocity();
+    joint_state_msg.velocity.data[3] = encoder_M3.get_velocity();
+
+    RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL));
     delay(10);
 }
