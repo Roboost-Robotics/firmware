@@ -36,7 +36,7 @@ The primary motor cortex is designed to be modular. This means that the code can
 
 ## Installation
 
-The project can be installed as a standalone project or as part of the [Roboost-Cerebrum](TODO) repository. In case of the latter, the micro-ROS agent will be executed automatically as a Docker container. If you only want to use the primary motor cortex, you can install it as a standalone project. In this case, you will need to install the micro-ROS agent manually.
+The project can be installed as a standalone project or as part of the [Roboost-Cerebrum](https://github.com/Roboost-Robotics/Roboost-Cerebrum) repository. In case of the latter, the micro-ROS agent will be executed automatically as a Docker container. If you only want to use the primary motor cortex, you can install it as a standalone project. In this case, you will need to install the micro-ROS agent manually.
 
 ### Standalone Installation
 
@@ -98,7 +98,7 @@ ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
 
 Note that depending on the communication method, you will need to modify the firmware of the microcontroller. Per default, the firmware is configured to use UDP over wifi.
 
-#### Running the Robot
+#### Controlling the Robot
 
 Once the micro-ROS agent is running, you can run the robot using the following command:
 
@@ -110,9 +110,41 @@ This will allow you to control the robot using the keyboard. You can also use an
 
 ### Roboost-Cerebrum Installation
 
-When installing the project as part of the [Roboost-Cerebrum](TODO) repository, the micro-ROS agent will be executed automatically as a Docker container. This means that you will not need to install the agent manually. In this case, you only need to adapt the project according to your hardware configuration, upload the code to the microcontroller and run the Roboost-Cerebrum Docker container. For more information, visit the [Roboost-Cerebrum](TODO) repository.
+When installing the project as part of the [Roboost-Cerebrum](https://github.com/Roboost-Robotics/Roboost-Cerebrum) repository, the micro-ROS agent will be executed automatically as a Docker container. This means that you will not need to install the agent manually. In this case, you only need to adapt the project according to your hardware configuration, upload the code to the microcontroller and run the Roboost-Cerebrum Docker container. For more information, visit the [Roboost-Cerebrum](https://github.com/Roboost-Robotics/Roboost-Cerebrum) repository.
+
+Here are commands to get you started:
+
+Start the micro-ROS agent:
+
+```bash
+docker run -it --net=host microros/micro-ros-agent:humble udp4 -p 8888
+```
+
+Starting the TF broadcaster:
+
+```bash
+ros2 launch tf_broadcast_package mecanum_tf_broadcast_launch.py
+```
+
+Starting the joint state publisher:
+
+```bash
+ros2 run joint_state_publisher_gui joint_state_publisher_gui
+```
+
+Starting Rviz2:
+
+```bash
+ros2 launch rviz2 rviz2.launch.py
+```
+
+In Rviz2, set the fixed frame to `odom` and add a TF and RobotModel display. You should now see the robot in Rviz2. Note that you need to select the robot description in the RobotModel to see the robot.
 
 ## TODO
 
 - Add documentation of the motor shield PCB
-- Add URDF listener (if not available, use configuration file)
+- Add JointState mode in addition to Twist mode
+  - So that the motors can be controlled using joint states
+- Add support for VESCs
+- Add support for swerve drive
+- Test accuracy of odometry
