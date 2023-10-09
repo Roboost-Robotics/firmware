@@ -11,10 +11,9 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
+#include "utils/constants.h"
 #include <Arduino.h>
 #include <ESP32Encoder.h>
-
-#define PI 3.1415926535897932384626433832795
 
 /**
  * @brief Encoder base class.
@@ -28,14 +27,14 @@ public:
      *
      * @return float The velocity in rad/s.
      */
-    virtual float get_velocity() = 0;
+    virtual double get_velocity() = 0;
 
     /**
-     * @brief Get the position of the encoder.
+     * @brief Get the angle of the encoder.
      *
-     * @return float The position in rad.
+     * @return float The angle in rad.
      */
-    virtual float get_position() = 0;
+    virtual double get_angle() = 0;
 
     /**
      * @brief Update the encoder values.
@@ -67,16 +66,16 @@ public:
     /**
      * @brief Get the velocity of the encoder.
      *
-     * @return float The velocity in rad/s.
+     * @return double The velocity in rad/s.
      */
-    float get_velocity() override;
+    double get_velocity() override;
 
     /**
      * @brief Get the position of the encoder.
      *
-     * @return float The position in rad (0 to 2*PI).
+     * @return double The position in rad (0 to 2*PI).
      */
-    float get_position() override;
+    double get_angle() override;
 
     /**
      * @brief Update the encoder values.
@@ -90,8 +89,8 @@ private:
     ESP32Encoder encoder_;
     const u_int16_t resolution_;
     const bool reverse_;
-    float position_ = 0;      // in radians
-    float velocity_ = 0;      // in radians per second
+    double position_ = 0;     // in radians
+    double velocity_ = 0;     // in radians per second
     unsigned long last_time_; // in microseconds
 };
 

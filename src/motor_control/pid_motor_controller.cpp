@@ -10,6 +10,7 @@
  */
 
 #include "motor-control/pid_motor_controller.hpp"
+#include "utils/comparisons.hpp"
 #include <Arduino.h>
 
 PIDMotorController::PIDMotorController(MotorDriver& motor_driver,
@@ -26,7 +27,7 @@ PIDMotorController::PIDMotorController(MotorDriver& motor_driver,
     pid_.SetTunings(kp_, ki_, kd_);
     pid_.SetOutputLimits(control_lower_limit_, control_upper_limit_);
 
-    output_history_.assign(filter_window_size_, 0.0);
+    // output_history_.assign(filter_window_size_, 0.0);
 }
 
 void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
@@ -35,14 +36,16 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 
     setpoint_ = desired_rotation_speed;
     input_ = encoder_.get_velocity();
-    input_ = filter_input(input_);
+    // input_ = filter_input(input_);
 
-    gain_scheduling();
+    // gain_scheduling();
 
     pid_.Compute();
 
-    double control = filter_output(output_);
-    apply_anti_windup(control);
+    double control = output_;
+
+    // double control = filter_output(output_);
+    // apply_anti_windup(control);
 
     if (control > control_upper_limit_)
         control = control_upper_limit_;
@@ -72,63 +75,4 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 float PIDMotorController::get_rotation_speed()
 {
     return encoder_.get_velocity();
-}
-
-// Method to check if two floats are approximately equal
-// TODO: Move to utils
-bool approx_equal(float a, float b, float epsilon)
-{
-    return std::abs(a - b) < epsilon;
-}
-
-double PIDMotorController::filter_output(double output)
-{
-    output_history_.push_front(output);
-
-    if (output_history_.size() > filter_window_size_)
-        output_history_.pop_back();
-
-    if (approx_equal(setpoint_, 0.0, 0.01) && approx_equal(input_, 0.0, 0.01))
-        return 0.0;
-
-    double sum = 0.0;
-    for (double value : output_history_)
-        sum += value;
-
-    return sum / output_history_.size();
-}
-
-double PIDMotorController::filter_input(double input)
-{
-    input_history_.push_front(input);
-
-    if (input_history_.size() > filter_window_size_)
-        input_history_.pop_back();
-
-    double sum = 0.0;
-    for (double value : input_history_)
-        sum += value;
-
-    return sum / input_history_.size();
-}
-
-void PIDMotorController::apply_anti_windup(float control)
-{
-    if (control > control_upper_limit_)
-        pid_.SetTunings(kp_, 0.0, kd_);
-    else if (control < control_lower_limit_)
-        pid_.SetTunings(kp_, 0.0, kd_);
-    else if (pid_.GetKi() == 0.0)
-        pid_.SetTunings(kp_, ki_, kd_);
-}
-
-void PIDMotorController::gain_scheduling()
-{
-    double error = abs(setpoint_ - input_);
-    if (error > 10.0)
-        pid_.SetTunings(kp_ * 0.5, ki_ * 0.5, kd_);
-    else if (error > 5.0)
-        pid_.SetTunings(kp_ * 0.75, ki_ * 0.75, kd_);
-    else
-        pid_.SetTunings(kp_, ki_, kd_);
 }

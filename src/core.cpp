@@ -36,6 +36,9 @@
 #include "motor-control/simple_motor_controller.hpp"
 #include "velocity_controller.hpp"
 
+// TODO: remove after testing
+#include "utils/controllers.hpp"
+
 L298NMotorDriver driver_M0(M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL);
 L298NMotorDriver driver_M1(M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL);
 L298NMotorDriver driver_M2(M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL);
@@ -73,6 +76,14 @@ rcl_node_t node;
 
 unsigned long last_time = 0;
 Eigen::Vector3d pose = Eigen::Vector3d::Zero();
+
+// Time synchronization variables
+unsigned long last_time_sync_ms = 0;
+unsigned long last_time_sync_ns = 0;
+unsigned long time_sync_interval = 1000; // Sync timeout
+const int timeout_ms = 500;
+int64_t synced_time_ms = 0;
+int64_t synced_time_ns = 0;
 
 /**
  * @brief Callback function for handling incoming cmd_vel (velocity command)
@@ -211,13 +222,13 @@ void setup()
     joint_state_msg.header.frame_id.data = "base_link";
     rosidl_runtime_c__String__Sequence__init(&joint_state_msg.name, 4);
     rosidl_runtime_c__String__assign(&joint_state_msg.name.data[0],
-                                     "wheel_front_left");
+                                     "wheel_front_left_joint");
     rosidl_runtime_c__String__assign(&joint_state_msg.name.data[1],
-                                     "wheel_front_right");
+                                     "wheel_front_right_joint");
     rosidl_runtime_c__String__assign(&joint_state_msg.name.data[2],
-                                     "wheel_back_left");
+                                     "wheel_back_left_joint");
     rosidl_runtime_c__String__assign(&joint_state_msg.name.data[3],
-                                     "wheel_back_right");
+                                     "wheel_back_right_joint");
     joint_state_msg.name.size = 4;
     joint_state_msg.name.capacity = 4;
 
@@ -229,7 +240,44 @@ void setup()
     joint_state_msg.velocity.size = 4;
     joint_state_msg.velocity.capacity = 4;
 
-    // Array of joint efforts is left empty
+    // TODO: remove after testing
+    PIDController pid_(0.2, 0.05, 0.01, 0.01); // TODO: Tune PID controller
+    unsigned long last_time = micros();
+    unsigned long last_rotation_step = millis();
+    float wanted_angle = 0;
+    while (true)
+    {
+        // Speed test
+        // encoder_M0.update();
+        // double sampling_time = (micros() - last_time) / 1000000.0;
+        // Serial.print(">sampling_time:");
+        // Serial.println(sampling_time);
+        // double control =
+        //     pid_.update(4 * PI, encoder_M0.get_velocity(), sampling_time);
+
+        // driver_M0.set_motor_control(control);
+        // last_time = micros();
+        // delay(10);
+
+        // Position test
+        // for the position test, the motor position is incremented by PI/2
+        // every 5 seconds
+        encoder_M0.update();
+        double sampling_time = (micros() - last_time) / 1000000.0;
+        Serial.print(">sampling_time:");
+        Serial.println(sampling_time);
+        double control = pid_.update(PI, encoder_M0.get_angle(), sampling_time);
+
+        if (millis() - last_rotation_step > 5000)
+        {
+            last_rotation_step = millis();
+            wanted_angle += PI / 2;
+        }
+
+        driver_M0.set_motor_control(control);
+        last_time = micros();
+        delay(10);
+    }
 }
 
 /**
@@ -239,6 +287,22 @@ void setup()
  */
 void loop()
 {
+    // Time synchronization
+    if (millis() - last_time_sync_ms > time_sync_interval)
+    {
+        // Synchronize time with the agent
+        rmw_uros_sync_session(timeout_ms);
+
+        if (rmw_uros_epoch_synchronized())
+        {
+            // Get time in milliseconds or nanoseconds
+            synced_time_ms = rmw_uros_epoch_millis();
+            synced_time_ns = rmw_uros_epoch_nanos();
+            last_time_sync_ms = millis();
+            last_time_sync_ns = micros() * 1000;
+        }
+    }
+
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 
     robot_controller.update();
@@ -267,6 +331,12 @@ void loop()
     odom_msg.twist.twist.linear.y = robot_velocity(1);
     odom_msg.twist.twist.angular.z = robot_velocity(2);
 
+    odom_msg.header.stamp.sec =
+        (synced_time_ms + millis() - last_time_sync_ms) / 1000;
+    odom_msg.header.stamp.nanosec =
+        synced_time_ns + (micros() * 1000 - last_time_sync_ns);
+    odom_msg.header.stamp.nanosec %= 1000000000; // nanoseconds are in [0, 1e9)
+
     // Print pose in Teleoplot format:
     Serial.print(">x:");
     Serial.println(pose(0));
@@ -286,15 +356,18 @@ void loop()
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 
     // Update the joint state message
-    joint_state_msg.position.data[0] = encoder_M0.get_position();
-    joint_state_msg.position.data[1] = encoder_M1.get_position();
-    joint_state_msg.position.data[2] = encoder_M2.get_position();
-    joint_state_msg.position.data[3] = encoder_M3.get_position();
+    joint_state_msg.position.data[0] = encoder_M0.get_angle();
+    joint_state_msg.position.data[1] = encoder_M1.get_angle();
+    joint_state_msg.position.data[2] = encoder_M2.get_angle();
+    joint_state_msg.position.data[3] = encoder_M3.get_angle();
 
     joint_state_msg.velocity.data[0] = encoder_M0.get_velocity();
     joint_state_msg.velocity.data[1] = encoder_M1.get_velocity();
     joint_state_msg.velocity.data[2] = encoder_M2.get_velocity();
     joint_state_msg.velocity.data[3] = encoder_M3.get_velocity();
+
+    joint_state_msg.header.stamp.sec = synced_time_ms / 1000;
+    joint_state_msg.header.stamp.nanosec = synced_time_ns;
 
     RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL));
     delay(10);

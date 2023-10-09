@@ -22,7 +22,6 @@
  * @brief Implementation of MotorController, which sets the control output
  * directy to the motor driver with encoder feedback and PID control.
  *
- * TODO: Model Predictive Control
  */
 class PIDMotorController : public MotorController
 {
@@ -61,41 +60,8 @@ public:
     float get_rotation_speed();
 
 private:
-    /**
-     * @brief Filter the output to reduce noise.
-     *
-     * @param output The output to be filtered.
-     * @return double The filtered output term.
-     */
-    double filter_output(double output);
-
-    /**
-     * @brief Filter the input to reduce noise.
-     *
-     * @param input The input to be filtered.
-     * @return double The filtered input term.
-     */
-    double filter_input(double input);
-
-    /**
-     * @brief Apply anti-windup to the integral term.
-     *
-     * @param control The control output for limiting the integral term.
-     */
-    void apply_anti_windup(float control);
-
-    /**
-     * @brief Update the PID gains based on error.
-     *
-     */
-    void gain_scheduling();
-
     Encoder& encoder_;
     PID pid_;
-
-    std::deque<double> output_history_;
-    std::deque<double> input_history_;
-    const int filter_window_size_ = 4;
 
     const double control_upper_limit_;
     const double control_lower_limit_;

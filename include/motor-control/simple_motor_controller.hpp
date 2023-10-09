@@ -29,7 +29,8 @@ public:
      * @param max_rotation_speed Max rotational speed motor driver can output in
      * rad/sec
      */
-    SimpleMotorController(MotorDriver& motor_driver, const float max_rotation_speed);
+    SimpleMotorController(MotorDriver& motor_driver,
+                          const float max_rotation_speed);
 
     /**
      * @brief Set the rotation speed of the motor
@@ -50,7 +51,7 @@ public:
 
 private:
     const float max_rotation_speed_;
-    float setpoint_;
+    float rotation_speed_setpoint_;
 };
 
 #endif // SIMPLE_MOTOR_CONTROLLER_H
