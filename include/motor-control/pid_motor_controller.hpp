@@ -15,8 +15,7 @@
 
 #include "motor-control/encoder.hpp"
 #include "motor_controller.hpp"
-#include <PID_v1.h>
-#include <deque>
+#include "utils/controllers.hpp"
 
 /**
  * @brief Implementation of MotorController, which sets the control output
@@ -29,21 +28,15 @@ public:
     /**
      * @brief Construct a new PIDMotorController object
      *
-     * @param motor_driver The motor driver to be controlled.
-     * @param encoder The encoder to be used for feedback.
-     * @param kp The proportional gain of the PID controller.
-     * @param ki The integral gain of the PID controller.
-     * @param kd The derivative gain of the PID controller.
-     * @param control_upper_limit The upper limit of the control output.
-     * @param control_lower_limit The lower limit of the control output.
-     *
-     * @note double kp = 0.1, double ki = 0.8, double kd = 0.001 are good for no
-     * load
+     * @param motor_driver The motor driver to control.
+     * @param encoder The encoder to read the rotation speed from.
+     * @param pid_controller The PID controller to use.
+     * @param input_filter The filter to use for the input.
+     * @param output_filter The filter to use for the output.
      */
     PIDMotorController(MotorDriver& motor_driver, Encoder& encoder,
-                       double kp = 0.17, double ki = 0.0, double kd = 0.0,
-                       const double control_upper_limit = 1.0,
-                       const double control_lower_limit = -1.0);
+                       PIDController& pid_controller, Filter& input_filter,
+                       Filter& output_filter, double min_output = 0.2);
 
     /**
      * @brief Set the rotation speed of the motor.
@@ -61,13 +54,10 @@ public:
 
 private:
     Encoder& encoder_;
-    PID pid_;
-
-    const double control_upper_limit_;
-    const double control_lower_limit_;
-
-    double input_, output_, setpoint_;
-    double kp_, ki_, kd_;
+    PIDController& pid_;
+    Filter& input_filter_;
+    Filter& output_filter_;
+    double min_output_;
 };
 
 #endif // PID_MOTOR_CONTROLLER_H

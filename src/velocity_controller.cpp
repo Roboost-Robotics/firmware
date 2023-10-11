@@ -22,11 +22,9 @@ VelocityController::VelocityController(MotorControllerManager& motor_manager,
 
 void VelocityController::update()
 {
-    // Calculate the desired wheel speeds using the KinematicsModel
     Eigen::VectorXd desired_wheel_speeds =
         kinematics_model_->calculate_wheel_velocity(latest_command_);
 
-    // Check if there are enough motor controllers in the manager
     int motor_count = motor_manager_.get_motor_count();
     if (desired_wheel_speeds.size() != motor_count)
     {
@@ -34,14 +32,12 @@ void VelocityController::update()
         return;
     }
 
-    // Use the MotorControllerManager to set these speeds
     for (int i = 0; i < motor_count; ++i)
     {
         motor_manager_.set_motor_speed(i, desired_wheel_speeds(i));
     }
     motor_manager_.update();
 
-    // Update the odometry
     Eigen::VectorXd actual_wheel_speeds(motor_count);
     for (int i = 0; i < motor_count; ++i)
     {

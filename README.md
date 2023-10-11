@@ -148,3 +148,7 @@ In Rviz2, set the fixed frame to `odom` and add a TF and RobotModel display. You
 - Add support for VESCs
 - Add support for swerve drive
 - Test accuracy of odometry
+- Calculate odometry covariance
+- Add support for different tuning methods
+- Calculate motor torque based on [this](https://www.faulhaber.com/en/know-how/tutorials/dc-motor-tutorial-motor-calculations-for-coreless-brush-dc-motors/) tutorial
+- Add serial_debug flag to all relevant classes

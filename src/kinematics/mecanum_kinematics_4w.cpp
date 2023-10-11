@@ -21,7 +21,8 @@ MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
     // in the current configuration, r is always in the center of the robot
     // TODO: dynamic r
     const double r =
-        sqrt(pow(wheel_base_ / 2.0, 2) + pow(track_width_ / 2.0, 2));
+        wheel_base / 2.0 + track_width / 2.0; // sqrt(pow(wheel_base_ / 2.0, 2)
+                                              // + pow(track_width_ / 2.0, 2));
 
     // clang-format off
     forward_kinematics_ << 1, -1, -r,
