@@ -41,30 +41,26 @@ L298NMotorDriver driver_M1(M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL);
 L298NMotorDriver driver_M2(M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL);
 L298NMotorDriver driver_M3(M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL);
 
-// Encoder direction needs to be reversed, as the encoder sits on the mirrored
-// side of the motor
 HalfQuadEncoder encoder_M0(M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
-PIDControllerParameters pid_parameters_velocity{0.2, 0.0, 0.0, 0.01};
+// TODO: Use parameter server to set controller and filter parameters
+PIDController controller_M0(0.3, 0.0, 0.0, 0.01);
+PIDController controller_M1(0.3, 0.0, 0.0, 0.01);
+PIDController controller_M2(0.3, 0.0, 0.0, 0.01);
+PIDController controller_M3(0.3, 0.0, 0.0, 0.01);
 
-PIDController controller_M0(pid_parameters_velocity);
-PIDController controller_M1(pid_parameters_velocity);
-PIDController controller_M2(pid_parameters_velocity);
-PIDController controller_M3(pid_parameters_velocity);
+LowPassFilter encoder_input_filter_M0 = LowPassFilter(50.0, 0.01);
+LowPassFilter encoder_input_filter_M1 = LowPassFilter(50.0, 0.01);
+LowPassFilter encoder_input_filter_M2 = LowPassFilter(50.0, 0.01);
+LowPassFilter encoder_input_filter_M3 = LowPassFilter(50.0, 0.01);
 
-// TODO: Determine correct filter parameters
-LowPassFilter encoder_input_filter_M0 = LowPassFilter(0.9, 0.01);
-LowPassFilter encoder_input_filter_M1 = LowPassFilter(0.9, 0.01);
-LowPassFilter encoder_input_filter_M2 = LowPassFilter(0.9, 0.01);
-LowPassFilter encoder_input_filter_M3 = LowPassFilter(0.9, 0.01);
-
-MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(2);
+MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(4);
+MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(4);
+MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(4);
+MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(4);
 
 PIDMotorController motor_controller_M0(driver_M0, encoder_M0, controller_M0,
                                        encoder_input_filter_M0,
@@ -101,10 +97,9 @@ rcl_node_t node;
 unsigned long last_time = 0;
 Eigen::Vector3d pose = Eigen::Vector3d::Zero();
 
-// Time synchronization variables
 unsigned long last_time_sync_ms = 0;
 unsigned long last_time_sync_ns = 0;
-unsigned long time_sync_interval = 1000; // Sync timeout
+const unsigned long time_sync_interval = 1000;
 const int timeout_ms = 500;
 int64_t synced_time_ms = 0;
 int64_t synced_time_ns = 0;
@@ -159,7 +154,8 @@ void setup()
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;
 
-    // TODO: remove after testing
+    // ! uncomment this for serial and remove the wifi transport below and in
+    // ! the platformio.ini
     // set_microros_serial_transports(Serial);
 
     set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip,
@@ -237,22 +233,15 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    // Initialize the odometry message
-    // TODO: add covariance (small values in the diagonal, zeros elsewhere;
-    //  kalman filter will fill in the rest)
-    odom_msg.header.frame_id.data = "odom";
+    odom_msg.header.frame_id.data = "odom/wheel_odom";
     odom_msg.header.frame_id.size = strlen(odom_msg.header.frame_id.data);
     odom_msg.header.frame_id.capacity = odom_msg.header.frame_id.size + 1;
     odom_msg.child_frame_id.data = "base_link";
     odom_msg.child_frame_id.size = strlen(odom_msg.child_frame_id.data);
     odom_msg.child_frame_id.capacity = odom_msg.child_frame_id.size + 1;
-    // odom covariance: "Row-major representation of the 6x6 covariance matrix
-    // The orientation parameters use a fixed-axis representation.
-    // In order, the parameters are:
-    // (x, y, z, rotation about X axis, rotation about Y axis, rotation about Z
-    // axis)"
+
     double* temp_covariance = (double*)malloc(36 * sizeof(double));
-    // set diagonal values of covariance to 0.1, rest to 0
+
     // TODO: determine correct covariance values
     for (int i = 0; i < 36; i++)
     {
@@ -369,22 +358,6 @@ void loop()
     joint_state_msg.header.stamp.nanosec = synced_time_ns;
 
     RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL));
-
-    // Print pose in Teleoplot format:
-    Serial.print(">x:");
-    Serial.println(pose(0));
-    Serial.print(">y:");
-    Serial.println(pose(1));
-    Serial.print(">theta:");
-    Serial.println(pose(2));
-
-    // Print robot velocity in Teleoplot format:
-    Serial.print(">vx:");
-    Serial.println(robot_velocity(0));
-    Serial.print(">vy:");
-    Serial.println(robot_velocity(1));
-    Serial.print(">vtheta:");
-    Serial.println(robot_velocity(2));
 
     delay(10);
 }

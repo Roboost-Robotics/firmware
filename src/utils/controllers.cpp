@@ -11,12 +11,14 @@
 
 #include "utils/controllers.hpp"
 
-PIDController::PIDController(const PIDControllerParameters& parameters)
-    : parameters_(parameters), integral_(0.0), previous_error_(0.0),
+PIDController::PIDController(double kp, double ki, double kd,
+                             double max_expected_sampling_time)
+    : kp_(kp), ki_(ki), kd_(kd),
+      max_expected_sampling_time_(max_expected_sampling_time), integral_(0.0),
+      previous_error_(0.0),
       derivative_filter_(1.0 /
-                             (1.0 + 2.0 * PI * parameters.kd *
-                                        parameters.max_expected_sampling_time),
-                         parameters.max_expected_sampling_time)
+                             (1.0 + 2.0 * PI * kd * max_expected_sampling_time),
+                         max_expected_sampling_time)
 {
     last_update_time_ = micros();
 }
@@ -32,31 +34,7 @@ double PIDController::update(double setpoint, double input)
         derivative_filter_.update((error - previous_error_) / sampling_time);
     previous_error_ = error;
 
-    double output = parameters_.kp * error + parameters_.ki * integral_ +
-                    parameters_.kd * derivative;
-
-    // Serial.print(">PIDController input:");
-    // Serial.println(input);
-    // Serial.print(">PIDController output:");
-    // Serial.println(output);
-    // Serial.print(">PIDController setpoint:");
-    // Serial.println(setpoint);
-    // Serial.print(">PIDController error:");
-    // Serial.println(error);
-    // Serial.print(">PIDController integral:");
-    // Serial.println(integral_);
-    // Serial.print(">PIDController derivative:");
-    // Serial.println(derivative);
-    // Serial.print(">PIDController sampling_time:");
-    // Serial.println(sampling_time);
-    // Serial.print(">PIDController kp:");
-    // Serial.println(parameters_.kp);
-    // Serial.print(">PIDController ki:");
-    // Serial.println(parameters_.ki);
-    // Serial.print(">PIDController kd:");
-    // Serial.println(parameters_.kd);
-    // Serial.println(">PIDController max_expected_sampling_time:");
-    // Serial.println(parameters_.max_expected_sampling_time);
+    double output = kp_ * error + ki_ * integral_ + kd_ * derivative;
 
     return output;
 }

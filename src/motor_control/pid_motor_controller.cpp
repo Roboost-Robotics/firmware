@@ -29,20 +29,12 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 
     double input = encoder_.get_velocity();
 
-    // Serial.print(">PIDMotorController unfiltered input:");
-    // Serial.println(input);
-
     input = input_filter_.update(input);
 
     double output = pid_.update(desired_rotation_speed, input);
 
-    // Serial.print(">PIDMotorController unfiltered output:");
-    // Serial.println(output);
-
     output = output_filter_.update(output);
 
-    // If the output is too small and desired rotation speed is zero, set the
-    // output to zero.
     if (std::abs(output) < min_output_ &&
         std::abs(desired_rotation_speed) < 1e-3)
     {
@@ -50,13 +42,6 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
     }
 
     motor_driver_.set_motor_control(output);
-
-    // Serial.print(">PIDMotorController input:");
-    // Serial.println(input);
-    // Serial.print(">PIDMotorController output:");
-    // Serial.println(output);
-    // Serial.print(">PIDMotorController setpoint:");
-    // Serial.println(desired_rotation_speed);
 }
 
 float PIDMotorController::get_rotation_speed()

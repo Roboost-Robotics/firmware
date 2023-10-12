@@ -85,12 +85,12 @@ const uint8_t M_PWM_RES = 8;     // 2^n Bits
 // encoder front left
 const uint8_t M0_ENC_A = 17;
 const uint8_t M0_ENC_B = 16;
-const uint16_t M0_ENC_RESOLUTION = 600;
+const uint16_t M0_ENC_RESOLUTION = 360;
 
 // encoder front right
 const uint8_t M1_ENC_A = 5;
 const uint8_t M1_ENC_B = 15;
-const uint16_t M1_ENC_RESOLUTION = 360;
+const uint16_t M1_ENC_RESOLUTION = 600;
 
 // encoder back left
 const uint8_t M2_ENC_A = 39;
