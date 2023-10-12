@@ -143,8 +143,8 @@ In Rviz2, set the fixed frame to `odom` and add a TF and RobotModel display. You
 ## TODO
 
 - Add documentation of the motor shield PCB
-- Add JointState mode in addition to Twist mode
-  - So that the motors can be controlled using joint states
 - Add support for VESCs
 - Add support for swerve drive
 - Test accuracy of odometry
+- Calculate odometry covariance
+- Add parameter server for dynamic reconfiguration

@@ -1,5 +1,10 @@
-#ifndef ROBOTCONTROLLER_H
-#define ROBOTCONTROLLER_H
+#ifndef VELOCITYCONTROLLER_H
+#define VELOCITYCONTROLLER_H
+
+#ifdef JOINTSTATECONTROLLER_H
+#error                                                                         \
+    "joint_state_controller.hpp and velocity_controller.hpp cannot be used at the same time!"
+#endif
 
 #include <ArduinoEigen.h>
 #include <nav_msgs/msg/odometry.h>
@@ -48,12 +53,11 @@ public:
     void set_latest_command(const Eigen::Vector3d& latest_command);
 
 private:
-    MotorControllerManager&
-        motor_manager_;            // Reference to the motor control manager.
-    Kinematics* kinematics_model_; // Pointer to the kinematics model.
+    MotorControllerManager& motor_manager_;
+    Kinematics* kinematics_model_;
 
-    Eigen::Vector3d latest_command_; // Latest motion control command.
-    Eigen::Vector3d robot_velocity_; // Current robot velocity.
+    Eigen::Vector3d latest_command_;
+    Eigen::Vector3d robot_velocity_;
 };
 
-#endif // ROBOTCONTROLLER_H
+#endif // VELOCITYCONTROLLER_H

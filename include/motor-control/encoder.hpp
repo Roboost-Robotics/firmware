@@ -88,6 +88,8 @@ public:
 private:
     ESP32Encoder encoder_;
     const u_int16_t resolution_;
+    double step_increment_;
+    int64_t prev_count_;
     const bool reverse_;
     double position_ = 0;     // in radians
     double velocity_ = 0;     // in radians per second

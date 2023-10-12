@@ -1,57 +1,57 @@
-#ifndef ROBOTCONTROLLER_H
-#define ROBOTCONTROLLER_H
+#ifndef JOINTSTATECONTROLLER_H
+#define JOINTSTATECONTROLLER_H
+
+#ifdef VELOCITYCONTROLLER_H
+#error                                                                         \
+    "joint_state_controller.hpp and velocity_controller.hpp cannot be used at the same time!"
+#endif
 
 #include <ArduinoEigen.h>
 
-#include "kinematics/kinematics.hpp"
 #include "motor-control/motor_control_manager.hpp"
+#include <sensor_msgs/msg/joint_state.h>
 
 /**
- * @brief The VelocityController class manages the control of a robot's motors and
- *        implements odometry calculations based on its kinematics model.
+ * @brief The JointStateController class manages the control of a robot's motors
+ * based on the joint state messages received from the ROS2 network.
  */
 class JointStateController
 {
 public:
     /**
-     * @brief Construct a new Robot Controller object.
+     * @brief Construct a new Joint State Controller object.
      *
      * @param motor_manager The motor control manager responsible for motor
      *                      control.
-     * @param joint_state The joint state vector to be updated.
      */
-    JointStateController(MotorControllerManager& motor_manager, Eigen::VectorXd& joint_state);
+    JointStateController(MotorControllerManager& motor_manager);
 
     /**
      * @brief Update the robot's control loop. This method should be called
-     *        periodically to control the robot's motors and update odometry.
+     *        periodically to update the robot's motor control.
      */
     void update();
 
     /**
-     * @brief Get the current odometry estimation of the robot's state.
-     *
-     * @return Eigen::Vector<double, 6> A vector representing the robot's
-     *         odometry, containing position (x, y, z) and orientation (roll,
-     *         pitch, yaw) information.
-     */
-    Eigen::Vector<double, 6> get_odometry();
-
-    /**
      * @brief Set the latest command for the robot's motion control.
      *
-     * @param latest_command A vector containing the latest command for the
-     * robot's motion control, currently only representing linear velocities
-     * (vx, vy, vz).
+     * @param latest_command A vector containing the latest command for each
+     *                      motor.
      */
-    void set_latest_command(const Eigen::Vector3d& latest_command);
+    void set_latest_command(const Eigen::VectorXd& latest_command);
+
+    /**
+     * @brief Get the latest joint state message.
+     *
+     * @return sensor_msgs__msg__JointState The latest joint state message.
+     */
+    sensor_msgs__msg__JointState get_joint_state_msg();
 
 private:
-    MotorControllerManager& motor_manager_; // Reference to the motor control manager.
-    Kinematics* kinematics_model_;          // Pointer to the kinematics model.
+    MotorControllerManager& motor_manager_;
 
-    Eigen::Vector3d latest_command_;    // Latest motion control command.
-    Eigen::Vector<double, 6> odometry_; // Current odometry estimation.
+    Eigen::VectorXd latest_command_;
+    sensor_msgs__msg__JointState joint_state_msg_;
 };
 
-#endif // ROBOTCONTROLLER_H
+#endif // JOINTSTATECONTROLLER_H

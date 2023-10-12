@@ -34,11 +34,16 @@ const uint8_t LED_BUILTIN = 2;
  * degree.
  *
  */
-const float WHEEL_RADIUS = 0.0625; // radius of wheels
+
+// Bei 10 umdreheungen einen fehler von realeposition = gemesseneposition +
+// PI/2i
+
+const float CORRECTION_FACTOR = 1.0;                   // ~0.7;
+const float WHEEL_RADIUS = 0.0625 * CORRECTION_FACTOR; // radius of wheels
 const float WHEEL_BASE =
-    0.3465; // distance between wheel contact point in x direction
+    0.315; // distance between wheel contact point in x direction
 const float TRACK_WIDTH =
-    0.2835; // distance between wheel contact point in y direction
+    0.39; // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
@@ -80,12 +85,12 @@ const uint8_t M_PWM_RES = 8;     // 2^n Bits
 // encoder front left
 const uint8_t M0_ENC_A = 17;
 const uint8_t M0_ENC_B = 16;
-const uint16_t M0_ENC_RESOLUTION = 600;
+const uint16_t M0_ENC_RESOLUTION = 360;
 
 // encoder front right
 const uint8_t M1_ENC_A = 5;
 const uint8_t M1_ENC_B = 15;
-const uint16_t M1_ENC_RESOLUTION = 360;
+const uint16_t M1_ENC_RESOLUTION = 600;
 
 // encoder back left
 const uint8_t M2_ENC_A = 39;

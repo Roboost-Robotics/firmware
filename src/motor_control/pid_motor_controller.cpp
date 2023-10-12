@@ -14,62 +14,34 @@
 #include <Arduino.h>
 
 PIDMotorController::PIDMotorController(MotorDriver& motor_driver,
-                                       Encoder& encoder, double kp, double ki,
-                                       double kd,
-                                       const double control_upper_limit,
-                                       const double control_lower_limit)
-    : kp_(kp), ki_(ki), kd_(kd), control_upper_limit_(control_upper_limit),
-      control_lower_limit_(control_lower_limit), MotorController(motor_driver),
-      encoder_(encoder),
-      pid_(&input_, &output_, &setpoint_, kp_, ki_, kd_, DIRECT)
+                                       Encoder& encoder, PIDController& pid,
+                                       Filter& input_filter,
+                                       Filter& output_filter, double min_output)
+    : MotorController(motor_driver), encoder_(encoder), pid_(pid),
+      input_filter_(input_filter), output_filter_(output_filter),
+      min_output_(min_output)
 {
-    pid_.SetMode(AUTOMATIC);
-    pid_.SetTunings(kp_, ki_, kd_);
-    pid_.SetOutputLimits(control_lower_limit_, control_upper_limit_);
-
-    // output_history_.assign(filter_window_size_, 0.0);
 }
 
 void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 {
     encoder_.update();
 
-    setpoint_ = desired_rotation_speed;
-    input_ = encoder_.get_velocity();
-    // input_ = filter_input(input_);
+    double input = encoder_.get_velocity();
 
-    // gain_scheduling();
+    input = input_filter_.update(input);
 
-    pid_.Compute();
+    double output = pid_.update(desired_rotation_speed, input);
 
-    double control = output_;
+    output = output_filter_.update(output);
 
-    // double control = filter_output(output_);
-    // apply_anti_windup(control);
-
-    if (control > control_upper_limit_)
-        control = control_upper_limit_;
-    else if (control < control_lower_limit_)
-        control = control_lower_limit_;
-
-    if (print_debug_)
+    if (std::abs(output) < min_output_ &&
+        std::abs(desired_rotation_speed) < 1e-3)
     {
-        Serial.print(">setpoint:");
-        Serial.println(setpoint_);
-        Serial.print(">input:");
-        Serial.println(input_);
-        Serial.print(">output:");
-        Serial.println(control);
-        Serial.print(">kp:");
-        Serial.println(pid_.GetKp());
-        Serial.print(">ki:");
-        Serial.println(pid_.GetKi());
-        Serial.print(">kd:");
-        Serial.println(pid_.GetKd());
+        output = 0.0;
     }
-    Serial.println(control);
 
-    motor_driver_.set_motor_control(control);
+    motor_driver_.set_motor_control(output);
 }
 
 float PIDMotorController::get_rotation_speed()
