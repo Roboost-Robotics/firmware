@@ -47,6 +47,7 @@ HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
 // TODO: Use parameter server to set controller and filter parameters
+// https://micro.ros.org/docs/tutorials/programming_rcl_rclc/parameters/
 PIDController controller_M0(0.3, 0.0, 0.0, 0.01);
 PIDController controller_M1(0.3, 0.0, 0.0, 0.01);
 PIDController controller_M2(0.3, 0.0, 0.0, 0.01);
