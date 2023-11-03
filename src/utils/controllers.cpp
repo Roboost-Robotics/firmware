@@ -38,3 +38,22 @@ double PIDController::update(double setpoint, double input)
 
     return output;
 }
+
+void PIDController::reset()
+{
+    integral_ = 0.0;
+    previous_error_ = 0.0;
+    derivative_filter_.reset();
+}
+
+double PIDController::get_kp() { return kp_; }
+
+double PIDController::get_ki() { return ki_; }
+
+double PIDController::get_kd() { return kd_; }
+
+void PIDController::set_kp(double kp) { kp_ = kp; }
+
+void PIDController::set_ki(double ki) { ki_ = ki; }
+
+void PIDController::set_kd(double kd) { kd_ = kd; }

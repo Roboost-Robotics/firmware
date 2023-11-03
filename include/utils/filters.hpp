@@ -32,6 +32,12 @@ public:
     virtual float update(float input) = 0;
 };
 
+class NoFilter : public Filter
+{
+public:
+    float update(float input) { return input; }
+};
+
 /**
  * @brief Implementation and definiton of low pass filter class.
  *
@@ -55,6 +61,40 @@ public:
      * @return float The filtered value.
      */
     float update(float input);
+
+    /**
+     * @brief Reset the filter.
+     *
+     */
+    void reset();
+
+    /**
+     * @brief Get the cutoff frequency.
+     *
+     * @return float The cutoff frequency.
+     */
+    float get_cutoff_frequency();
+
+    /**
+     * @brief Get the sampling time.
+     *
+     * @return float The sampling time.
+     */
+    float get_sampling_time();
+
+    /**
+     * @brief Set the cutoff frequency.
+     *
+     * @param cutoff_frequency The cutoff frequency.
+     */
+    void set_cutoff_frequency(float cutoff_frequency);
+
+    /**
+     * @brief Set the sampling time.
+     *
+     * @param sampling_time The sampling time.
+     */
+    void set_sampling_time(float sampling_time);
 
 private:
     float cutoff_frequency_;

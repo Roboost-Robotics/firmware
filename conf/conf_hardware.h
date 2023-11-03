@@ -35,15 +35,11 @@ const uint8_t LED_BUILTIN = 2;
  *
  */
 
-// Bei 10 umdreheungen einen fehler von realeposition = gemesseneposition +
-// PI/2i
-
-const float CORRECTION_FACTOR = 1.0;                   // ~0.7;
-const float WHEEL_RADIUS = 0.0625 * CORRECTION_FACTOR; // radius of wheels
+const float WHEEL_RADIUS = 0.06; // 0.0835; // radius of wheels
 const float WHEEL_BASE =
-    0.315; // distance between wheel contact point in x direction
+    0.3185; // distance between wheel contact point in x direction
 const float TRACK_WIDTH =
-    0.39; // distance between wheel contact point in y direction
+    0.38; // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------

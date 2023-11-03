@@ -44,6 +44,54 @@ public:
      */
     double update(double setpoint, double input);
 
+    /**
+     * @brief Reset the controller.
+     *
+     */
+    void reset();
+
+    /**
+     * @brief Get the proportional gain.
+     *
+     * @return double The proportional gain.
+     */
+    double get_kp();
+
+    /**
+     * @brief Get the integral gain.
+     *
+     * @return double The integral gain.
+     */
+    double get_ki();
+
+    /**
+     * @brief Get the derivative gain.
+     *
+     * @return double The derivative gain.
+     */
+    double get_kd();
+
+    /**
+     * @brief Set the proportional gain.
+     *
+     * @param kp The proportional gain.
+     */
+    void set_kp(double kp);
+
+    /**
+     * @brief Set the integral gain.
+     *
+     * @param ki The integral gain.
+     */
+    void set_ki(double ki);
+
+    /**
+     * @brief Set the derivative gain.
+     *
+     * @param kd The derivative gain.
+     */
+    void set_kd(double kd);
+
 private:
     double kp_;
     double ki_;

@@ -24,6 +24,26 @@ float LowPassFilter::update(float input)
     return output_;
 }
 
+void LowPassFilter::reset() { output_ = 0.0f; }
+
+float LowPassFilter::get_cutoff_frequency() { return cutoff_frequency_; }
+
+float LowPassFilter::get_sampling_time() { return sampling_time_; }
+
+void LowPassFilter::set_cutoff_frequency(float cutoff_frequency)
+{
+    cutoff_frequency_ = cutoff_frequency;
+    alpha_ = sampling_time_ /
+             (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
+}
+
+void LowPassFilter::set_sampling_time(float sampling_time)
+{
+    sampling_time_ = sampling_time;
+    alpha_ = sampling_time_ /
+             (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
+}
+
 MovingAverageFilter::MovingAverageFilter(int window_size)
     : window_size_(window_size)
 {

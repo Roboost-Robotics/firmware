@@ -48,20 +48,25 @@ HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
 // TODO: Use parameter server to set controller and filter parameters
 // https://micro.ros.org/docs/tutorials/programming_rcl_rclc/parameters/
-PIDController controller_M0(0.3, 0.0, 0.0, 0.01);
-PIDController controller_M1(0.3, 0.0, 0.0, 0.01);
-PIDController controller_M2(0.3, 0.0, 0.0, 0.01);
-PIDController controller_M3(0.3, 0.0, 0.0, 0.01);
+PIDController controller_M0(0.2, 0.1, 0.0, 0.01);
+PIDController controller_M1(0.2, 0.1, 0.0, 0.01);
+PIDController controller_M2(0.2, 0.1, 0.0, 0.01);
+PIDController controller_M3(0.2, 0.1, 0.0, 0.01);
 
-LowPassFilter encoder_input_filter_M0 = LowPassFilter(50.0, 0.01);
-LowPassFilter encoder_input_filter_M1 = LowPassFilter(50.0, 0.01);
-LowPassFilter encoder_input_filter_M2 = LowPassFilter(50.0, 0.01);
-LowPassFilter encoder_input_filter_M3 = LowPassFilter(50.0, 0.01);
+// LowPassFilter encoder_input_filter_M0 = LowPassFilter(100.0, 0.01);
+// LowPassFilter encoder_input_filter_M1 = LowPassFilter(100.0, 0.01);
+// LowPassFilter encoder_input_filter_M2 = LowPassFilter(100.0, 0.01);
+// LowPassFilter encoder_input_filter_M3 = LowPassFilter(100.0, 0.01);
 
-MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(4);
-MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(4);
-MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(4);
-MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(4);
+NoFilter encoder_input_filter_M0 = NoFilter();
+NoFilter encoder_input_filter_M1 = NoFilter();
+NoFilter encoder_input_filter_M2 = NoFilter();
+NoFilter encoder_input_filter_M3 = NoFilter();
+
+MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(2);
+MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(2);
+MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(2);
+MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(2);
 
 PIDMotorController motor_controller_M0(driver_M0, encoder_M0, controller_M0,
                                        encoder_input_filter_M0,
@@ -83,7 +88,9 @@ MotorControllerManager motor_control_manager{
 MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
 VelocityController robot_controller(motor_control_manager, &kinematics);
 
-rcl_subscription_t cmd_vel_subscriber;
+rcl_subscription_t cmd_vel_subscriber, control_param_kp_subscriber,
+    control_param_ki_subscriber, control_param_kd_subscriber,
+    control_param_cutoff_freq_subscriber;
 rcl_publisher_t odom_publisher;
 rcl_publisher_t joint_state_publisher;
 geometry_msgs__msg__Twist twist_msg;
@@ -173,7 +180,7 @@ void setup()
         delay(1000);
     }
 
-    while (rclc_node_init_default(&node, "roboost_core_node", "", &support) !=
+    while (rclc_node_init_default(&node, "roboost_pmc_node", "", &support) !=
            RCL_RET_OK)
     {
         Serial.println("Failed to create node, retrying...");
@@ -211,7 +218,6 @@ void setup()
         delay(1000);
     }
 
-    // 1 is the number of subscriptions that will be added to the executor.
     while (rclc_executor_init(&executor, &support.context, 1, &allocator) !=
            RCL_RET_OK)
     {
@@ -234,7 +240,7 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
-    odom_msg.header.frame_id.data = "odom/wheel_odom";
+    odom_msg.header.frame_id.data = "odom";
     odom_msg.header.frame_id.size = strlen(odom_msg.header.frame_id.data);
     odom_msg.header.frame_id.capacity = odom_msg.header.frame_id.size + 1;
     odom_msg.child_frame_id.data = "base_link";
@@ -345,15 +351,19 @@ void loop()
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
 
     // Update the joint state message
-    joint_state_msg.position.data[0] = encoder_M0.get_angle();
-    joint_state_msg.position.data[1] = encoder_M1.get_angle();
-    joint_state_msg.position.data[2] = encoder_M2.get_angle();
-    joint_state_msg.position.data[3] = encoder_M3.get_angle();
 
-    joint_state_msg.velocity.data[0] = encoder_M0.get_velocity();
-    joint_state_msg.velocity.data[1] = encoder_M1.get_velocity();
-    joint_state_msg.velocity.data[2] = encoder_M2.get_velocity();
-    joint_state_msg.velocity.data[3] = encoder_M3.get_velocity();
+    Eigen::Vector4d wheel_velocities =
+        kinematics.calculate_wheel_velocity(robot_velocity);
+
+    joint_state_msg.position.data[0] += wheel_velocities(0) * dt;
+    joint_state_msg.position.data[1] += wheel_velocities(1) * dt;
+    joint_state_msg.position.data[2] += wheel_velocities(2) * dt;
+    joint_state_msg.position.data[3] += wheel_velocities(3) * dt;
+
+    joint_state_msg.velocity.data[0] = wheel_velocities(0);
+    joint_state_msg.velocity.data[1] = wheel_velocities(1);
+    joint_state_msg.velocity.data[2] = wheel_velocities(2);
+    joint_state_msg.velocity.data[3] = wheel_velocities(3);
 
     joint_state_msg.header.stamp.sec = synced_time_ms / 1000;
     joint_state_msg.header.stamp.nanosec = synced_time_ns;

@@ -120,6 +120,12 @@ Start the micro-ROS agent:
 docker run -it --net=host microros/micro-ros-agent:humble udp4 -p 8888
 ```
 
+Or using a serial connection:
+
+```bash
+docker run -it --device=/dev/ttyUSB0 microros/micro-ros-agent:humble serial --dev /dev/ttyUSB0
+```
+
 Starting the TF broadcaster:
 
 ```bash
