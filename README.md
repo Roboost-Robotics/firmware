@@ -6,6 +6,10 @@ This repository is part of the Roboost project. For more information visit the [
 
 This repository contains the code for the primary motor cortex of the robot. It is a PlatformIO project responsible for the control of a robot's motors. The [micro-ROS](https://micro.ros.org/) framework is used to connect the robot to a [ROS2](https://docs.ros.org/en/foxy/Installation.html) network. The robot can then be controlled using any ROS2 node publishing to /cmd_vel, such as the teleop_twist_keyboard.
 
+As example application, here is a video of the Roboost robot being controlled using the teleop_twist_keyboard:
+
+![Roboost Demo](https://github.com/Roboost-Robotics/.github/blob/main/res/Roboost-Demo.gif "Roboost Demo")
+
 ## Configuration
 
 For pin and hardware configuration (things like wheel dimensions, track width, etc.), changes can be made in the [conf_hardware.h](conf/conf_hardware.h) file. To change the hardware drivers, the [core.cpp](src/core.cpp) file needs to be modified. The [conf_network_example.h](conf/conf_network_example.h) file can be used to configure the network settings. Rename the file to `conf_network.h` and fill in the apropriate values to use it.
