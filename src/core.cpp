@@ -48,10 +48,11 @@ HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
 // TODO: Use parameter server to set controller and filter parameters
 // https://micro.ros.org/docs/tutorials/programming_rcl_rclc/parameters/
-PIDController controller_M0(0.2, 0.1, 0.0, 0.01);
-PIDController controller_M1(0.2, 0.1, 0.0, 0.01);
-PIDController controller_M2(0.2, 0.1, 0.0, 0.01);
-PIDController controller_M3(0.2, 0.1, 0.0, 0.01);
+
+PIDController controller_M0(0.18, 0.015, 0.0, 0.01);
+PIDController controller_M1(0.18, 0.015, 0.0, 0.01);
+PIDController controller_M2(0.18, 0.015, 0.0, 0.01);
+PIDController controller_M3(0.18, 0.015, 0.0, 0.01);
 
 // LowPassFilter encoder_input_filter_M0 = LowPassFilter(100.0, 0.01);
 // LowPassFilter encoder_input_filter_M1 = LowPassFilter(100.0, 0.01);
@@ -93,6 +94,7 @@ rcl_subscription_t cmd_vel_subscriber, control_param_kp_subscriber,
     control_param_cutoff_freq_subscriber;
 rcl_publisher_t odom_publisher;
 rcl_publisher_t joint_state_publisher;
+
 geometry_msgs__msg__Twist twist_msg;
 nav_msgs__msg__Odometry odom_msg;
 sensor_msgs__msg__JointState joint_state_msg;
@@ -164,10 +166,10 @@ void setup()
 
     // ! uncomment this for serial and remove the wifi transport below and in
     // ! the platformio.ini
-    // set_microros_serial_transports(Serial);
+    set_microros_serial_transports(Serial);
 
-    set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip,
-                                 agent_port);
+    // set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip,
+    //                              agent_port);
     delay(2000);
 
     allocator = rcl_get_default_allocator();
