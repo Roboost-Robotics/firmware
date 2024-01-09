@@ -36,7 +36,7 @@ public:
      */
     PIDMotorController(MotorDriver& motor_driver, Encoder& encoder,
                        PIDController& pid_controller, Filter& input_filter,
-                       Filter& output_filter, double min_output = 0.2);
+                       Filter& output_filter, double min_output);
 
     /**
      * @brief Set the rotation speed of the motor.

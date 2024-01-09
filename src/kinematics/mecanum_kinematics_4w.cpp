@@ -25,7 +25,7 @@ MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
                            1, 1, -l,
                            -1, 1, -l;
 
-    inverse_kinematics_ << 1, -1, -1, -1, 
+    inverse_kinematics_ << 1, -1, 1, -1, 
                            -1, -1, 1, 1, 
                            -1/l, -1/l, -1/l, -1/l;
     // clang-format on

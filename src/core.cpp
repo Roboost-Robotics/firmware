@@ -2,7 +2,7 @@
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
  * @brief This file contains the main functionality for controlling a mecanum
- * robot using micro-ROS via UDP.
+ * robot using micro-ROS via Serial.
  * @version 1.1
  * @date 2023-08-21
  *
@@ -12,6 +12,9 @@
  * @todo Add joint state controller (similar to velocity controller).
  *
  */
+
+#define DEBUG
+#define DEBUG_TIME
 
 #include <Arduino.h>
 #include <ArduinoEigen.h>
@@ -28,8 +31,12 @@
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/joint_state.h>
 
+# ifdef DEBUG
+    #include <diagnostic_msgs/msg/diagnostic_status.h>
+# endif
+
 #include "conf_hardware.h"
-#include "conf_network.h"
+// #include "conf_network.h"
 #include "motor-control/encoder.hpp"
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include "motor-control/pid_motor_controller.hpp"
@@ -46,13 +53,10 @@ HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
-// TODO: Use parameter server to set controller and filter parameters
-// https://micro.ros.org/docs/tutorials/programming_rcl_rclc/parameters/
-
-PIDController controller_M0(0.18, 0.015, 0.0, 0.01);
-PIDController controller_M1(0.18, 0.015, 0.0, 0.01);
-PIDController controller_M2(0.18, 0.015, 0.0, 0.01);
-PIDController controller_M3(0.18, 0.015, 0.0, 0.01);
+PIDController controller_M0(0.0955, 0.0, 0.0, 0.2);
+PIDController controller_M1(0.095, 0.0, 0.0, 0.2);
+PIDController controller_M2(0.10, 0.0, 0.0, 0.2);
+PIDController controller_M3(0.10, 0.0, 0.0, 0.2);
 
 // LowPassFilter encoder_input_filter_M0 = LowPassFilter(100.0, 0.01);
 // LowPassFilter encoder_input_filter_M1 = LowPassFilter(100.0, 0.01);
@@ -64,23 +68,32 @@ NoFilter encoder_input_filter_M1 = NoFilter();
 NoFilter encoder_input_filter_M2 = NoFilter();
 NoFilter encoder_input_filter_M3 = NoFilter();
 
-MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(2);
-MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(2);
+// MovingAverageFilter motor_output_filter_M0 = MovingAverageFilter(2);
+// MovingAverageFilter motor_output_filter_M1 = MovingAverageFilter(2);
+// MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(2);
+// MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(2);
+
+LowPassFilter motor_output_filter_M0 = LowPassFilter(1.0, 0.2); // TODO: Why does 1.0 work?
+LowPassFilter motor_output_filter_M1 = LowPassFilter(1.0, 0.2);
+LowPassFilter motor_output_filter_M2 = LowPassFilter(1.0, 0.2);
+LowPassFilter motor_output_filter_M3 = LowPassFilter(1.0, 0.2);
+
+static double MIN_OUTPUT = 0.35;
+
+// TODO: Add damping to the motors
 
 PIDMotorController motor_controller_M0(driver_M0, encoder_M0, controller_M0,
                                        encoder_input_filter_M0,
-                                       motor_output_filter_M0);
+                                       motor_output_filter_M0, MIN_OUTPUT);
 PIDMotorController motor_controller_M1(driver_M1, encoder_M1, controller_M1,
                                        encoder_input_filter_M1,
-                                       motor_output_filter_M1);
+                                       motor_output_filter_M1, MIN_OUTPUT);
 PIDMotorController motor_controller_M2(driver_M2, encoder_M2, controller_M2,
                                        encoder_input_filter_M2,
-                                       motor_output_filter_M2);
+                                       motor_output_filter_M2, MIN_OUTPUT);
 PIDMotorController motor_controller_M3(driver_M3, encoder_M3, controller_M3,
                                        encoder_input_filter_M3,
-                                       motor_output_filter_M3);
+                                       motor_output_filter_M3, MIN_OUTPUT);
 
 MotorControllerManager motor_control_manager{
     {&motor_controller_M0, &motor_controller_M1, &motor_controller_M2,
@@ -89,15 +102,20 @@ MotorControllerManager motor_control_manager{
 MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
 VelocityController robot_controller(motor_control_manager, &kinematics);
 
-rcl_subscription_t cmd_vel_subscriber, control_param_kp_subscriber,
-    control_param_ki_subscriber, control_param_kd_subscriber,
-    control_param_cutoff_freq_subscriber;
+rcl_subscription_t cmd_vel_subscriber;
 rcl_publisher_t odom_publisher;
 rcl_publisher_t joint_state_publisher;
+# ifdef DEBUG
+    rcl_publisher_t diagnostic_publisher;
+# endif
 
 geometry_msgs__msg__Twist twist_msg;
 nav_msgs__msg__Odometry odom_msg;
 sensor_msgs__msg__JointState joint_state_msg;
+
+# ifdef DEBUG
+    diagnostic_msgs__msg__DiagnosticStatus diagnostic_msg;
+# endif
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -113,6 +131,13 @@ const unsigned long time_sync_interval = 1000;
 const int timeout_ms = 500;
 int64_t synced_time_ms = 0;
 int64_t synced_time_ns = 0;
+
+
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    unsigned long last_time_debug = 0;
+    # endif
+# endif
 
 /**
  * @brief Callback function for handling incoming cmd_vel (velocity command)
@@ -152,6 +177,23 @@ void inline print_debug_info()
     Serial.println(uxTaskGetStackHighWaterMark(NULL));
 }
 
+# ifdef DEBUG
+    /**
+     * @brief Publishes a diagnostic message with the given message.
+     *
+     * @param message The message to publish.
+     */
+    void publishDiagnosticMessage(const char* message)
+    {
+        diagnostic_msg.level = diagnostic_msgs__msg__DiagnosticStatus__STALE;
+        diagnostic_msg.message.data = (char*)message;
+        diagnostic_msg.message.size = strlen(diagnostic_msg.message.data);
+        diagnostic_msg.message.capacity = diagnostic_msg.message.size + 1;
+
+        RCSOFTCHECK(rcl_publish(&diagnostic_publisher, &diagnostic_msg, NULL));
+    }
+# endif
+
 /**
  * @brief Setup function for initializing micro-ROS, pin modes, etc.
  *
@@ -161,8 +203,8 @@ void setup()
     // Configure serial transport
     Serial.begin(115200); // disable in production
 
-    IPAddress agent_ip(AGENT_IP);
-    uint16_t agent_port = AGENT_PORT;
+    // IPAddress agent_ip(AGENT_IP);
+    // uint16_t agent_port = AGENT_PORT;
 
     // ! uncomment this for serial and remove the wifi transport below and in
     // ! the platformio.ini
@@ -210,6 +252,20 @@ void setup()
         delay(1000);
     }
 
+# ifdef DEBUG
+    while (
+        rclc_publisher_init_default(
+            &diagnostic_publisher, &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(diagnostic_msgs, msg, DiagnosticStatus),
+            "diagnostics") != RCL_RET_OK)
+    {
+        Serial.println(
+            "Failed to create diagnostic publisher, retrying...");
+        delay(100);
+    }
+# endif
+
+
     while (rclc_subscription_init_default(
                &cmd_vel_subscriber, &node,
                ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
@@ -249,26 +305,26 @@ void setup()
     odom_msg.child_frame_id.size = strlen(odom_msg.child_frame_id.data);
     odom_msg.child_frame_id.capacity = odom_msg.child_frame_id.size + 1;
 
-    double* temp_covariance = (double*)malloc(36 * sizeof(double));
+    // double* temp_covariance = (double*)malloc(36 * sizeof(double));
 
-    // TODO: determine correct covariance values
-    for (int i = 0; i < 36; i++)
-    {
-        if (i % 7 != 0)
-        {
-            temp_covariance[i] = 0.0;
-        }
-    }
-    temp_covariance[0 + 0] = 0.1;  // x
-    temp_covariance[6 + 1] = 0.1;  // y
-    temp_covariance[12 + 2] = 0.1; // z
-    temp_covariance[18 + 3] = 0.1; // rotation about X axis
-    temp_covariance[24 + 4] = 0.1; // rotation about Y axis
-    temp_covariance[30 + 5] = 0.1; // rotation about Z axis
+    // // TODO: determine correct covariance values
+    // for (int i = 0; i < 36; i++)
+    // {
+    //     if (i % 7 != 0)
+    //     {
+    //         temp_covariance[i] = 0.0;
+    //     }
+    // }
+    // temp_covariance[0 + 0] = 0.8;  // x
+    // temp_covariance[6 + 1] = 0.8;  // y
+    // temp_covariance[12 + 2] = 0.8; // z
+    // temp_covariance[18 + 3] = 0; // rotation about X axis
+    // temp_covariance[24 + 4] = 0; // rotation about Y axis
+    // temp_covariance[30 + 5] = 0.8; // rotation about Z axis
 
-    memcpy(odom_msg.pose.covariance, temp_covariance, 36 * sizeof(double));
-    memcpy(odom_msg.twist.covariance, temp_covariance, 36 * sizeof(double));
-    free(temp_covariance);
+    // memcpy(odom_msg.pose.covariance, temp_covariance, 36 * sizeof(double));
+    // memcpy(odom_msg.twist.covariance, temp_covariance, 36 * sizeof(double));
+    // free(temp_covariance);
 
     // Initialize the joint state message
     joint_state_msg.header.frame_id.data = "base_link";
@@ -300,6 +356,21 @@ void setup()
  */
 void loop()
 {
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    char debug_str[200];
+    strcpy(debug_str, "");
+
+    // Publish debug time information for diagnostics 0
+    unsigned long now_debug = millis();
+    double dt_debug = (now_debug - last_time_debug) / 1000.0;
+    char dt_part[50];
+    sprintf(dt_part, "[0]: %f; ", dt_debug);
+    strcat(debug_str, dt_part);
+    last_time_debug = now_debug;
+    # endif
+# endif
+
     // Time synchronization
     if (millis() - last_time_sync_ms > time_sync_interval)
     {
@@ -316,9 +387,42 @@ void loop()
         }
     }
 
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    // Publish debug time information to diagnostics 1
+    now_debug = millis();
+    dt_debug = (now_debug - last_time_debug) / 1000.0;
+    sprintf(dt_part, "[1]: %f; ", dt_debug);
+    strcat(debug_str, dt_part);
+    last_time_debug = now_debug;
+    # endif
+# endif
+
     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
 
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    // Publish debug time information to diagnostics 2
+    now_debug = millis();
+    dt_debug = (now_debug - last_time_debug) / 1000.0;
+    sprintf(dt_part, "[2]: %f; ", dt_debug);
+    strcat(debug_str, dt_part);
+    last_time_debug = now_debug;
+    # endif
+# endif
+
     robot_controller.update();
+
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    // Publish debug time information to diagnostics 3
+    now_debug = millis();
+    dt_debug = (now_debug - last_time_debug) / 1000.0;
+    sprintf(dt_part, "[3]: %f; ", dt_debug);
+    strcat(debug_str, dt_part);
+    last_time_debug = now_debug;
+    # endif
+# endif
 
     Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
 
@@ -351,6 +455,19 @@ void loop()
     odom_msg.header.stamp.nanosec %= 1000000000; // nanoseconds are in [0, 1e9)
 
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL));
+
+# ifdef DEBUG
+    # ifdef DEBUG_TIME
+    // Publish debug time information to diagnostics 4
+    now_debug = millis();
+    dt_debug = (now_debug - last_time_debug) / 1000.0;
+    sprintf(dt_part, "[4]: %f; [dt]: %f s", dt_debug, dt);
+    strcat(debug_str, dt_part);
+    last_time_debug = now_debug;
+
+    publishDiagnosticMessage(debug_str);
+    # endif
+# endif
 
     // Update the joint state message
 
