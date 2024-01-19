@@ -57,11 +57,11 @@ double base_kp = 0.105;
 // double modifier_kp = 1.0;
 double base_ki = 0.125;
 double modifier_ki_linear = 2.0;
-double modifier_ki_rotational = 1.4;
+double modifier_ki_rotational = 1.1;
 double base_kd = 0.005;
 // double modifier_kd = 1.0;
 double max_expected_sampling_time = 0.2;
-double max_integral = 4.5;
+double max_integral = 5.2;
 
 PIDController controller_M0(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
 PIDController controller_M1(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
@@ -180,11 +180,16 @@ void cmd_vel_subscription_callback(const void* msgin)
     smoothed_cmd_vel(2) = cmd_vel_filter_rot.update(msg->angular.z);
 
     // Based on max velocity multiply the ki value by a factor
-    if(abs(smoothed_cmd_vel(0)) > 0.5 || abs(smoothed_cmd_vel(1)) > 0.5 || abs(smoothed_cmd_vel(2)) > 1.0) {
+    if(abs(smoothed_cmd_vel(0)) > 0.5 || abs(smoothed_cmd_vel(1)) > 0.5) {
         controller_M0.set_ki(base_ki * modifier_ki_linear);
         controller_M1.set_ki(base_ki * modifier_ki_linear);
         controller_M2.set_ki(base_ki * modifier_ki_linear);
         controller_M3.set_ki(base_ki * modifier_ki_linear);
+    } else if(abs(smoothed_cmd_vel(2)) > 1.0) {
+        controller_M0.set_ki(base_ki * modifier_ki_rotational);
+        controller_M1.set_ki(base_ki * modifier_ki_rotational);
+        controller_M2.set_ki(base_ki * modifier_ki_rotational);
+        controller_M3.set_ki(base_ki * modifier_ki_rotational);
     } else {
         controller_M0.set_ki(base_ki);
         controller_M1.set_ki(base_ki);
@@ -193,18 +198,6 @@ void cmd_vel_subscription_callback(const void* msgin)
     }
 
     robot_controller.set_latest_command(smoothed_cmd_vel);
-}
-
-/**
- * @brief Prints the current free heap and stack size to the serial monitor.
- *
- */
-void inline print_debug_info()
-{
-    Serial.print(">Free heap:");
-    Serial.println(xPortGetFreeHeapSize());
-    Serial.print(">Free stack:");
-    Serial.println(uxTaskGetStackHighWaterMark(NULL));
 }
 
 # ifdef DEBUG
@@ -250,7 +243,6 @@ void setup()
     while (rclc_support_init(&support, 0, NULL, &allocator) != RCL_RET_OK)
     {
         Serial.println("Failed to create init options, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -258,7 +250,6 @@ void setup()
            RCL_RET_OK)
     {
         Serial.println("Failed to create node, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -268,7 +259,6 @@ void setup()
                "odom") != RCL_RET_OK)
     {
         Serial.println("Failed to create odom publisher, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -278,7 +268,6 @@ void setup()
                "joint_states") != RCL_RET_OK)
     {
         Serial.println("Failed to create joint_state publisher, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -302,7 +291,6 @@ void setup()
                "cmd_vel") != RCL_RET_OK)
     {
         Serial.println("Failed to create cmd_vel subscriber, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -310,7 +298,6 @@ void setup()
            RCL_RET_OK)
     {
         Serial.println("Failed to create executor, retrying...");
-        print_debug_info();
         delay(1000);
     }
 
@@ -320,7 +307,6 @@ void setup()
     {
         Serial.println(
             "Failed to add cmd_vel subscriber to executor,retrying...");
-        print_debug_info();
         delay(1000);
     }
 
