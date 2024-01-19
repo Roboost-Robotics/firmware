@@ -53,10 +53,20 @@ HalfQuadEncoder encoder_M1(M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M2(M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION);
 HalfQuadEncoder encoder_M3(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION);
 
-PIDController controller_M0(0.0955, 0.0, 0.0, 0.2);
-PIDController controller_M1(0.095, 0.0, 0.0, 0.2);
-PIDController controller_M2(0.10, 0.0, 0.0, 0.2);
-PIDController controller_M3(0.10, 0.0, 0.0, 0.2);
+double base_kp = 0.105;
+// double modifier_kp = 1.0;
+double base_ki = 0.125;
+double modifier_ki_linear = 2.0;
+double modifier_ki_rotational = 1.4;
+double base_kd = 0.005;
+// double modifier_kd = 1.0;
+double max_expected_sampling_time = 0.2;
+double max_integral = 4.5;
+
+PIDController controller_M0(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
+PIDController controller_M1(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
+PIDController controller_M2(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
+PIDController controller_M3(base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral);
 
 // LowPassFilter encoder_input_filter_M0 = LowPassFilter(100.0, 0.01);
 // LowPassFilter encoder_input_filter_M1 = LowPassFilter(100.0, 0.01);
@@ -73,14 +83,17 @@ NoFilter encoder_input_filter_M3 = NoFilter();
 // MovingAverageFilter motor_output_filter_M2 = MovingAverageFilter(2);
 // MovingAverageFilter motor_output_filter_M3 = MovingAverageFilter(2);
 
-LowPassFilter motor_output_filter_M0 = LowPassFilter(1.0, 0.2); // TODO: Why does 1.0 work?
-LowPassFilter motor_output_filter_M1 = LowPassFilter(1.0, 0.2);
-LowPassFilter motor_output_filter_M2 = LowPassFilter(1.0, 0.2);
-LowPassFilter motor_output_filter_M3 = LowPassFilter(1.0, 0.2);
+// LowPassFilter motor_output_filter_M0 = LowPassFilter(1.0, 0.2);
+// LowPassFilter motor_output_filter_M1 = LowPassFilter(1.0, 0.2);
+// LowPassFilter motor_output_filter_M2 = LowPassFilter(1.0, 0.2);
+// LowPassFilter motor_output_filter_M3 = LowPassFilter(1.0, 0.2);
+
+NoFilter motor_output_filter_M0 = NoFilter();
+NoFilter motor_output_filter_M1 = NoFilter();
+NoFilter motor_output_filter_M2 = NoFilter();
+NoFilter motor_output_filter_M3 = NoFilter();
 
 static double MIN_OUTPUT = 0.35;
-
-// TODO: Add damping to the motors
 
 PIDMotorController motor_controller_M0(driver_M0, encoder_M0, controller_M0,
                                        encoder_input_filter_M0,
@@ -101,6 +114,12 @@ MotorControllerManager motor_control_manager{
 
 MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
 VelocityController robot_controller(motor_control_manager, &kinematics);
+
+MovingAverageFilter cmd_vel_filter_x = MovingAverageFilter(2);
+MovingAverageFilter cmd_vel_filter_y = MovingAverageFilter(2);
+MovingAverageFilter cmd_vel_filter_rot = MovingAverageFilter(4);
+
+Eigen::Matrix<double, 3, 1> smoothed_cmd_vel;
 
 rcl_subscription_t cmd_vel_subscriber;
 rcl_publisher_t odom_publisher;
@@ -156,13 +175,24 @@ void cmd_vel_subscription_callback(const void* msgin)
 {
     const auto* msg = reinterpret_cast<const geometry_msgs__msg__Twist*>(msgin);
 
-    // Convert the ROS Twist message to an Eigen::Matrix<double, 3, 1>
-    Eigen::Matrix<double, 3, 1> cmd;
-    cmd(0) = msg->linear.x;
-    cmd(1) = msg->linear.y;
-    cmd(2) = msg->angular.z;
+    smoothed_cmd_vel(0) = cmd_vel_filter_x.update(msg->linear.x);
+    smoothed_cmd_vel(1) = cmd_vel_filter_y.update(msg->linear.y);
+    smoothed_cmd_vel(2) = cmd_vel_filter_rot.update(msg->angular.z);
 
-    robot_controller.set_latest_command(cmd);
+    // Based on max velocity multiply the ki value by a factor
+    if(abs(smoothed_cmd_vel(0)) > 0.5 || abs(smoothed_cmd_vel(1)) > 0.5 || abs(smoothed_cmd_vel(2)) > 1.0) {
+        controller_M0.set_ki(base_ki * modifier_ki_linear);
+        controller_M1.set_ki(base_ki * modifier_ki_linear);
+        controller_M2.set_ki(base_ki * modifier_ki_linear);
+        controller_M3.set_ki(base_ki * modifier_ki_linear);
+    } else {
+        controller_M0.set_ki(base_ki);
+        controller_M1.set_ki(base_ki);
+        controller_M2.set_ki(base_ki);
+        controller_M3.set_ki(base_ki);
+    }
+
+    robot_controller.set_latest_command(smoothed_cmd_vel);
 }
 
 /**
@@ -305,26 +335,26 @@ void setup()
     odom_msg.child_frame_id.size = strlen(odom_msg.child_frame_id.data);
     odom_msg.child_frame_id.capacity = odom_msg.child_frame_id.size + 1;
 
-    // double* temp_covariance = (double*)malloc(36 * sizeof(double));
+    double* temp_covariance = (double*)malloc(36 * sizeof(double));
 
-    // // TODO: determine correct covariance values
-    // for (int i = 0; i < 36; i++)
-    // {
-    //     if (i % 7 != 0)
-    //     {
-    //         temp_covariance[i] = 0.0;
-    //     }
-    // }
-    // temp_covariance[0 + 0] = 0.8;  // x
-    // temp_covariance[6 + 1] = 0.8;  // y
-    // temp_covariance[12 + 2] = 0.8; // z
-    // temp_covariance[18 + 3] = 0; // rotation about X axis
-    // temp_covariance[24 + 4] = 0; // rotation about Y axis
-    // temp_covariance[30 + 5] = 0.8; // rotation about Z axis
+    // TODO: determine correct covariance values
+    for (int i = 0; i < 36; i++)
+    {
+        if (i % 7 != 0)
+        {
+            temp_covariance[i] = 0.0;
+        }
+    }
+    temp_covariance[0 + 0] = 0.8;  // x
+    temp_covariance[6 + 1] = 0.8;  // y
+    temp_covariance[12 + 2] = 0.8; // z
+    temp_covariance[18 + 3] = 0; // rotation about X axis
+    temp_covariance[24 + 4] = 0; // rotation about Y axis
+    temp_covariance[30 + 5] = 0.8; // rotation about Z axis
 
-    // memcpy(odom_msg.pose.covariance, temp_covariance, 36 * sizeof(double));
-    // memcpy(odom_msg.twist.covariance, temp_covariance, 36 * sizeof(double));
-    // free(temp_covariance);
+    memcpy(odom_msg.pose.covariance, temp_covariance, 36 * sizeof(double));
+    memcpy(odom_msg.twist.covariance, temp_covariance, 36 * sizeof(double));
+    free(temp_covariance);
 
     // Initialize the joint state message
     joint_state_msg.header.frame_id.data = "base_link";

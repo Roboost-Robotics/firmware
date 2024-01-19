@@ -33,7 +33,7 @@ public:
      * @param max_expected_sampling_time The maximum expected sampling time.
      */
     PIDController(double kp, double ki, double kd,
-                  double max_expected_sampling_time);
+                  double max_expected_sampling_time, double max_integral);
 
     /**
      * @brief Update the controller.
@@ -72,6 +72,20 @@ public:
     double get_kd();
 
     /**
+     * @brief Get the maximum expected sampling time.
+     *
+     * @return double The maximum expected sampling time.
+     */
+    double get_max_expected_sampling_time();
+
+    /**
+     * @brief Get the maximum integral.
+     * 
+     * @return double The maximum integral.
+     */
+    double get_max_integral();
+
+    /**
      * @brief Set the proportional gain.
      *
      * @param kp The proportional gain.
@@ -92,11 +106,26 @@ public:
      */
     void set_kd(double kd);
 
+    /**
+     * @brief Set the maximum expected sampling time.
+     *
+     * @param max_expected_sampling_time The maximum expected sampling time.
+     */
+    void set_max_expected_sampling_time(double max_expected_sampling_time);
+
+    /**
+     * @brief Set the maximum integral.
+     * 
+     * @param max_integral The maximum integral.
+     */
+    void set_max_integral(double max_integral);
+
 private:
     double kp_;
     double ki_;
     double kd_;
     double max_expected_sampling_time_;
+    double max_integral_;
     double integral_;
     double previous_error_;
     LowPassFilter derivative_filter_;
