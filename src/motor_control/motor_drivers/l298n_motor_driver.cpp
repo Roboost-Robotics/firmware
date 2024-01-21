@@ -9,6 +9,7 @@
  *
  */
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
+#include "conf_hardware.h"
 #include <Arduino.h>
 
 L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1,
@@ -24,12 +25,8 @@ L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1,
     pinMode(pin_in2_, OUTPUT);
     pinMode(pin_ena_, OUTPUT);
 
-    // setting PWM properties
-    const uint16_t freq = 5000;
-    const uint8_t resolution = 8;
-
     // configure PWM functionalities
-    ledcSetup(pwm_channel_, freq, resolution);
+    ledcSetup(pwm_channel_, M_PWM_FRQ, M_PWM_RES);
 
     // attach the channel to the GPIO to be controlled
     ledcAttachPin(pin_ena_, pwm_channel_);

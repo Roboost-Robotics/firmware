@@ -6,8 +6,6 @@
 #include <nav_msgs/msg/odometry.h>
 #include <rcl/rcl.h>
 
-#include "utils/conversions.hpp"
-
 extern rcl_time_point_value_t global_current_time;
 
 class OdometryPublisher
@@ -22,6 +20,7 @@ public:
 private:
     rcl_publisher_t odom_publisher_;
     nav_msgs__msg__Odometry odom_msg_;
+    Eigen::Vector3d pose_;
     double covariance_[36];
     char frame_id_[20];
     char child_frame_id_[20];
