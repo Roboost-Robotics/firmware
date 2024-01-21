@@ -18,7 +18,7 @@
  * @brief ESP32 specific configs
  *
  */
-const uint8_t LED_BUILTIN = 2;
+#define LED_BUILTIN 2
 
 /**
  * @brief Selection of robot kinematics.
@@ -35,43 +35,41 @@ const uint8_t LED_BUILTIN = 2;
  *
  */
 
-const float WHEEL_RADIUS = 0.06; // 0.0835; // radius of wheels
-const float WHEEL_BASE =
-    0.3185; // distance between wheel contact point in x direction
-const float TRACK_WIDTH =
-    0.38; // distance between wheel contact point in y direction
+#define WHEEL_RADIUS 0.06 // 0.0835; // radius of wheels
+#define WHEEL_BASE 0.3185 // distance between wheel contact point in x direction
+#define TRACK_WIDTH 0.38  // distance between wheel contact point in y direction
 
 //--------------------------pinout
 // definitions------------------------------------
 
 // motor front left
-const uint8_t M0_IN1 = 23;
-const uint8_t M0_IN2 = 22;
-const uint8_t M0_ENA = 21;
+#define M0_IN1 23
+#define M0_IN2 22
+#define M0_ENA 21
 
 // motor front right
-const uint8_t M1_IN1 = 14;
-const uint8_t M1_IN2 = 18;
-const uint8_t M1_ENA = 19;
+#define M1_IN1 14
+#define M1_IN2 18
+#define M1_ENA 19
 
 // motor back left
-const uint8_t M2_IN1 = 26;
-const uint8_t M2_IN2 = 27;
-const uint8_t M2_ENA = 13;
+#define M2_IN1 26
+#define M2_IN2 27
+#define M2_ENA 13
 
 // motor back right
-const uint8_t M3_IN1 = 32;
-const uint8_t M3_IN2 = 33;
-const uint8_t M3_ENA = 25;
+#define M3_IN1 32
+#define M3_IN2 33
+#define M3_ENA 25
 
 // PWM config
-const uint8_t M0_PWM_CNL = 0;
-const uint8_t M1_PWM_CNL = 1;
-const uint8_t M2_PWM_CNL = 2;
-const uint8_t M3_PWM_CNL = 3;
+#define M0_PWM_CNL 0
+#define M1_PWM_CNL 1
+#define M2_PWM_CNL 2
+#define M3_PWM_CNL 3
 
-const uint16_t M_PWM_FRQ = 1000; // Hz
-const uint8_t M_PWM_RES = 8;     // 2^n Bits
+#define M_PWM_FRQ 1000 // Hz
+#define M_PWM_RES 8    // 2^n Bits
 #endif
 
 // Uncomment if encoders should be used in the system
@@ -79,24 +77,24 @@ const uint8_t M_PWM_RES = 8;     // 2^n Bits
 #ifdef ENCODERS
 
 // encoder front left
-const uint8_t M0_ENC_A = 17;
-const uint8_t M0_ENC_B = 16;
-const uint16_t M0_ENC_RESOLUTION = 360;
+#define M0_ENC_A 17
+#define M0_ENC_B 16
+#define M0_ENC_RESOLUTION 360
 
 // encoder front right
-const uint8_t M1_ENC_A = 5;
-const uint8_t M1_ENC_B = 15;
-const uint16_t M1_ENC_RESOLUTION = 600;
+#define M1_ENC_A 5
+#define M1_ENC_B 15
+#define M1_ENC_RESOLUTION 600
 
 // encoder back left
-const uint8_t M2_ENC_A = 39;
-const uint8_t M2_ENC_B = 36;
-const uint16_t M2_ENC_RESOLUTION = 360;
+#define M2_ENC_A 39
+#define M2_ENC_B 36
+#define M2_ENC_RESOLUTION 360
 
 // encoder back right
-const uint8_t M3_ENC_A = 35;
-const uint8_t M3_ENC_B = 34;
-const uint16_t M3_ENC_RESOLUTION = 360;
+#define M3_ENC_A 35
+#define M3_ENC_B 34
+#define M3_ENC_RESOLUTION 360
 
 #endif
 
