@@ -54,6 +54,12 @@ Eigen::Vector3d VelocityController::get_robot_velocity()
     return robot_velocity_;
 }
 
+Eigen::VectorXd VelocityController::get_set_wheel_velocities()
+{
+    // Return the latest set wheel velocities
+    return kinematics_model_->calculate_wheel_velocity(latest_command_);
+}
+
 void VelocityController::set_latest_command(
     const Eigen::Vector3d& latest_command)
 {

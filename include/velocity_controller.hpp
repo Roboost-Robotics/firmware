@@ -44,6 +44,14 @@ public:
     Eigen::Vector3d get_robot_velocity();
 
     /**
+     * @brief Get the current set wheel velocities.
+     *
+     * @return Eigen::VectorXd The current set wheel velocities based on latest
+     * command.
+     */
+    Eigen::VectorXd get_set_wheel_velocities();
+
+    /**
      * @brief Set the latest command for the robot's motion control.
      *
      * @param latest_command A vector containing the latest command for the
