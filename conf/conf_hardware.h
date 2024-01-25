@@ -70,8 +70,8 @@ const uint8_t M1_PWM_CNL = 1;
 const uint8_t M2_PWM_CNL = 2;
 const uint8_t M3_PWM_CNL = 3;
 
-const uint16_t M_PWM_FRQ = 1000; // Hz
-const uint8_t M_PWM_RES = 8;     // 2^n Bits
+const uint16_t M_PWM_FRQ = 15000; // Hz
+const uint8_t M_PWM_RES = 8;      // 2^n Bits
 #endif
 
 // Uncomment if encoders should be used in the system
