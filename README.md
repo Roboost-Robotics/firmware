@@ -53,7 +53,27 @@ The project can be installed as a standalone project or as part of the [Roboost-
 
 #### Building
 
-To install the project, clone the repository and open it in VSCode. The project is written for the [ESP32](https://www.espressif.com/en/products/socs/esp32) microcontroller, so you will need to install the [PlatformIO](https://platformio.org/) extension for VSCode. Once installed, you can build and upload the code to the microcontroller using the PlatformIO extension. All dependencies will be installed automatically.
+To install the project, clone the repository and open it in VSCode. The project is written for the [ESP32](https://www.espressif.com/en/products/socs/esp32) microcontroller, so you will need to install the [PlatformIO](https://platformio.org/) extension for VSCode.
+Before uploading the code, make sure you have configured the correct port in the [platformio.ini](platformio.ini) file. I would recommend to use simlinks so that it works even if the port changes. You can do this by adding a rules file to `/etc/udev/rules.d/`:
+
+```bash
+sudo nano /etc/udev/rules.d/roboost-mecanum-serial.rules
+```
+
+Use the following line to check the correct port (replace `/dev/ttyUSB1` with the correct port):
+
+```bash
+udevadm info -a -n /dev/ttyUSB1 | grep KERNELS
+```
+
+Note down the `KERNELS` value and use it in the rules file by adding the following line:
+
+```bash
+SUBSYSTEM=="tty", KERNELS=="1-1.1", SYMLINK+="primaryMotorCortex"
+```
+
+Replace `1-1.1` with the correct value. Now you can use the symlink `/dev/primaryMotorCortex` in the [platformio.ini](platformio.ini) file. This way, every time you connect the microcontroller to the same USB port, it will use the symlink.
+Now you can build and upload the code to the microcontroller using the PlatformIO extension. All dependencies will be installed automatically.
 
 #### Usage
 

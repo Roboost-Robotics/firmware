@@ -131,7 +131,6 @@ unsigned long last_time = 0;
 Eigen::Vector3d pose = Eigen::Vector3d::Zero();
 
 unsigned long last_time_sync_ms = 0;
-unsigned long last_time_sync_ns = 0;
 const unsigned long time_sync_interval = 1000;
 const int timeout_ms = 500;
 int64_t synced_time_ms = 0;
@@ -320,10 +319,11 @@ void loop()
         if (rmw_uros_epoch_synchronized())
         {
             // Get time in milliseconds or nanoseconds
-            synced_time_ns = rmw_uros_epoch_nanos(); // Contains the epoch time
-                                                     // in nanoseconds
+            synced_time_ns = rmw_uros_epoch_nanos();  // Contains the epoch time
+                                                      // in nanoseconds
+            synced_time_ms = rmw_uros_epoch_millis(); // Contains the epoch time
+                                                      // in milliseconds
             last_time_sync_ms = millis();
-            last_time_sync_ns = micros() * 1000;
 
             // Set the global current time
             global_current_time = synced_time_ns;

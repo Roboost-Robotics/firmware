@@ -68,8 +68,8 @@
 #define M2_PWM_CNL 2
 #define M3_PWM_CNL 3
 
-#define M_PWM_FRQ 1000 // Hz
-#define M_PWM_RES 8    // 2^n Bits
+#define M_PWM_FRQ 15000 // Hz
+#define M_PWM_RES 8     // 2^n Bits
 #endif
 
 // Uncomment if encoders should be used in the system
