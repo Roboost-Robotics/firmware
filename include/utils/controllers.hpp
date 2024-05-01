@@ -12,8 +12,9 @@
 #ifndef CONTROLLERS_H
 #define CONTROLLERS_H
 
-#include "utils/constants.h"
-#include "utils/filters.hpp"
+#include <utils/constants.h>
+#include <utils/filters.hpp>
+#include <utils/timing.hpp>
 #include <Arduino.h>
 
 /**
@@ -33,7 +34,7 @@ public:
      * @param max_expected_sampling_time The maximum expected sampling time.
      */
     PIDController(double kp, double ki, double kd,
-                  double max_expected_sampling_time, double max_integral);
+                  double max_expected_sampling_time, double max_integral, TimingService& timing_service = TimingService::get_instance());
 
     /**
      * @brief Update the controller.
@@ -129,7 +130,8 @@ private:
     double integral_;
     double previous_error_;
     LowPassFilter derivative_filter_;
-    unsigned long last_update_time_;
+    
+    TimingService& timing_service_;
 };
 
 #endif // CONTROLLERS_H

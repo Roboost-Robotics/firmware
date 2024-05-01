@@ -12,25 +12,25 @@
 #include "utils/controllers.hpp"
 
 PIDController::PIDController(double kp, double ki, double kd,
-                             double max_expected_sampling_time, double max_integral)
+                             double max_expected_sampling_time, double max_integral, TimingService& timing_service)
     : kp_(kp), ki_(ki), kd_(kd),
       max_expected_sampling_time_(max_expected_sampling_time), integral_(0.0),
       previous_error_(0.0),
       derivative_filter_(1.0 /
                              (1.0 + 2.0 * PI * kd * max_expected_sampling_time),
                          max_expected_sampling_time),
-        max_integral_(max_integral)
+        max_integral_(max_integral),
+        timing_service_(timing_service)
 {
-    last_update_time_ = micros();
+
 }
 
 double PIDController::update(double setpoint, double input)
 {
-    double sampling_time = (micros() - last_update_time_) * 1e-6;
-    last_update_time_ = micros();
+    double dt = MICROS_TO_SECONDS_DOUBLE(timing_service_.getDeltaTime());
     double error = setpoint - input;
 
-    integral_ += error * sampling_time;
+    integral_ += error * dt;
     
     // Enforce the maximum integral limit
     if (integral_ > max_integral_) {
@@ -39,7 +39,7 @@ double PIDController::update(double setpoint, double input)
         integral_ = -max_integral_;
     }
     double derivative =
-        derivative_filter_.update((error - previous_error_) / sampling_time);
+        derivative_filter_.update((error - previous_error_) / dt);
     previous_error_ = error;
 
     double output = kp_ * error + ki_ * integral_ + kd_ * derivative;

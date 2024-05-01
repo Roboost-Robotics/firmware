@@ -10,6 +10,8 @@
  */
 #include "kinematics/kinematics.hpp"
 
+// TODO: Remove Eigen dependency -> use std::array instead
+
 MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
                                          const float& wheel_base,
                                          const float& track_width)

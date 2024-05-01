@@ -12,6 +12,7 @@
 #define RCL_CHECKS_H
 
 #include <Arduino.h>
+#include <conf_hardware.h>
 
 /**
  * @brief This function is used to check the return value of rcl functions.
@@ -21,17 +22,13 @@
  */
 inline void error_loop()
 {
-    while (1)
+    while (true)
     {
-        Serial.println("RC check failed. Press EN to reset.");
-        Serial.print("    Error: ");
-        Serial.println(rcutils_get_error_string().str);
-        rcutils_reset_error();
-        Serial.print("    Timestamp: ");
-        Serial.println(millis());
-        Serial.print("    Free Heap: ");
-        Serial.println(ESP.getFreeHeap());
-        delay(1000);
+        Serial.println("Error in rcl function");
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(500);
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(500);
     }
 }
 

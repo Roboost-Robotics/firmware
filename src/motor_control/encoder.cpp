@@ -2,8 +2,8 @@
 
 HalfQuadEncoder::HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B,
                                  const u_int16_t& resolution,
-                                 const bool reverse)
-    : resolution_(resolution), reverse_(reverse)
+                                 const bool reverse, TimingService& timing_service)
+    : resolution_(resolution), reverse_(reverse), timing_service_(timing_service)
 {
     ESP32Encoder::useInternalWeakPullResistors = DOWN;
     encoder_.attachSingleEdge(pin_A, pin_B);
@@ -16,8 +16,8 @@ double HalfQuadEncoder::get_velocity() { return velocity_; }
 
 void HalfQuadEncoder::update()
 {
-    unsigned long current_time = micros();
-    double elapsed_time = (current_time - last_time_) * 1e-6;
+    
+    double dt = timing_service_.getDeltaTime();
 
     int64_t count = encoder_.getCount();
 
@@ -26,8 +26,7 @@ void HalfQuadEncoder::update()
 
     position_ = count * step_increment_;
 
-    velocity_ = position_change / elapsed_time;
+    velocity_ = position_change / dt;
 
-    last_time_ = current_time;
     prev_count_ = count;
 }

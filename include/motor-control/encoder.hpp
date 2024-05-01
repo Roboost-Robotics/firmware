@@ -11,7 +11,8 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
-#include "utils/constants.h"
+#include <utils/constants.h>
+#include <utils/timing.hpp>
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 
@@ -61,7 +62,7 @@ public:
      * @param reverse Whether the encoder is reversed.
      */
     HalfQuadEncoder(const u_int8_t& pin_A, const u_int8_t& pin_B,
-                    const u_int16_t& resolution, const bool reverse = false);
+                    const u_int16_t& resolution, const bool reverse = false, TimingService& timing_service = TimingService::get_instance());
 
     /**
      * @brief Get the velocity of the encoder.
@@ -93,7 +94,7 @@ private:
     const bool reverse_;
     double position_ = 0;     // in radians
     double velocity_ = 0;     // in radians per second
-    unsigned long last_time_; // in microseconds
+    TimingService& timing_service_;
 };
 
 #endif // ENCODER_H
