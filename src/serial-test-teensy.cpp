@@ -38,7 +38,8 @@ bool performInitializationWithFeedback(std::function<rcl_ret_t()> initFunction)
             // delay(1000);
             // digitalWrite(LED_BUILTIN, LOW);
             // delay(100);
-            while (true); // Infinite loop to indicate failure
+            while (true)
+                ; // Infinite loop to indicate failure
         }
     }
 }
@@ -46,19 +47,23 @@ bool performInitializationWithFeedback(std::function<rcl_ret_t()> initFunction)
 #define INIT(initCall)                                                         \
     performInitializationWithFeedback([&]() { return (initCall); })
 
-void led_timer_callback()//rcl_timer_t * timer, int64_t last_call_time)
+void led_timer_callback() // rcl_timer_t * timer, int64_t last_call_time)
 {
     ledState = !ledState;
     digitalWrite(LED_BUILTIN, ledState ? HIGH : LOW);
 }
 
-void my_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+void my_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
 {
-  if (timer != NULL) {
-    RCSOFTCHECK(rcl_publish(&temp_humidity_publisher, &temp_humidity_msg, NULL));
-  } else {
-    printf("Error in timer_callback: timer parameter is NULL\n");
-  }
+    if (timer != NULL)
+    {
+        RCSOFTCHECK(
+            rcl_publish(&temp_humidity_publisher, &temp_humidity_msg, NULL));
+    }
+    else
+    {
+        printf("Error in timer_callback: timer parameter is NULL\n");
+    }
 }
 
 void setup()
@@ -76,32 +81,40 @@ void setup()
 
     // Initialize support and node
     INIT(rclc_support_init(&support, 0, NULL, &allocator));
-    INIT(rclc_node_init_default(&node, "micro_ros_tutorial_node", "", &support));
+    INIT(
+        rclc_node_init_default(&node, "micro_ros_tutorial_node", "", &support));
 
     // Initialize timers
     rcl_timer_t my_timer;
     // rcl_timer_t led_timer;
     const unsigned int timer_timeout = 1000; // in ms for sensor data
     // const unsigned int led_timer_timeout = 500; // in ms for LED blinking
-    INIT(rclc_timer_init_default(&my_timer, &support, RCL_MS_TO_NS(timer_timeout), my_timer_callback));
-    //INIT(rclc_timer_init_default(&led_timer, &support, RCL_MS_TO_NS(led_timer_timeout), led_timer_callback));
+    INIT(rclc_timer_init_default(
+        &my_timer, &support, RCL_MS_TO_NS(timer_timeout), my_timer_callback));
+    // INIT(rclc_timer_init_default(&led_timer, &support,
+    // RCL_MS_TO_NS(led_timer_timeout), led_timer_callback));
 
     // Initialize publisher
-    INIT(rclc_publisher_init_default(&temp_humidity_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(roboost_msgs, msg, TempHumidity), "TempHumidity"));
+    INIT(rclc_publisher_init_default(
+        &temp_humidity_publisher, &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(roboost_msgs, msg, TempHumidity),
+        "TempHumidity"));
 
     // Setup executor
     executor = rclc_executor_get_zero_initialized_executor();
 
     // # handles = # timers + # subscriptions
-    const uint8_t num_handles = 1;//2;
-    INIT(rclc_executor_init(&executor, &support.context, num_handles, &allocator));
+    const uint8_t num_handles = 1; // 2;
+    INIT(rclc_executor_init(&executor, &support.context, num_handles,
+                            &allocator));
     INIT(rclc_executor_add_timer(&executor, &my_timer));
     // INIT(rclc_executor_add_timer(&executor, &led_timer));
 
     temp_humidity_msg.temperature = 25.0;
     temp_humidity_msg.humidity = 50.0;
 
-    // Spin the executor in the setup (this will block any further code in setup or loop)
+    // Spin the executor in the setup (this will block any further code in setup
+    // or loop)
     rclc_executor_spin(&executor);
 }
 

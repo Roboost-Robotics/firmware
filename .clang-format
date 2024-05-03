@@ -1,12 +1,14 @@
 ---
-Language:        Cpp
+# See https://clang.llvm.org/docs/ClangFormatStyleOptions.html for more information.
+
+Language: Cpp
 # BasedOnStyle:  LLVM
 AccessModifierOffset: -4 # -2
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignEscapedNewlines: Right
-AlignOperands:   true
+AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: false
@@ -20,19 +22,19 @@ AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: true # false
 BinPackArguments: true
 BinPackParameters: true
-BraceWrapping:   
-  AfterClass:      true # false
+BraceWrapping:
+  AfterClass: true # false
   AfterControlStatement: true # false
-  AfterEnum:       true # false
-  AfterFunction:   true # false
-  AfterNamespace:  true # false
+  AfterEnum: true # false
+  AfterFunction: true # false
+  AfterNamespace: false
   AfterObjCDeclaration: true # false
-  AfterStruct:     true # false
-  AfterUnion:      true # false
+  AfterStruct: true # false
+  AfterUnion: true # false
   AfterExternBlock: true # false
-  BeforeCatch:     true # false
-  BeforeElse:      true # false
-  IndentBraces:    true # false
+  BeforeCatch: true # false
+  BeforeElse: true # false
+  IndentBraces: true # false
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
@@ -44,34 +46,34 @@ BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: BeforeColon
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
-ColumnLimit:     80
-CommentPragmas:  '^ IWYU pragma:'
-CompactNamespaces: false
+ColumnLimit: 200
+CommentPragmas: "^ IWYU pragma:"
+CompactNamespaces: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
-DisableFormat:   false
+DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
-ForEachMacros:   
+ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-IncludeBlocks:   Preserve
-IncludeIsMainRegex: '(Test)?$'
+IncludeBlocks: Preserve
+IncludeIsMainRegex: "(Test)?$"
 IndentCaseLabels: true # false
 IndentPPDirectives: None
-IndentWidth:   4  #2
+IndentWidth: 4 #2
 IndentWrappedFunctionNames: false
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true
-MacroBlockBegin: ''
-MacroBlockEnd:   ''
+MacroBlockBegin: ""
+MacroBlockEnd: ""
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None
+NamespaceIndentation: All
 ObjCBlockIndentWidth: 2
 ObjCSpaceAfterProperty: false
 ObjCSpaceBeforeProtocolList: true
@@ -83,8 +85,8 @@ PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerAlignment: Left # Right
-ReflowComments:  true
-SortIncludes:    true
+ReflowComments: true
+SortIncludes: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: true
@@ -92,11 +94,11 @@ SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
-SpacesInAngles:  false
+SpacesInAngles: false
 SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard:        Cpp11
-TabWidth:        8
-UseTab:          Never
+Standard: Cpp11
+TabWidth: 8
+UseTab: Never

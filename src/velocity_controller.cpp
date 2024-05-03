@@ -11,19 +11,20 @@
 
 #include "velocity_controller.hpp"
 
-VelocityController::VelocityController(MotorControllerManager& motor_manager,
-                                       Kinematics* kinematics_model)
-    : motor_manager_(motor_manager), kinematics_model_(kinematics_model)
+using namespace roboost::robot_controller;
+using namespace roboost::motor_control;
+using namespace roboost::kinematics;
+
+RobotVelocityController::RobotVelocityController(MotorControllerManager& motor_manager, Kinematics* kinematics_model) : motor_manager_(motor_manager), kinematics_model_(kinematics_model)
 {
     // Initialize latest_command and odometry_ to default values here
     latest_command_ = Eigen::Vector3d::Zero();
     robot_velocity_ = Eigen::Vector3d::Zero();
 }
 
-void VelocityController::update()
+void RobotVelocityController::update()
 {
-    Eigen::VectorXd desired_wheel_speeds =
-        kinematics_model_->calculate_wheel_velocity(latest_command_);
+    Eigen::VectorXd desired_wheel_speeds = kinematics_model_->calculate_wheel_velocity(latest_command_);
 
     int motor_count = motor_manager_.get_motor_count();
     if (desired_wheel_speeds.size() != motor_count)
@@ -44,24 +45,19 @@ void VelocityController::update()
         actual_wheel_speeds(i) = motor_manager_.get_motor_speed(i);
     }
 
-    robot_velocity_ =
-        kinematics_model_->calculate_robot_velocity(actual_wheel_speeds);
+    robot_velocity_ = kinematics_model_->calculate_robot_velocity(actual_wheel_speeds);
 }
 
-Eigen::Vector3d VelocityController::get_robot_velocity()
+Eigen::Vector3d RobotVelocityController::get_robot_velocity()
 {
     // Return the latest odometry data
     return robot_velocity_;
 }
 
-Eigen::VectorXd VelocityController::get_set_wheel_velocities()
+Eigen::VectorXd RobotVelocityController::get_set_wheel_velocities()
 {
     // Return the latest set wheel velocities
     return kinematics_model_->calculate_wheel_velocity(latest_command_);
 }
 
-void VelocityController::set_latest_command(
-    const Eigen::Vector3d& latest_command)
-{
-    latest_command_ = latest_command;
-}
+void RobotVelocityController::set_latest_command(const Eigen::Vector3d& latest_command) { latest_command_ = latest_command; }

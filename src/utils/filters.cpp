@@ -11,11 +11,11 @@
 
 #include "utils/filters.hpp"
 
-LowPassFilter::LowPassFilter(float cutoff_frequency, float sampling_time)
-    : cutoff_frequency_(cutoff_frequency), sampling_time_(sampling_time)
+using namespace roboost::filters;
+
+LowPassFilter::LowPassFilter(float cutoff_frequency, float sampling_time) : cutoff_frequency_(cutoff_frequency), sampling_time_(sampling_time)
 {
-    alpha_ = sampling_time_ /
-             (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
+    alpha_ = sampling_time_ / (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
 }
 
 float LowPassFilter::update(float input)
@@ -33,21 +33,16 @@ float LowPassFilter::get_sampling_time() { return sampling_time_; }
 void LowPassFilter::set_cutoff_frequency(float cutoff_frequency)
 {
     cutoff_frequency_ = cutoff_frequency;
-    alpha_ = sampling_time_ /
-             (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
+    alpha_ = sampling_time_ / (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
 }
 
 void LowPassFilter::set_sampling_time(float sampling_time)
 {
     sampling_time_ = sampling_time;
-    alpha_ = sampling_time_ /
-             (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
+    alpha_ = sampling_time_ / (sampling_time_ + 1.0f / (2.0f * PI * cutoff_frequency_));
 }
 
-MovingAverageFilter::MovingAverageFilter(int window_size)
-    : window_size_(window_size)
-{
-}
+MovingAverageFilter::MovingAverageFilter(int window_size) : window_size_(window_size) {}
 
 float MovingAverageFilter::update(float input)
 {
@@ -76,19 +71,14 @@ float MedianFilter::update(float input)
     std::sort(input_history_.begin(), input_history_.end());
 
     if (input_history_.size() % 2 == 0)
-        output_ = (input_history_[input_history_.size() / 2 - 1] +
-                   input_history_[input_history_.size() / 2]) /
-                  2.0f;
+        output_ = (input_history_[input_history_.size() / 2 - 1] + input_history_[input_history_.size() / 2]) / 2.0f;
     else
         output_ = input_history_[input_history_.size() / 2];
 
     return output_;
 }
 
-ExponentialMovingAverageFilter::ExponentialMovingAverageFilter(float alpha)
-    : alpha_(alpha)
-{
-}
+ExponentialMovingAverageFilter::ExponentialMovingAverageFilter(float alpha) : alpha_(alpha) {}
 
 float ExponentialMovingAverageFilter::update(float input)
 {

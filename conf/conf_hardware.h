@@ -18,7 +18,7 @@
  * @brief ESP32 specific configs
  *
  */
-const uint8_t LED_BUILTIN = 2;
+// const uint8_t LED_BUILTIN = 2;
 
 /**
  * @brief Selection of robot kinematics.

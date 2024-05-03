@@ -13,13 +13,12 @@
 #include "utils/comparisons.hpp"
 #include <Arduino.h>
 
-PIDMotorController::PIDMotorController(MotorDriver& motor_driver,
-                                       Encoder& encoder, PIDController& pid,
-                                       Filter& input_filter,
-                                       Filter& output_filter, double min_output)
-    : MotorController(motor_driver), encoder_(encoder), pid_(pid),
-      input_filter_(input_filter), output_filter_(output_filter),
-      min_output_(min_output)
+using namespace roboost::motor_control;
+using namespace roboost::controllers;
+using namespace roboost::filters;
+
+PIDMotorController::PIDMotorController(MotorDriver& motor_driver, Encoder& encoder, PIDController& pid, Filter& input_filter, Filter& output_filter, double min_output)
+    : MotorController(motor_driver), encoder_(encoder), pid_(pid), input_filter_(input_filter), output_filter_(output_filter), min_output_(min_output)
 {
 }
 
@@ -35,8 +34,7 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
 
     output = output_filter_.update(output);
 
-    if (std::abs(output) < min_output_ &&
-        std::abs(desired_rotation_speed) < 1e-3)
+    if (std::abs(output) < min_output_ && std::abs(desired_rotation_speed) < 1e-3)
     {
         output = 0.0;
     }
@@ -44,7 +42,4 @@ void PIDMotorController::set_rotation_speed(float desired_rotation_speed)
     motor_driver_.set_motor_control(output);
 }
 
-float PIDMotorController::get_rotation_speed()
-{
-    return encoder_.get_velocity();
-}
+float PIDMotorController::get_rotation_speed() { return encoder_.get_velocity(); }

@@ -12,11 +12,9 @@
 
 // TODO: Remove Eigen dependency -> use std::array instead
 
-MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
-                                         const float& wheel_base,
-                                         const float& track_width)
-    : wheel_radius_(wheel_radius), wheel_base_(wheel_base),
-      track_width_(track_width)
+using namespace roboost::kinematics;
+
+MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius, const float& wheel_base, const float& track_width) : wheel_radius_(wheel_radius), wheel_base_(wheel_base), track_width_(track_width)
 {
 
     const double l = wheel_base / 2.0 + track_width / 2.0;
@@ -33,8 +31,7 @@ MecanumKinematics4W::MecanumKinematics4W(const float& wheel_radius,
     // clang-format on
 }
 
-Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(
-    const Eigen::Vector3d& robot_velocity)
+Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(const Eigen::Vector3d& robot_velocity)
 {
     Eigen::VectorXd wheel_velocity(4);
 
@@ -44,8 +41,7 @@ Eigen::VectorXd MecanumKinematics4W::calculate_wheel_velocity(
     return wheel_velocity;
 }
 
-Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(
-    const Eigen::VectorXd& wheel_velocity)
+Eigen::Vector3d MecanumKinematics4W::calculate_robot_velocity(const Eigen::VectorXd& wheel_velocity)
 {
     Eigen::Vector3d robot_velocity;
 

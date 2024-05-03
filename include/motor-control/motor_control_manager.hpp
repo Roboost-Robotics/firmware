@@ -16,65 +16,73 @@
 #include <ArduinoEigen.h>
 #include <vector>
 
-/**
- * @brief The MotorControllerManager class manages a collection of motors and
- *        their desired speeds.
- */
-class MotorControllerManager
+namespace roboost
 {
-public:
-    /**
-     * @brief Construct a new Motor Controller Manager object.
-     *
-     * @param motor_controllers An initializer list of MotorController pointers.
-     */
-    MotorControllerManager(std::initializer_list<MotorController*> motor_controllers);
+    namespace motor_control
+    {
 
-    /**
-     * @brief Set the desired speed for a specific motor.
-     *
-     * @param motor_index The index of the motor.
-     * @param desired_speed The desired speed value.
-     */
-    void set_motor_speed(const uint8_t motor_index, float desired_speed);
+        /**
+         * @brief The MotorControllerManager class manages a collection of motors and
+         *        their desired speeds.
+         */
+        class MotorControllerManager
+        {
+        public:
+            /**
+             * @brief Construct a new Motor Controller Manager object.
+             *
+             * @param motor_controllers An initializer list of MotorController pointers.
+             */
+            MotorControllerManager(std::initializer_list<MotorController*> motor_controllers);
 
-    /**
-     * @brief Set the desired speed for all motors.
-     *
-     * @param desired_speed The desired speed value.
-     */
-    void set_all_motor_speeds(const float desired_speed);
+            /**
+             * @brief Set the desired speed for a specific motor.
+             *
+             * @param motor_index The index of the motor.
+             * @param desired_speed The desired speed value.
+             */
+            void set_motor_speed(const uint8_t motor_index, float desired_speed);
 
-    /**
-     * @brief Get the desired speed of a specific motor.
-     *
-     * @param motor_index The index of the motor.
-     * @return float The desired speed value.
-     */
-    float get_motor_speed(const uint8_t motor_index) const;
+            /**
+             * @brief Set the desired speed for all motors.
+             *
+             * @param desired_speed The desired speed value.
+             */
+            void set_all_motor_speeds(const float desired_speed);
 
-    /**
-     * @brief Get the number of MotorControllers in the manager.
-     *
-     * @return uint8_t The number of motors.
-     */
-    uint8_t get_motor_count() const;
+            /**
+             * @brief Get the desired speed of a specific motor.
+             *
+             * @param motor_index The index of the motor.
+             * @return float The desired speed value.
+             */
+            float get_motor_speed(const uint8_t motor_index) const;
 
-    /**
-     * @brief Update the MotorControllers to set the new desired rotational
-     * speed.
-     */
-    void update();
+            /**
+             * @brief Get the number of MotorControllers in the manager.
+             *
+             * @return uint8_t The number of motors.
+             */
+            uint8_t get_motor_count() const;
 
-    /**
-     * @brief Destroy the Motor Controller Manager object and free up the
-     * memory.
-     */
-    ~MotorControllerManager();
+            /**
+             * @brief Update the MotorControllers to set the new desired rotational
+             * speed.
+             */
+            void update();
 
-private:
-    std::vector<std::pair<MotorController*, float>> motor_controllers_; // Vector to hold MotorController pointers and
-                                                                        // desired speeds.
-};
+            /**
+             * @brief Destroy the Motor Controller Manager object and free up the
+             * memory.
+             */
+            ~MotorControllerManager();
+
+        private:
+            std::vector<std::pair<MotorController*, float>> motor_controllers_; // Vector to hold MotorController pointers and
+                                                                                // desired speeds.
+        };
+
+    } // namespace motor_control
+} // namespace roboost
 
 #endif // MOTOR_CONTROLLER_MANAGER_H

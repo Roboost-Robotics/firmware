@@ -11,12 +11,10 @@
 #include "motor-control/motor-drivers/l298n_motor_driver.hpp"
 #include <Arduino.h>
 
-L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1,
-                                   const uint8_t& pin_in2,
-                                   const uint8_t& pin_ena,
-                                   const uint8_t& pwm_channel)
-    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena),
-      pwm_channel_(pwm_channel)
+using namespace roboost::motor_control;
+
+L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1, const uint8_t& pin_in2, const uint8_t& pin_ena, const uint8_t& pwm_channel)
+    : pin_in1_(pin_in1), pin_in2_(pin_in2), pin_ena_(pin_ena), pwm_channel_(pwm_channel)
 {
     // Initialize L298N...
     // setting pin modes
@@ -28,11 +26,16 @@ L298NMotorDriver::L298NMotorDriver(const uint8_t& pin_in1,
     const uint16_t freq = 5000;
     const uint8_t resolution = 8;
 
+#ifdef ESP32
     // configure PWM functionalities
     ledcSetup(pwm_channel_, freq, resolution);
 
     // attach the channel to the GPIO to be controlled
     ledcAttachPin(pin_ena_, pwm_channel_);
+#elif defined(TEENSYDUINO)
+    analogWriteFrequency(pin_ena_, freq);
+    analogWriteResolution(resolution);
+#endif // ESP32
 }
 
 void L298NMotorDriver::set_motor_control(float control_value)
@@ -48,5 +51,10 @@ void L298NMotorDriver::set_motor_control(float control_value)
 
     // Set PWM for L298N...
     u_int8_t pwm = static_cast<int>(std::abs(control_value) * 255);
+
+#ifdef ESP32
     ledcWrite(pwm_channel_, pwm);
+#elif defined(TEENSYDUINO)
+    analogWrite(pin_ena_, pwm);
+#endif // ESP32
 }

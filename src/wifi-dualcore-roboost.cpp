@@ -1,7 +1,8 @@
 /**
  * @file core.cpp
  * @author Friedl Jakob (friedl.jak@gmail.com)
- * @brief This file contains the main functionality for controlling the Roboost robot connected over serial to the main computer.
+ * @brief This file contains the main functionality for controlling the Roboost
+ * robot connected over serial to the main computer.
  * @version 1.2
  * @date 2024-04-30
  *
@@ -27,9 +28,9 @@
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/joint_state.h>
 
+#include <utils/diagnostics.hpp>
 #include <utils/initialization.hpp>
 #include <utils/timing.hpp>
-#include <utils/diagnostics.hpp>
 
 #include "conf_hardware.h"
 #include "conf_network.h"
@@ -41,17 +42,10 @@
 
 #define MOTOR_COUNT 4
 
-L298NMotorDriver drivers[MOTOR_COUNT] = {
-    {M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL},
-    {M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL},
-    {M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL},
-    {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL}};
+L298NMotorDriver drivers[MOTOR_COUNT] = {{M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL}, {M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL}, {M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL}, {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL}};
 
 HalfQuadEncoder encoders[MOTOR_COUNT] = {
-    {M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION},
-    {M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION},
-    {M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION},
-    {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION}};
+    {M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION}, {M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION}, {M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION}, {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION}};
 
 constexpr double base_kp = 0.105;
 constexpr double base_ki = 0.125;
@@ -61,30 +55,26 @@ constexpr double base_kd = 0.005;
 constexpr double max_expected_sampling_time = 0.2;
 constexpr double max_integral = 5.2;
 
-PIDController controllers[MOTOR_COUNT] = {
-    {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
-    {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
-    {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
-    {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral}};
+PIDController controllers[MOTOR_COUNT] = {{base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
+                                          {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
+                                          {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral},
+                                          {base_kp, base_ki, base_kd, max_expected_sampling_time, max_integral}};
 
-NoFilter encoder_input_filters[MOTOR_COUNT] = {
-    NoFilter(), NoFilter(), NoFilter(), NoFilter()};
+NoFilter encoder_input_filters[MOTOR_COUNT] = {NoFilter(), NoFilter(), NoFilter(), NoFilter()};
 
-NoFilter motor_output_filters[MOTOR_COUNT] = {
-    NoFilter(), NoFilter(), NoFilter(), NoFilter()};
+NoFilter motor_output_filters[MOTOR_COUNT] = {NoFilter(), NoFilter(), NoFilter(), NoFilter()};
 
 static double MIN_OUTPUT = 0.35;
 
-PIDMotorController motor_controllers[MOTOR_COUNT] = {
-    {drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
-    {drivers[1], encoders[1], controllers[1], encoder_input_filters[1], motor_output_filters[1], MIN_OUTPUT},
-    {drivers[2], encoders[2], controllers[2], encoder_input_filters[2], motor_output_filters[2], MIN_OUTPUT},
-    {drivers[3], encoders[3], controllers[3], encoder_input_filters[3], motor_output_filters[3], MIN_OUTPUT}};
+PIDMotorController motor_controllers[MOTOR_COUNT] = {{drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
+                                                     {drivers[1], encoders[1], controllers[1], encoder_input_filters[1], motor_output_filters[1], MIN_OUTPUT},
+                                                     {drivers[2], encoders[2], controllers[2], encoder_input_filters[2], motor_output_filters[2], MIN_OUTPUT},
+                                                     {drivers[3], encoders[3], controllers[3], encoder_input_filters[3], motor_output_filters[3], MIN_OUTPUT}};
 
 MotorControllerManager motor_control_manager{&motor_controllers[0], &motor_controllers[1], &motor_controllers[2], &motor_controllers[3]};
 
 MecanumKinematics4W kinematics(WHEEL_RADIUS, WHEEL_BASE, TRACK_WIDTH);
-VelocityController robot_controller(motor_control_manager, &kinematics);
+RobotVelocityController robot_controller(motor_control_manager, &kinematics);
 
 MovingAverageFilter cmd_vel_filter_x = MovingAverageFilter(2);
 MovingAverageFilter cmd_vel_filter_y = MovingAverageFilter(2);
@@ -123,28 +113,17 @@ TimingService& timing_service = TimingService::get_instance();
 static const char* odom_frame_id = "odom";
 static const char* base_link_frame_id = "base_link";
 static const char* joint_state_frame_id = "base_link";
-static const char* joint_names[] = {
-    "wheel_front_left_joint",
-    "wheel_front_right_joint",
-    "wheel_back_left_joint",
-    "wheel_back_right_joint"
-};
+static const char* joint_names[] = {"wheel_front_left_joint", "wheel_front_right_joint", "wheel_back_left_joint", "wheel_back_right_joint"};
 
-static const double default_covariance[36] = {
-    0.8, 0, 0, 0, 0, 0, 0,
-    0, 0.8, 0, 0, 0, 0, 0,
-    0, 0, 0.8, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0.8
-};
+static const double default_covariance[36] = {0.8, 0, 0, 0, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.8};
 
 // Function prototypes
 void cmd_vel_subscription_callback(const void* msgin);
 void set_ros_timestamp(std_msgs__msg__Header& header, unsigned long sync_ms, unsigned long sync_ns);
 void publish_joint_states(const Eigen::Vector4d& velocities, double dt);
 void update_odometry(const Eigen::Vector3d& velocity, double dt);
-void pub_timer_callback(rcl_timer_t * timer, int64_t last_call_time);
-void sync_timer_callback(rcl_timer_t * timer, int64_t last_call_time);
+void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time);
+void sync_timer_callback(rcl_timer_t* timer, int64_t last_call_time);
 void init_odometry_msg();
 void init_joint_state_msg();
 void init_wanted_joint_state_msg();
@@ -153,12 +132,17 @@ void pub_callback();
 
 SemaphoreHandle_t dataMutex;
 
-void robotControllerTask(void *pvParameters) {
-    while (true) {
-        if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+void robotControllerTask(void* pvParameters)
+{
+    while (true)
+    {
+        if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE)
+        {
             robot_controller.update();
             xSemaphoreGive(dataMutex);
-        } else {
+        }
+        else
+        {
             // Handle semaphore timeout or error
             Serial.println("Failed to acquire mutex: Robot Controller");
         }
@@ -166,12 +150,17 @@ void robotControllerTask(void *pvParameters) {
     }
 }
 
-void microROSTask(void *pvParameters) {
-    while (true) {
-        if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+void microROSTask(void* pvParameters)
+{
+    while (true)
+    {
+        if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE)
+        {
             RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
             xSemaphoreGive(dataMutex);
-        } else {
+        }
+        else
+        {
             // Handle semaphore timeout or error
             Serial.println("Failed to acquire mutex: microROS Task");
         }
@@ -198,58 +187,46 @@ void setup()
 
     // timing_service.addTask([]() {
     //     robot_controller.update();
-    // }, TIMING_MS_TO_US(20), TIMING_MS_TO_US(50), "Contoller update"); // Update robot controller every 20ms with a timeout of 50ms
+    // }, TIMING_MS_TO_US(20), TIMING_MS_TO_US(50), "Contoller update"); //
+    // Update robot controller every 20ms with a timeout of 50ms
 
     // timing_service.addTask([]() {
     //     RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
     // }, TIMING_MS_TO_US(200), TIMING_MS_TO_US(500), "Executor spin");
 
-    timing_service.addTask([]() {
-        Serial.print("vx: ");
-        Serial.print(robot_controller.get_robot_velocity()(0));
-        Serial.print(" vy: ");
-        Serial.print(robot_controller.get_robot_velocity()(1));
-        Serial.print(" vtheta: ");
-        Serial.print(robot_controller.get_robot_velocity()(2));
-        Serial.print(" dt: ");
-        Serial.print(timing_service.getDeltaTime());
-        Serial.print("us");
+    timing_service.addTask(
+        []()
+        {
+            Serial.print("vx: ");
+            Serial.print(robot_controller.get_robot_velocity()(0));
+            Serial.print(" vy: ");
+            Serial.print(robot_controller.get_robot_velocity()(1));
+            Serial.print(" vtheta: ");
+            Serial.print(robot_controller.get_robot_velocity()(2));
+            Serial.print(" dt: ");
+            Serial.print(timing_service.getDeltaTime());
+            Serial.print("us");
 
-        Serial.print(" wanted:: vx: ");
-        Serial.print(robot_controller.get_set_wheel_velocities()(0));
-        Serial.print(" vy: ");
-        Serial.print(robot_controller.get_set_wheel_velocities()(1));
-        Serial.print(" vtheta: ");
-        Serial.println(robot_controller.get_set_wheel_velocities()(2));
-
-    }, TIMING_MS_TO_US(1000), TIMING_MS_TO_US(2000), "Robot state");
+            Serial.print(" wanted:: vx: ");
+            Serial.print(robot_controller.get_set_wheel_velocities()(0));
+            Serial.print(" vy: ");
+            Serial.print(robot_controller.get_set_wheel_velocities()(1));
+            Serial.print(" vtheta: ");
+            Serial.println(robot_controller.get_set_wheel_velocities()(2));
+        },
+        TIMING_MS_TO_US(1000), TIMING_MS_TO_US(2000), "Robot state");
 
     dataMutex = xSemaphoreCreateMutex();
 
-    if (dataMutex == NULL) {
+    if (dataMutex == NULL)
+    {
         Serial.println("Failed to create mutex");
         return; // Handle mutex creation failure
     }
 
-    xTaskCreatePinnedToCore(
-        robotControllerTask,
-        "RobotController",
-        10000,
-        NULL,
-        1,
-        NULL,
-        1
-    );
+    xTaskCreatePinnedToCore(robotControllerTask, "RobotController", 10000, NULL, 1, NULL, 1);
 
-    xTaskCreatePinnedToCore(
-        microROSTask,
-        "MicroROS",
-        10000,
-        NULL,
-        0,
-        NULL,
-        0
-    );
+    xTaskCreatePinnedToCore(microROSTask, "MicroROS", 10000, NULL, 0, NULL, 0);
 }
 
 /**
@@ -257,12 +234,10 @@ void setup()
  * odometry.
  *
  */
-void loop()
-{
-    timing_service.update();
-}
+void loop() { timing_service.update(); }
 
-void print_free_heap() {
+void print_free_heap()
+{
     Serial.print("free heap: ");
     Serial.print(ESP.getFreeHeap());
     Serial.print(" | min free heap: ");
@@ -271,7 +246,8 @@ void print_free_heap() {
     Serial.println(ESP.getFreeHeap() - ESP.getMinFreeHeap());
 }
 
-void init_microros() {
+void init_microros()
+{
 
     IPAddress agent_ip(AGENT_IP);
     uint16_t agent_port = AGENT_PORT;
@@ -314,12 +290,12 @@ void init_microros() {
     init_wanted_joint_state_msg();
 }
 
-
 /**
  * @brief Initialize the odometry message.
- * 
+ *
  */
-void init_odometry_msg() {
+void init_odometry_msg()
+{
     odom_msg.header.frame_id.data = const_cast<char*>(odom_frame_id);
     odom_msg.header.frame_id.size = strlen(odom_frame_id);
     odom_msg.header.frame_id.capacity = odom_msg.header.frame_id.size + 1;
@@ -333,14 +309,16 @@ void init_odometry_msg() {
 
 /**
  * @brief Initialize the joint state message.
- * 
+ *
  */
-void init_joint_state_msg() {
+void init_joint_state_msg()
+{
     joint_state_msg.header.frame_id.data = const_cast<char*>(joint_state_frame_id);
     joint_state_msg.name.size = 4;
     joint_state_msg.name.capacity = 4;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         rosidl_runtime_c__String__assign(&joint_state_msg.name.data[i], joint_names[i]);
     }
 
@@ -356,17 +334,18 @@ void init_joint_state_msg() {
     joint_state_msg.velocity.capacity = 4;
 }
 
-
 /**
  * @brief Initialize the wanted joint state message.
- * 
+ *
  */
-void init_wanted_joint_state_msg() {
+void init_wanted_joint_state_msg()
+{
     wanted_joint_state_msg.header.frame_id.data = const_cast<char*>(joint_state_frame_id);
     wanted_joint_state_msg.name.size = 4;
     wanted_joint_state_msg.name.capacity = 4;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         rosidl_runtime_c__String__assign(&wanted_joint_state_msg.name.data[i], joint_names[i]);
     }
 
@@ -376,7 +355,6 @@ void init_wanted_joint_state_msg() {
     wanted_joint_state_msg.position.size = 4;
     wanted_joint_state_msg.position.capacity = 4;
 }
-
 
 /**
  * @brief Callback function for handling incoming cmd_vel (velocity command)
@@ -427,24 +405,27 @@ void cmd_vel_subscription_callback(const void* msgin)
 
 /**
  * @brief Helper function to set the ROS timestamp for a message.
- * 
+ *
  * @param header Header of the message
  * @param sync_ms Synced time in milliseconds
  * @param sync_ns Nano second part of the synced time
  */
-void set_ros_timestamp(std_msgs__msg__Header& header, unsigned long sync_ms, unsigned long sync_ns) {
+void set_ros_timestamp(std_msgs__msg__Header& header, unsigned long sync_ms, unsigned long sync_ns)
+{
     header.stamp.sec = (sync_ms + millis() - last_time_sync_ms) / 1000;
     header.stamp.nanosec = sync_ns + (micros() * 1000 - last_time_sync_ns) % 1000000000;
 }
 
 /**
  * @brief Helper function to publish joint states.
- * 
+ *
  * @param velocities Vector of wheel velocities
  * @param dt Time step
  */
-void publish_joint_states(const Eigen::Vector4d& velocities, double dt) {
-    for (int i = 0; i < 4; i++) {
+void publish_joint_states(const Eigen::Vector4d& velocities, double dt)
+{
+    for (int i = 0; i < 4; i++)
+    {
         joint_state_msg.position.data[i] += velocities(i) * dt;
         joint_state_msg.velocity.data[i] = velocities(i);
     }
@@ -454,12 +435,14 @@ void publish_joint_states(const Eigen::Vector4d& velocities, double dt) {
 
 /**
  * @brief Helper function to publish desired joint states.
- * 
+ *
  * @param velocities Vector of wheel velocities
  * @param dt Time step
  */
-void publish_wanted_joint_states(const Eigen::Vector4d& velocities, double dt) {
-    for (int i = 0; i < 4; i++) {
+void publish_wanted_joint_states(const Eigen::Vector4d& velocities, double dt)
+{
+    for (int i = 0; i < 4; i++)
+    {
         wanted_joint_state_msg.position.data[i] = velocities(i);
     }
     set_ros_timestamp(wanted_joint_state_msg.header, synced_time_ms, synced_time_ns);
@@ -468,11 +451,12 @@ void publish_wanted_joint_states(const Eigen::Vector4d& velocities, double dt) {
 
 /**
  * @brief Helper function to update odometry.
- * 
+ *
  * @param velocity Robot velocity
  * @param dt Time step
  */
-void update_odometry(const Eigen::Vector3d& velocity, double dt) {
+void update_odometry(const Eigen::Vector3d& velocity, double dt)
+{
     pose(0) += velocity(0) * cos(pose(2)) * dt - velocity(1) * sin(pose(2)) * dt;
     pose(1) += velocity(0) * sin(pose(2)) * dt + velocity(1) * cos(pose(2)) * dt;
     pose(2) += velocity(2) * dt;
@@ -489,12 +473,14 @@ void update_odometry(const Eigen::Vector3d& velocity, double dt) {
 
 /**
  * @brief Callback function for the publish timer.
- * 
+ *
  * @param timer Timer object
  * @param last_call_time Last call time
  */
-void pub_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
-    if (timer == NULL) {
+void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
+{
+    if (timer == NULL)
+    {
         Serial.println("Error in timer_callback: timer parameter is NULL\n");
         return;
     }
@@ -516,7 +502,8 @@ void pub_timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
     publish_wanted_joint_states(wanted_wheel_velocities, dt);
 }
 
-void pub_callback(){
+void pub_callback()
+{
     double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.getDeltaTime());
     Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
 
@@ -536,13 +523,14 @@ void pub_callback(){
 
 /**
  * @brief Callback function for the sync timer.
- * 
+ *
  * @param timer Timer object
  * @param last_call_time Last call time
  */
-void sync_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+void sync_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
 {
-    if (timer == NULL) {
+    if (timer == NULL)
+    {
         Serial.println("Error in timer_callback: timer parameter is NULL\n");
         return;
     }
@@ -554,7 +542,9 @@ void sync_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
         // Get time in milliseconds or nanoseconds
         synced_time_ms = rmw_uros_epoch_millis();
         synced_time_ns = rmw_uros_epoch_nanos();
-    } else {
+    }
+    else
+    {
         Serial.println("Error in sync_timer_callback: time not synchronized\n");
     }
 }

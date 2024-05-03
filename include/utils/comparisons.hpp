@@ -14,10 +14,13 @@
 
 #include <cmath>
 
-// Method to check if two floats are approximately equal
-bool approx_equal(float a, float b, float epsilon)
+namespace roboost
 {
-    return std::abs(a - b) < epsilon;
-}
+    namespace comparisons
+    {
+        // Method to check if two floats are approximately equal
+        bool approx_equal(float a, float b, float epsilon) { return std::abs(a - b) < epsilon; }
+    } // namespace comparisons
+} // namespace roboost
 
 #endif // COMPARISONS_H
