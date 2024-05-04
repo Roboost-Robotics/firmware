@@ -34,11 +34,11 @@
 
 #include "conf_hardware.h"
 #include "conf_network.h"
-#include "motor-control/encoder.hpp"
-#include "motor-control/motor-drivers/l298n_motor_driver.hpp"
-#include "motor-control/pid_motor_controller.hpp"
-#include "motor-control/simple_motor_controller.hpp"
-#include "velocity_controller.hpp"
+#include "motor_control/encoder.hpp"
+#include "motor_control/motor-drivers/l298n_motor_driver.hpp"
+#include "motor_control/pid_motor_controller.hpp"
+#include "motor_control/simple_motor_controller.hpp"
+#include "robot_controller.hpp"
 
 #define MOTOR_COUNT 4
 

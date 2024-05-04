@@ -1,4 +1,5 @@
 conf/conf_network.h
+lib/*
 .pio
 .vscode
 micro_ros_setup

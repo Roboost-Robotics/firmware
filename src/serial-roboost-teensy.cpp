@@ -17,9 +17,9 @@
 #include <ArduinoEigen.h>
 #include <micro_ros_platformio.h>
 
-#include "rcl_checks.h"
 #include <rcl/rcl.h>
 #include <rclc/executor.h>
+#include <roboost/utils/rcl_checks.h>
 
 #include <rclc/rclc.h>
 #include <rosidl_runtime_c/string_functions.h>
@@ -28,16 +28,16 @@
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/joint_state.h>
 
-#include <utils/timing.hpp>
+#include <roboost/utils/timing.hpp>
 
 #include "conf_hardware.h"
 #include "conf_network.h"
-#include "motor-control/encoder.hpp"
-#include "motor-control/motor-drivers/l298n_motor_driver.hpp"
-#include "motor-control/pid_motor_controller.hpp"
-#include "motor-control/simple_motor_controller.hpp"
-#include "utils/logging.hpp"
-#include "velocity_controller.hpp"
+#include <roboost/motor_control/encoder.hpp>
+#include <roboost/motor_control/motor_drivers/l298n_motor_driver.hpp>
+#include <roboost/motor_control/pid_motor_controller.hpp>
+#include <roboost/motor_control/robot_controller.hpp>
+#include <roboost/motor_control/simple_motor_controller.hpp>
+#include <roboost/utils/logging.hpp>
 
 #define MOTOR_COUNT 4
 
