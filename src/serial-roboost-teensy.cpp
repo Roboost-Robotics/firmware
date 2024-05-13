@@ -71,7 +71,7 @@ roboost::filters::NoFilter motor_output_filters[MOTOR_COUNT] = {{}, {}, {}, {}};
 
 static double MIN_OUTPUT = 0.35;
 
-roboost::motor_control::PIDMotorController motor_controllers[MOTOR_COUNT] = {{drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
+roboost::motor_control::VelocityController motor_controllers[MOTOR_COUNT] = {{drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
                                                                              {drivers[1], encoders[1], controllers[1], encoder_input_filters[1], motor_output_filters[1], MIN_OUTPUT},
                                                                              {drivers[2], encoders[2], controllers[2], encoder_input_filters[2], motor_output_filters[2], MIN_OUTPUT},
                                                                              {drivers[3], encoders[3], controllers[3], encoder_input_filters[3], motor_output_filters[3], MIN_OUTPUT}};
@@ -114,7 +114,7 @@ const int sync_timeout_ms = 500;
 int64_t synced_time_ms = 0;
 int64_t synced_time_ns = 0;
 
-roboost::timing::TimingService& timing_service = roboost::timing::TimingService::get_instance();
+roboost::timing::Scheduler& timing_service = roboost::timing::Scheduler::get_instance();
 
 IntervalTimer control_loop_timer;
 
@@ -165,41 +165,6 @@ void setup()
     init_microros();
 
     digitalWrite(LED_BUILTIN, HIGH);
-
-    // timing_service.addTask([]() { digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN)); }, TIMING_MS_TO_US(500), TIMING_MS_TO_US(1000), "LED blink");
-
-    // timing_service.addTask([]() { robot_controller.update(); }, TIMING_MS_TO_US(20), TIMING_MS_TO_US(50),
-    //                        "Contoller update"); // Update robot controller every
-    //                                             // 20ms with a timeout of 50ms
-
-    // timing_service.addTask([]() { RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100))); }, TIMING_MS_TO_US(200), TIMING_MS_TO_US(500), "Executor spin");
-
-    // timing_service.addTask([]() { pub_callback(); }, TIMING_MS_TO_US(100), TIMING_MS_TO_US(200), "Publisher");
-
-    // timing_service.addTask([]() { sync_callback(); }, TIMING_MS_TO_US(1000), TIMING_MS_TO_US(2000), "Time sync");
-    // timing_service.addTask(
-    //     []()
-    //     {
-    //         Serial.print("vx: ");
-    //         Serial.print(robot_controller.get_robot_velocity()(0));
-    //         Serial.print(" vy: ");
-    //         Serial.print(robot_controller.get_robot_velocity()(1));
-    //         Serial.print(" vtheta: ");
-    //         Serial.print(robot_controller.get_robot_velocity()(2));
-    //         Serial.print(" dt: ");
-    //         Serial.print(timing_service.getDeltaTime());
-    //         Serial.print("us");
-
-    //         Serial.print(" wanted:: vx: ");
-    //         Serial.print(robot_controller.get_set_wheel_velocities()(0));
-    //         Serial.print(" vy: ");
-    //         Serial.print(robot_controller.get_set_wheel_velocities()(1));
-    //         Serial.print(" vtheta: ");
-    //         Serial.println(robot_controller.get_set_wheel_velocities()(2));
-    //     },
-    //     TIMING_MS_TO_US(1000), TIMING_MS_TO_US(2000), "Robot state");
-
-    // Hardware timer for teensy 4.0 controller update
 }
 
 /**
@@ -227,13 +192,6 @@ void print_free_heap()
 
 void init_microros()
 {
-    // IPAddress agent_ip(AGENT_IP);
-    // uint16_t agent_port = AGENT_PORT;
-    // Serial.println("Initializing micro-ROS transport...");
-    // print_free_heap();
-    // set_microros_wifi_transports((char*)SSID, (char*)SSID_PW, agent_ip,
-    //                              agent_port);
-
     allocator = rcl_get_default_allocator();
 
     INIT(rclc_support_init(&support, 0, NULL, &allocator), logger);
@@ -241,7 +199,6 @@ void init_microros()
 
     INIT(rclc_publisher_init_default(&odom_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry), "odom"), logger);
     INIT(rclc_publisher_init_default(&joint_state_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState), "joint_states"), logger);
-    // INIT(rclc_publisher_init_default(&wanted_joint_state_publisher, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState), "wanted_joint_states"));
 
     INIT(rclc_timer_init_default(&publish_timer, &support, RCL_MS_TO_NS(100), pub_timer_callback), logger);
     INIT(rclc_timer_init_default(&sync_timer, &support, RCL_MS_TO_NS(time_sync_interval), sync_timer_callback), logger);
@@ -337,26 +294,6 @@ void init_joint_state_msg()
     joint_state_msg.velocity.data[1] = 0.0;
     joint_state_msg.velocity.data[2] = 0.0;
     joint_state_msg.velocity.data[3] = 0.0;
-
-    // joint_state_msg.header.frame_id.data = const_cast<char*>(joint_state_frame_id);
-    // joint_state_msg.name.size = 4;
-    // joint_state_msg.name.capacity = 4;
-
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     rosidl_runtime_c__String__assign(&joint_state_msg.name.data[i], joint_names[i]);
-    // }
-
-    // static double position[4] = {0.0, 0.0, 0.0, 0.0};
-    // static double velocity[4] = {0.0, 0.0, 0.0, 0.0};
-
-    // joint_state_msg.position.data = position;
-    // joint_state_msg.position.size = 4;
-    // joint_state_msg.position.capacity = 4;
-
-    // joint_state_msg.velocity.data = velocity;
-    // joint_state_msg.velocity.size = 4;
-    // joint_state_msg.velocity.capacity = 4;
 }
 
 /**
@@ -518,25 +455,12 @@ void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
         return;
     }
 
-    // double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.getDeltaTime());
-    // Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
-
-    // Update odometry
-    // update_odometry(robot_velocity, dt);
     set_ros_timestamp(odom_msg.header, synced_time_ms, synced_time_ns);
     RCSOFTCHECK(rcl_publish(&odom_publisher, &odom_msg, NULL), logger);
 
     // TODO: Remove this
     set_ros_timestamp(joint_state_msg.header, synced_time_ms, synced_time_ns);
     RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL), logger);
-
-    // // Publish joint states
-    // Eigen::Vector4d wheel_velocities = kinematics.calculate_wheel_velocity(robot_velocity);
-    // publish_joint_states(wheel_velocities, dt);
-
-    // // Publish desired joint states
-    // Eigen::Vector4d wanted_wheel_velocities = robot_controller.get_set_wheel_velocities();
-    // publish_wanted_joint_states(wanted_wheel_velocities, dt);
 }
 
 /**

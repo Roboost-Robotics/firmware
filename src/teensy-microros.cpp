@@ -51,7 +51,7 @@ unsigned long last_time_sync_ns = 0;
 int64_t synced_time_ms = 0;
 int64_t synced_time_ns = 0;
 
-roboost::timing::TimingService& timing_service = roboost::timing::TimingService::get_instance(); // TODO: How to use this better for delta time?
+roboost::timing::Scheduler& timing_service = roboost::timing::Scheduler::get_instance(); // TODO: How to use this better for delta time?
 roboost::timing::Task executor_task;
 
 roboost::logging::SerialLogger& logger = roboost::logging::SerialLogger::getInstance(Serial);

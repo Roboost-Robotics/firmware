@@ -66,7 +66,7 @@ NoFilter motor_output_filters[MOTOR_COUNT] = {NoFilter(), NoFilter(), NoFilter()
 
 static double MIN_OUTPUT = 0.35;
 
-PIDMotorController motor_controllers[MOTOR_COUNT] = {{drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
+VelocityController motor_controllers[MOTOR_COUNT] = {{drivers[0], encoders[0], controllers[0], encoder_input_filters[0], motor_output_filters[0], MIN_OUTPUT},
                                                      {drivers[1], encoders[1], controllers[1], encoder_input_filters[1], motor_output_filters[1], MIN_OUTPUT},
                                                      {drivers[2], encoders[2], controllers[2], encoder_input_filters[2], motor_output_filters[2], MIN_OUTPUT},
                                                      {drivers[3], encoders[3], controllers[3], encoder_input_filters[3], motor_output_filters[3], MIN_OUTPUT}};
@@ -107,7 +107,7 @@ const int sync_timeout_ms = 500;
 int64_t synced_time_ms = 0;
 int64_t synced_time_ns = 0;
 
-TimingService& timing_service = TimingService::get_instance();
+Scheduler& timing_service = Scheduler::get_instance();
 
 // Predefined global or static data
 static const char* odom_frame_id = "odom";
@@ -165,21 +165,21 @@ void setup()
         []()
         {
             Serial.print("vx: ");
-            Serial.print(robot_controller.get_robot_velocity()(0));
+            Serial.print(robot_controller.get_robot_vel()(0));
             Serial.print(" vy: ");
-            Serial.print(robot_controller.get_robot_velocity()(1));
+            Serial.print(robot_controller.get_robot_vel()(1));
             Serial.print(" vtheta: ");
-            Serial.print(robot_controller.get_robot_velocity()(2));
+            Serial.print(robot_controller.get_robot_vel()(2));
             Serial.print(" dt: ");
             Serial.print(timing_service.getDeltaTime());
             Serial.print("us");
 
             Serial.print(" wanted:: vx: ");
-            Serial.print(robot_controller.get_set_wheel_velocities()(0));
+            Serial.print(robot_controller.get_wheel_vel_setpoints()(0));
             Serial.print(" vy: ");
-            Serial.print(robot_controller.get_set_wheel_velocities()(1));
+            Serial.print(robot_controller.get_wheel_vel_setpoints()(1));
             Serial.print(" vtheta: ");
-            Serial.println(robot_controller.get_set_wheel_velocities()(2));
+            Serial.println(robot_controller.get_wheel_vel_setpoints()(2));
         },
         TIMING_MS_TO_US(1000), TIMING_MS_TO_US(2000), "Robot state");
 }
@@ -446,7 +446,7 @@ void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
     }
 
     double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.getDeltaTime());
-    Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
+    Eigen::Vector3d robot_velocity = robot_controller.get_robot_vel();
 
     // Update odometry
     update_odometry(robot_velocity, dt);
@@ -458,14 +458,14 @@ void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
     publish_joint_states(wheel_velocities, dt);
 
     // Publish desired joint states
-    Eigen::Vector4d wanted_wheel_velocities = robot_controller.get_set_wheel_velocities();
+    Eigen::Vector4d wanted_wheel_velocities = robot_controller.get_wheel_vel_setpoints();
     publish_wanted_joint_states(wanted_wheel_velocities, dt);
 }
 
 void pub_callback()
 {
     double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.getDeltaTime());
-    Eigen::Vector3d robot_velocity = robot_controller.get_robot_velocity();
+    Eigen::Vector3d robot_velocity = robot_controller.get_robot_vel();
 
     // Update odometry
     update_odometry(robot_velocity, dt);
@@ -477,7 +477,7 @@ void pub_callback()
     publish_joint_states(wheel_velocities, dt);
 
     // Publish desired joint states
-    Eigen::Vector4d wanted_wheel_velocities = robot_controller.get_set_wheel_velocities();
+    Eigen::Vector4d wanted_wheel_velocities = robot_controller.get_wheel_vel_setpoints();
     publish_wanted_joint_states(wanted_wheel_velocities, dt);
 }
 
