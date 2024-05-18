@@ -63,7 +63,7 @@ int main()
     float kp = 0.6, ki = 1.05, kd = 0.001;
     LowPassFilter derivative_filter(1.0 / (1.0 + 2.0 * M_PI * kd * dt), dt);
 
-    ConsoleLogger& logger = ConsoleLogger::getInstance();
+    ConsoleLogger& logger = ConsoleLogger::get_instance();
     Scheduler timing_service = Scheduler::get_instance(logger);
     timing_service.setDeltaTime(TIMING_S_TO_US(dt));
 

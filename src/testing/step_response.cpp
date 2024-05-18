@@ -19,7 +19,7 @@ using namespace roboost::controllers;
 using namespace roboost::filters;
 using namespace roboost::numeric;
 
-SerialLogger& logger = SerialLogger::getInstance();
+SerialLogger& logger = SerialLogger::get_instance();
 Scheduler& timing_service = Scheduler::get_instance(logger);
 
 // For VelocityController
@@ -81,7 +81,7 @@ const double frequency = 0.1;
 void setup()
 {
     Serial.begin(115200);
-    logger.setSerial(Serial);
+    logger.set_serial(Serial);
     encoder.set_timing_service(timing_service);
     encoder.set_logger(logger);
 }
@@ -147,7 +147,7 @@ void loop()
         Serial.print(">error[rad/s]:");
         Serial.println(setpoint - input_filter.get_output());
         Serial.print(">dt[us]:");
-        Serial.println(timing_service.getDeltaTime());
+        Serial.println(timing_service.get_delta_time());
         Serial.print(">P:");
         Serial.println(controller.get_previous_error() * kp);
         Serial.print(">I:");

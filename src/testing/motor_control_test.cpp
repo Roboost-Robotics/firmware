@@ -1,19 +1,19 @@
 #include <Arduino.h>
 #include <conf_hardware.h>
 #include <math.h> // Include the math library for sine function
+#include <roboost/kinematics/kinematics.hpp>
 #include <roboost/motor_control/encoders/encoder.hpp>
-#include <roboost/motor_control/motor_controllers/position_motor_controller.hpp>
+#include <roboost/motor_control/motor_control_manager.hpp>
 #include <roboost/motor_control/motor_controllers/velocity_motor_controller.hpp>
-#include <roboost/motor_control/motor_drivers/l298n_motor_driver.hpp>
+#include <roboost/motor_control/motor_drivers/motor_driver.hpp>
+#include <roboost/motor_control/robot_controller.hpp>
 #include <roboost/utils/callback_scheduler.hpp>
 #include <roboost/utils/controllers.hpp>
 #include <roboost/utils/filters.hpp>
-#include <roboost/utils/gradient_descent.hpp>
-#include <roboost/utils/interval_callback.hpp>
 #include <roboost/utils/logging.hpp>
+#include <roboost/utils/matrices.hpp>
 #include <roboost/utils/rtos_task_manager.hpp>
 #include <roboost/utils/time_macros.hpp>
-#include <roboost/utils/velocity_estimator.hpp>
 
 #define MOTOR_COUNT 4
 
@@ -22,50 +22,34 @@ using namespace roboost::timing;
 using namespace roboost::logging;
 using namespace roboost::controllers;
 using namespace roboost::filters;
-using namespace roboost::numeric;
+using namespace roboost::math;
+using namespace roboost::kinematics;
+using namespace roboost::robot_controller;
 
-SerialLogger& logger = SerialLogger::getInstance();
-CallbackScheduler& timing_service = CallbackScheduler::get_instance(logger);
-RTOSTaskManager& task_manager = RTOSTaskManager::get_instance(logger);
+Logger& logger = Logger::get_instance<SerialLogger>(Serial);
+CallbackScheduler& timing_service = CallbackScheduler::get_instance();
+TaskManager& task_manager = TaskManager::get_instance();
 
-// For VelocityController
+// PID Controller parameters
 const double kp = 1.0;
 const double ki = 0.0;
 const double kd = 0.0;
-
-// For PositionController
-// const double kp = 2.8;
-// const double ki = 0.0;
-// const double kd = 0.0;
-
 const double max_integral = 50.0;
 
-// NoFilter derivative_filter = NoFilter();
-
-// Position Controller:
-const double cutoff_frequency_derivative = 100000; // 10 Hz
-const double sampling_time_derivative = 0.0000001; // 50 microseconds
-
-const double cuttoff_frequency_setpoint = 150;
+// Filter parameters
+const double cutoff_frequency_derivative = 100000;
+const double sampling_time_derivative = 0.0000001;
+const double cutoff_frequency_setpoint = 150;
 const double sampling_time_setpoint = 0.000001;
-
 const uint8_t output_filter_window_size = 100;
-
 const uint8_t input_filter_window_size = 100;
-
-const double max_rate_per_second = 0.0006; // 0.00006 rad/s
-const double update_rate = 0.1;            // 0.1 seconds
-
+const double max_rate_per_second = 0.0006;
+const double update_rate = 0.1;
 const double deadband_threshold = 0.01;
 const double minimum_output = 0.05;
 
+// Motor, Encoder, and Controller instances
 // clang-format off
-LowPassFilter derivative_filter[MOTOR_COUNT] = {
-    {cutoff_frequency_derivative, sampling_time_derivative},
-    {cutoff_frequency_derivative, sampling_time_derivative},
-    {cutoff_frequency_derivative, sampling_time_derivative},
-    {cutoff_frequency_derivative, sampling_time_derivative}};
-    
 L298NMotorDriver motor_driver[MOTOR_COUNT] = {
     {M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL},
     {M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL},
@@ -86,49 +70,75 @@ DummyEncoder encoder[MOTOR_COUNT] = {
     {M3_ENC_RESOLUTION}};
 #endif
 
-PIDController controller[MOTOR_COUNT] = {
-    {kp, ki, kd, max_integral, derivative_filter[0], &timing_service},
-    {kp, ki, kd, max_integral, derivative_filter[1], &timing_service},
-    {kp, ki, kd, max_integral, derivative_filter[2], &timing_service},
-    {kp, ki, kd, max_integral, derivative_filter[3], &timing_service}};
+LowPassFilter<double> derivative_filter[MOTOR_COUNT] = {
+    {cutoff_frequency_derivative, sampling_time_derivative},
+    {cutoff_frequency_derivative, sampling_time_derivative},
+    {cutoff_frequency_derivative, sampling_time_derivative},
+    {cutoff_frequency_derivative, sampling_time_derivative}};
 
-// Position Controller:
-// NoFilter input_filter[MOTOR_COUNT] = {{}, {}, {}, {}};
+PIDController<double, LowPassFilter<double>> controller[MOTOR_COUNT] = {
+    {kp, ki, kd, max_integral, derivative_filter[0]},
+    {kp, ki, kd, max_integral, derivative_filter[1]},
+    {kp, ki, kd, max_integral, derivative_filter[2]},
+    {kp, ki, kd, max_integral, derivative_filter[3]}};
 
-// Velocity Controller:
-MovingAverageFilter input_filter[MOTOR_COUNT] = {
+MovingAverageFilter<double> input_filter[MOTOR_COUNT] = {
     {input_filter_window_size},
     {input_filter_window_size},
     {input_filter_window_size},
     {input_filter_window_size}};
 
-MovingAverageFilter output_filter[MOTOR_COUNT] = {
+MovingAverageFilter<double> output_filter[MOTOR_COUNT] = {
     {output_filter_window_size},
     {output_filter_window_size},
     {output_filter_window_size},
     {output_filter_window_size}};
 
-LowPassFilter setpoint_filter[4] = {
-    {cuttoff_frequency_setpoint, sampling_time_setpoint},
-    {cuttoff_frequency_setpoint, sampling_time_setpoint},
-    {cuttoff_frequency_setpoint, sampling_time_setpoint},
-    {cuttoff_frequency_setpoint, sampling_time_setpoint}};
-
-RateLimitingFilter rate_limiting_filter[MOTOR_COUNT] = {
+RateLimitingFilter<double> rate_limiting_filter[MOTOR_COUNT] = {
     {max_rate_per_second, update_rate},
     {max_rate_per_second, update_rate},
     {max_rate_per_second, update_rate},
     {max_rate_per_second, update_rate}};
 
-VelocityController motor_controller[MOTOR_COUNT] = {
-    {motor_driver[0], encoder[0], controller[0], input_filter[0], output_filter[0], rate_limiting_filter[0], deadband_threshold, minimum_output},
-    {motor_driver[1], encoder[1], controller[1], input_filter[1], output_filter[1], rate_limiting_filter[1], deadband_threshold, minimum_output},
-    {motor_driver[2], encoder[2], controller[2], input_filter[2], output_filter[2], rate_limiting_filter[2], deadband_threshold, minimum_output},
-    {motor_driver[3], encoder[3], controller[3], input_filter[3], output_filter[3], rate_limiting_filter[3], deadband_threshold, minimum_output}};
+VelocityController<L298NMotorDriver,
+                    HalfQuadEncoder,
+                    PIDController<double, LowPassFilter<double>>,
+                    MovingAverageFilter<double>,
+                    MovingAverageFilter<double>,
+                    RateLimitingFilter<double>>
+    motor_controller[MOTOR_COUNT] = {
+        {motor_driver[0], encoder[0], controller[0], input_filter[0], output_filter[0], rate_limiting_filter[0], deadband_threshold, minimum_output},
+        {motor_driver[1], encoder[1], controller[1], input_filter[1], output_filter[1], rate_limiting_filter[1], deadband_threshold, minimum_output},
+        {motor_driver[2], encoder[2], controller[2], input_filter[2], output_filter[2], rate_limiting_filter[2], deadband_threshold, minimum_output},
+        {motor_driver[3], encoder[3], controller[3], input_filter[3], output_filter[3], rate_limiting_filter[3], deadband_threshold, minimum_output}};
+
+MotorControllerManager<
+    VelocityController<L298NMotorDriver,
+                        HalfQuadEncoder,
+                        PIDController<double, LowPassFilter<double>>,
+                        MovingAverageFilter<double>,
+                        MovingAverageFilter<double>,
+                        RateLimitingFilter<double>>>
+    motor_manager = {
+        &motor_controller[0],
+        &motor_controller[1],
+        &motor_controller[2],
+        &motor_controller[3]};
+
+MecanumKinematics4W kinematics_model(0.05, 0.3, 0.3);
+
+RobotVelocityController<
+    VelocityController<L298NMotorDriver,
+                        HalfQuadEncoder,
+                        PIDController<double, LowPassFilter<double>>,
+                        MovingAverageFilter<double>,
+                        MovingAverageFilter<double>,
+                        RateLimitingFilter<double>>,
+                        MecanumKinematics4W>
+    robot_controller(motor_manager, kinematics_model);
 // clang-format on
 
 const double max_amplitude = PI / 2; // Maximum speed in rad/s
-
 unsigned long last_time = 0;
 const double amplitude = max_amplitude;
 const double frequency = 0.1;
@@ -185,10 +195,14 @@ void controlLoop(void* pvParameters)
         unsigned long time = TIMING_US_TO_MS(timing_service.getLastUpdateTime()); // Get time in milliseconds
         setpoint = getSetpoint(time);                                             // Get setpoint from function pointer
 
-        for (int i = 0; i < MOTOR_COUNT; i++)
-        {
-            motor_controller[i].set_target(setpoint);
-        }
+        Vector<double> target_velocity(3);
+        target_velocity[0] = setpoint; // vx
+        target_velocity[1] = 0.0;      // vy
+        target_velocity[2] = 0.0;      // vz
+
+        robot_controller.set_latest_command(target_velocity);
+        robot_controller.update();
+
         vTaskDelay(1);
     }
 }
@@ -198,19 +212,21 @@ void debugLoop(void* pvParameters)
     while (1)
     {
         Serial.print(">control_task_exec_time[us]:");
-        Serial.println(timing_service.getDeltaTime());
+        Serial.println(timing_service.get_delta_time());
         Serial.print(">debug_task_priority:");
 
-        Serial.print(">measured[rad/s]:");
+        Serial.print(">measured_vel[rad/s]:");
         Serial.println(encoder[3].get_velocity()); // TODO: Such a low resolution encoder does not work well with high update rates
-        Serial.print(">measured_filtered[rad/s]:");
+        Serial.print(">measured_vel_filtered[rad/s]:");
         Serial.println(input_filter[3].get_output());
+        Serial.print(">measured_pos[ticks]:");
+        Serial.println(encoder[3].get_position());
         Serial.print(">setpoint[rad/s]:");
         Serial.println(setpoint);
         Serial.print(">error[rad/s]:");
         Serial.println(setpoint - input_filter[3].get_output());
         Serial.print(">dt[us]:");
-        Serial.println(timing_service.getDeltaTime());
+        Serial.println(timing_service.get_delta_time());
         Serial.print(">P:");
         Serial.println(controller[3].get_previous_error() * kp);
         Serial.print(">I:");
@@ -229,25 +245,18 @@ void debugLoop(void* pvParameters)
 void setup()
 {
     Serial.begin(115200);
-    logger.setSerial(Serial);
 
     Serial.print(">start:");
     Serial.println(millis());
-// Set timing and logger for all encoders
-#ifdef ESP32
-    for (int i = 0; i < MOTOR_COUNT; i++)
-    {
-        encoder[i].set_timing_service(timing_service);
-        encoder[i].set_logger(logger);
-    }
-#endif
 
-    task_manager.createTask(controlLoop, "ControlTask", 2048, NULL, (configMAX_PRIORITIES - 1));
-    task_manager.createTask(debugLoop, "DebugTask", 2048, NULL, 1);
+    task_manager.create_task(controlLoop, "ControlTask", 2048, NULL, (configMAX_PRIORITIES - 1));
+    task_manager.create_task(debugLoop, "DebugTask", 2048, NULL, 1);
 
     // Disable loop
     while (1)
     {
+
+        // motor_driver[3].set_motor_control(1 << 10); // Set motor to full speed
         // delay(1000);
     }
 }

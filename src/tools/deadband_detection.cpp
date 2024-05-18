@@ -19,7 +19,7 @@ using namespace roboost::filters;
 
 L298NMotorDriver motor_driver(M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL);
 HalfQuadEncoder encoder(M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION, false);
-SerialLogger& logger = SerialLogger::getInstance();
+SerialLogger& logger = SerialLogger::get_instance();
 Scheduler& timing_service = Scheduler::get_instance();
 
 void setup()
