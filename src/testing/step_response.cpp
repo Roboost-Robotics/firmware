@@ -162,5 +162,5 @@ void loop()
         // delay(100);
     }
 
-    motor_controller.set_target(setpoint);
+    motor_controller.update(setpoint);
 }
