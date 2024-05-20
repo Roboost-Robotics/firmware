@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <conf_hardware.h>
-#include <math.h> // Include the math library for sine function
+#include <math.h>
 #include <roboost/kinematics/kinematics.hpp>
 #include <roboost/motor_control/encoders/encoder.hpp>
 #include <roboost/motor_control/motor_control_manager.hpp>
@@ -31,22 +31,22 @@ CallbackScheduler& timing_service = CallbackScheduler::get_instance();
 TaskManager& task_manager = TaskManager::get_instance();
 
 // PID Controller parameters
-const double kp = 1.0;
-const double ki = 0.0;
-const double kd = 0.0;
-const double max_integral = 50.0;
+constexpr float kp = 1.0;
+constexpr float ki = 0;
+constexpr float kd = 0;
+constexpr float max_integral = 50;
 
 // Filter parameters
-const double cutoff_frequency_derivative = 100000;
-const double sampling_time_derivative = 0.0000001;
-const double cutoff_frequency_setpoint = 150;
-const double sampling_time_setpoint = 0.000001;
-const uint8_t output_filter_window_size = 100;
-const uint8_t input_filter_window_size = 100;
-const double max_rate_per_second = 0.0006;
-const double update_rate = 0.1;
-const double deadband_threshold = 0.01;
-const double minimum_output = 0.05;
+constexpr float cutoff_frequency_derivative = 100000;
+constexpr float sampling_time_derivative = 1; // Assuming time is in microseconds and needs to be scaled appropriately
+constexpr float cutoff_frequency_setpoint = 150;
+constexpr float sampling_time_setpoint = 1; // Assuming time is in microseconds and needs to be scaled appropriately
+constexpr uint8_t output_filter_window_size = 100;
+constexpr uint8_t input_filter_window_size = 100;
+constexpr float max_rate_per_second = 6;   // Assuming it needs scaling
+constexpr float update_rate = 10000;       // Assuming time is in microseconds
+constexpr int32_t deadband_threshold = 10; // example value, in ticks/s
+constexpr int32_t minimum_output = 50;     // example value, scaled by 1024
 
 // Motor, Encoder, and Controller instances
 // clang-format off
@@ -70,31 +70,31 @@ DummyEncoder encoder[MOTOR_COUNT] = {
     {M3_ENC_RESOLUTION}};
 #endif
 
-LowPassFilter<double> derivative_filter[MOTOR_COUNT] = {
+LowPassFilter<float> derivative_filter[MOTOR_COUNT] = {
     {cutoff_frequency_derivative, sampling_time_derivative},
     {cutoff_frequency_derivative, sampling_time_derivative},
     {cutoff_frequency_derivative, sampling_time_derivative},
     {cutoff_frequency_derivative, sampling_time_derivative}};
 
-PIDController<double, LowPassFilter<double>> controller[MOTOR_COUNT] = {
+PIDController<float, LowPassFilter<float>> controller[MOTOR_COUNT] = {
     {kp, ki, kd, max_integral, derivative_filter[0]},
     {kp, ki, kd, max_integral, derivative_filter[1]},
     {kp, ki, kd, max_integral, derivative_filter[2]},
     {kp, ki, kd, max_integral, derivative_filter[3]}};
 
-MovingAverageFilter<double> input_filter[MOTOR_COUNT] = {
+MovingAverageFilter<float> input_filter[MOTOR_COUNT] = {
     {input_filter_window_size},
     {input_filter_window_size},
     {input_filter_window_size},
     {input_filter_window_size}};
 
-MovingAverageFilter<double> output_filter[MOTOR_COUNT] = {
+MovingAverageFilter<float> output_filter[MOTOR_COUNT] = {
     {output_filter_window_size},
     {output_filter_window_size},
     {output_filter_window_size},
     {output_filter_window_size}};
 
-RateLimitingFilter<double> rate_limiting_filter[MOTOR_COUNT] = {
+RateLimitingFilter<float> rate_limiting_filter[MOTOR_COUNT] = {
     {max_rate_per_second, update_rate},
     {max_rate_per_second, update_rate},
     {max_rate_per_second, update_rate},
@@ -102,10 +102,10 @@ RateLimitingFilter<double> rate_limiting_filter[MOTOR_COUNT] = {
 
 VelocityController<L298NMotorDriver,
                     HalfQuadEncoder,
-                    PIDController<double, LowPassFilter<double>>,
-                    MovingAverageFilter<double>,
-                    MovingAverageFilter<double>,
-                    RateLimitingFilter<double>>
+                    PIDController<float, LowPassFilter<float>>,
+                    MovingAverageFilter<float>,
+                    MovingAverageFilter<float>,
+                    RateLimitingFilter<float>>
     motor_controller[MOTOR_COUNT] = {
         {motor_driver[0], encoder[0], controller[0], input_filter[0], output_filter[0], rate_limiting_filter[0], deadband_threshold, minimum_output},
         {motor_driver[1], encoder[1], controller[1], input_filter[1], output_filter[1], rate_limiting_filter[1], deadband_threshold, minimum_output},
@@ -115,65 +115,65 @@ VelocityController<L298NMotorDriver,
 MotorControllerManager<
     VelocityController<L298NMotorDriver,
                         HalfQuadEncoder,
-                        PIDController<double, LowPassFilter<double>>,
-                        MovingAverageFilter<double>,
-                        MovingAverageFilter<double>,
-                        RateLimitingFilter<double>>>
+                        PIDController<float, LowPassFilter<float>>,
+                        MovingAverageFilter<float>,
+                        MovingAverageFilter<float>,
+                        RateLimitingFilter<float>>>
     motor_manager = {
         &motor_controller[0],
         &motor_controller[1],
         &motor_controller[2],
         &motor_controller[3]};
 
-MecanumKinematics4W kinematics_model(0.05, 0.3, 0.3);
+MecanumKinematics4W kinematics_model(50, 300, 300); // Units in mm
 
 RobotVelocityController<
     VelocityController<L298NMotorDriver,
                         HalfQuadEncoder,
-                        PIDController<double, LowPassFilter<double>>,
-                        MovingAverageFilter<double>,
-                        MovingAverageFilter<double>,
-                        RateLimitingFilter<double>>,
+                        PIDController<float, LowPassFilter<float>>,
+                        MovingAverageFilter<float>,
+                        MovingAverageFilter<float>,
+                        RateLimitingFilter<float>>,
                         MecanumKinematics4W>
     robot_controller(motor_manager, kinematics_model);
 // clang-format on
 
-const double max_amplitude = PI / 2; // Maximum speed in rad/s
+const float max_amplitude = 2 * M_PI;
 unsigned long last_time = 0;
-const double amplitude = max_amplitude;
-const double frequency = 0.1;
+const float amplitude = max_amplitude;
+const float frequency = 0.1;
 
-volatile double setpoint = 0.0;
+volatile int32_t setpoint = 0;
 
 // Function for sine wave setpoint
-double sineWaveSetpoint(unsigned long time) { return amplitude * sin(2 * PI * frequency * time / 1000.0); }
+int32_t sineWaveSetpoint(unsigned long time) { return amplitude * sin(2 * PI * frequency * time / 1000.0); }
 
 // Function for step response setpoint
-double stepResponseSetpoint(unsigned long time)
+int32_t stepResponseSetpoint(unsigned long time)
 {
-    return time > 5000 ? amplitude : 0.0; // Step to amplitude after 5 seconds
+    return time > 5000 ? amplitude : 0; // Step to amplitude after 5 seconds
 }
 
 // Function for rectangular wave setpoint
-double rectangularWaveSetpoint(unsigned long time)
+int32_t rectangularWaveSetpoint(unsigned long time)
 {
-    double period = 1000.0 / frequency; // Convert frequency to period in milliseconds
+    float period = 1000.0 / frequency; // Convert frequency to period in milliseconds
     if ((time / (long)(period / 2)) % 2 == 0)
     {
         return amplitude; // Setpoint is at high amplitude
     }
     else
     {
-        return 0.0; // Setpoint is reset to 0
+        return 0; // Setpoint is reset to 0
     }
 }
 
 // Function for triangular wave setpoint
-double triangularWaveSetpoint(unsigned long time)
+int32_t triangularWaveSetpoint(unsigned long time)
 {
-    double period = 1000.0 / frequency; // Convert frequency to period in milliseconds
-    double phase = time / period;
-    double phase_mod = phase - (long)phase; // Get the fractional part of the phase
+    float period = 1000.0 / frequency; // Convert frequency to period in milliseconds
+    float phase = time / period;
+    float phase_mod = phase - (long)phase; // Get the fractional part of the phase
     if (phase_mod < 0.5)
     {
         return 4 * amplitude * phase_mod; // Setpoint is increasing
@@ -184,7 +184,7 @@ double triangularWaveSetpoint(unsigned long time)
     }
 }
 
-double (*getSetpoint)(unsigned long) = stepResponseSetpoint; // Function pointer to current setpoint function
+int32_t (*getSetpoint)(unsigned long) = stepResponseSetpoint; // Function pointer to current setpoint function
 
 void controlLoop(void* pvParameters)
 {
@@ -192,13 +192,13 @@ void controlLoop(void* pvParameters)
     {
         timing_service.update();
 
-        unsigned long time = TIMING_US_TO_MS(timing_service.getLastUpdateTime()); // Get time in milliseconds
-        setpoint = getSetpoint(time);                                             // Get setpoint from function pointer
+        unsigned long time = TIMING_US_TO_MS(timing_service.get_last_update_time()); // Get time in milliseconds
+        setpoint = getSetpoint(time);                                                // Get setpoint from function pointer
 
-        Vector<double> target_velocity(3);
+        Vector<float> target_velocity(3);
         target_velocity[0] = setpoint; // vx
-        target_velocity[1] = 0.0;      // vy
-        target_velocity[2] = 0.0;      // vz
+        target_velocity[1] = 0;        // vy
+        target_velocity[2] = 0;        // vz
 
         robot_controller.set_latest_command(target_velocity);
         robot_controller.update();
@@ -215,24 +215,24 @@ void debugLoop(void* pvParameters)
         Serial.println(timing_service.get_delta_time());
         Serial.print(">debug_task_priority:");
 
-        Serial.print(">measured_vel[rad/s]:");
+        Serial.print(">measured_vel[ticks/s]:");
         Serial.println(encoder[3].get_velocity()); // TODO: Such a low resolution encoder does not work well with high update rates
-        Serial.print(">measured_vel_filtered[rad/s]:");
+        Serial.print(">measured_vel_filtered[ticks/s]:");
         Serial.println(input_filter[3].get_output());
         Serial.print(">measured_pos[ticks]:");
         Serial.println(encoder[3].get_position());
-        Serial.print(">setpoint[rad/s]:");
+        Serial.print(">setpoint[ticks/s]:");
         Serial.println(setpoint);
-        Serial.print(">error[rad/s]:");
+        Serial.print(">error[ticks/s]:");
         Serial.println(setpoint - input_filter[3].get_output());
         Serial.print(">dt[us]:");
         Serial.println(timing_service.get_delta_time());
         Serial.print(">P:");
-        Serial.println(controller[3].get_previous_error() * kp);
+        Serial.println(controller[3].get_previous_error() * kp / 1024);
         Serial.print(">I:");
-        Serial.println(controller[3].get_integral() * ki);
+        Serial.println(controller[3].get_integral() * ki / 1024);
         Serial.print(">D:");
-        Serial.println(controller[3].get_derivative() * kd);
+        Serial.println(controller[3].get_derivative() * kd / 1024);
         Serial.print(">control_value:");
         Serial.println(motor_driver[3].get_motor_control());
         Serial.print(">position_setpoint:");
@@ -255,7 +255,6 @@ void setup()
     // Disable loop
     while (1)
     {
-
         // motor_driver[3].set_motor_control(1 << 10); // Set motor to full speed
         // delay(1000);
     }

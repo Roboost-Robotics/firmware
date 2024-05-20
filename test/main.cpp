@@ -1,5 +1,6 @@
 #include "test_controllers.hpp"
 #include "test_kinematics.hpp"
+#include "test_velocity_controller.hpp"
 #include <gtest/gtest.h>
 
 int main(int argc, char** argv)
