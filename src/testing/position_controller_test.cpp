@@ -7,6 +7,7 @@
 #include <roboost/motor_control/motor_drivers/motor_driver.hpp>
 #include <roboost/utils/callback_scheduler.hpp>
 #include <roboost/utils/controllers.hpp>
+#include <roboost/utils/estimators.hpp>
 #include <roboost/utils/filters.hpp>
 #include <roboost/utils/logging.hpp>
 #include <roboost/utils/rtos_task_manager.hpp>
@@ -17,10 +18,15 @@ using namespace roboost::timing;
 using namespace roboost::logging;
 using namespace roboost::controllers;
 using namespace roboost::filters;
+using namespace roboost::estimators;
 
 Logger& logger = Logger::get_instance<SerialLogger>(Serial); // TODO: Add logger style for teleplot
 CallbackScheduler& timing_service = CallbackScheduler::get_instance();
 TaskManager& task_manager = TaskManager::get_instance();
+
+constexpr size_t OUTPUT_VALUES_SIZE = 50;
+// Save the last OUTPUT_VALUES_SIZE values of the output
+std::vector<float> output_values(OUTPUT_VALUES_SIZE);
 
 // PID Controller parameters for no load (Step response)
 // constexpr float kp = 0.8;
@@ -33,19 +39,19 @@ TaskManager& task_manager = TaskManager::get_instance();
 // constexpr float kd = 0.045;
 
 // PID Controller parameters for no load (Sine wave)
-constexpr float kp = 2.8;
-constexpr float ki = 0;
-constexpr float kd = 0.045;
+constexpr float kp = 2.8;   // 2.8
+constexpr float ki = 0.0;   // 0
+constexpr float kd = 0.045; // 0.045
 
-constexpr float max_integral = 50;
+constexpr float max_integral = 1000;
 
 // Filter parameters
-constexpr float cutoff_frequency_derivative = 1;
-constexpr float sampling_time_derivative = 1; // Assuming time is in microseconds and needs to be scaled appropriately
-constexpr uint8_t input_filter_window_size = 1;
+constexpr float cutoff_frequency_derivative = 20;
+constexpr float sampling_time_derivative = 0.001; // Assuming time is in microseconds and needs to be scaled appropriately
+constexpr uint8_t input_filter_window_size = 80;
 constexpr uint8_t output_filter_window_size = 1;
-constexpr float max_rate_per_second = 6; // Assuming it needs scaling
-constexpr float update_rate = 1;         // Assuming time is in microseconds
+constexpr float max_rate_per_second = 0.8; // Assuming it needs scaling
+constexpr float update_rate = 0.000001;    // Assuming time is in microseconds
 constexpr float deadband_threshold = 0.01f;
 constexpr float minimum_output = 0.02f;
 
@@ -54,17 +60,24 @@ L298NMotorDriver motor_driver = {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL};
 
 HalfQuadEncoder encoder = {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION};
 
+// NoFilter<float> derivative_filter = {};
 // LowPassFilter<float> derivative_filter = {cutoff_frequency_derivative, sampling_time_derivative};
-NoFilter<float> derivative_filter = {};
+// MovingAverageFilter<float> derivative_filter = {input_filter_window_size};
+LowPassFilter<float> derivative_filter = {cutoff_frequency_derivative, sampling_time_derivative};
 PIDController<float> controller = {kp, ki, kd, max_integral, derivative_filter};
 // MovingAverageFilter<float> input_filter = {input_filter_window_size};
 NoFilter<float> input_filter = {};
-// MovingAverageFilter<float> output_filter = {output_filter_window_size};
+// LowPassFilter<float> input_filter = {cutoff_frequency_derivative, sampling_time_derivative};
 NoFilter<float> output_filter = {};
+// LowPassFilter<float> output_filter = {cutoff_frequency_derivative, sampling_time_derivative};
+// MovingAverageFilter<float> output_filter = {output_filter_window_size};
+// LowPassFilter<float> output_filter = {cutoff_frequency_derivative, sampling_time_derivative};
 // RateLimitingFilter<float> rate_limiting_filter = {max_rate_per_second, update_rate};
 NoFilter<float> rate_limiting_filter = {};
 
 PositionController motor_controller = {motor_driver, encoder, controller, input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output};
+
+IncrementalEncoderVelocityEstimator velocity_estimator = {0.000001, 0.01, 50};
 
 const float max_amplitude = 2 * M_PI;
 unsigned long last_time = 0;
@@ -112,10 +125,16 @@ float triangularWaveSetpoint(unsigned long time)
     }
 }
 
-float (*getSetpoint)(unsigned long) = sineWaveSetpoint; // Function pointer to current setpoint function
+float (*getSetpoint)(unsigned long) = triangularWaveSetpoint; // Function pointer to current setpoint function
 
 void controlLoop(void* pvParameters)
 {
+    TickType_t xLastWakeTime;
+    const TickType_t xFrequency = pdMS_TO_TICKS(1); // 1 tick
+
+    // Initialise the xLastWakeTime variable with the current time.
+    xLastWakeTime = xTaskGetTickCount();
+
     while (1)
     {
         timing_service.update();
@@ -125,7 +144,20 @@ void controlLoop(void* pvParameters)
 
         motor_controller.update(setpoint);
 
-        vTaskDelay(1);
+        // Put the current output in the output_values vector
+        output_values.push_back(controller.get_output());
+        if (output_values.size() > OUTPUT_VALUES_SIZE)
+        {
+            output_values.erase(output_values.begin());
+        }
+
+        // velocity_estimator.update(encoder.get_position_radians());
+
+        // Serial.print(">setpoint[rad]:");
+        // Serial.println(setpoint);
+
+        // Wait for the next cycle.
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
 
@@ -133,12 +165,12 @@ void debugLoop(void* pvParameters)
 {
     while (1)
     {
-        Serial.print(">measured_vel[ticks/s]:");
-        Serial.println(encoder.get_velocity());
+        Serial.print(">estimated_vel[rad/s]:");
+        Serial.println(velocity_estimator.get_output());
         Serial.print(">measured_pos[ticks]:");
         Serial.println(encoder.get_position());
         Serial.print(">measured_pos[rad]:");
-        Serial.println(encoder.ticks_to_radians(encoder.get_position()));
+        Serial.println(encoder.get_position_radians());
         Serial.print(">setpoint[rad]:");
         Serial.println(setpoint);
         Serial.print(">error[rad]:");
@@ -151,10 +183,19 @@ void debugLoop(void* pvParameters)
         Serial.println(controller.get_integral() * ki);
         Serial.print(">D:");
         Serial.println(controller.get_derivative() * kd);
+        Serial.print(">output:");
+        Serial.println(controller.get_output());
+        Serial.print(">filtered_output:");
+        Serial.println(output_filter.get_output());
         Serial.print(">control_value:");
         Serial.println(motor_driver.get_motor_control());
         Serial.print(">position_setpoint:");
         Serial.println(motor_controller.get_setpoint());
+        for (auto value : output_values)
+        {
+            Serial.print(">output_values:");
+            Serial.println(value);
+        }
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }
