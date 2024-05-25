@@ -3,6 +3,7 @@
 #include <math.h>
 #include <roboost/motor_control/encoders/half_quad_encoder.hpp>
 #include <roboost/motor_control/motor_control_manager.hpp>
+#include <roboost/motor_control/motor_controllers/position_motor_controller.hpp>
 #include <roboost/motor_control/motor_controllers/velocity_motor_controller.hpp>
 #include <roboost/motor_control/motor_drivers/motor_driver.hpp>
 #include <roboost/utils/callback_scheduler.hpp>
@@ -26,43 +27,24 @@ CallbackScheduler& timing_service = CallbackScheduler::get_instance();
 TaskManager& task_manager = TaskManager::get_instance();
 
 // PID Controller parameters for no load (Sine wave)
-constexpr float kp = 0.1;
-constexpr float ki = 0.8;
-constexpr float kd = 0.0;
+constexpr float kp = 2;     // 2.8
+constexpr float ki = 0.0;   // 0
+constexpr float kd = 0.045; // 0.045
 constexpr float max_integral = 4000;
 
 // Motor, Encoder, and Controller instances
 L298NMotorDriver motor_driver = {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL};
 HalfQuadEncoder encoder = {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION};
 
-// NoFilter<float> derivative_filter = {};
-// NoFilter<float> input_filter = {};
-MovingAverageFilter<float> input_filter = {10};
-
-// float input_filter_cutoff_frequency = 500, lowpass_filter_sampling_time = 0.000001;
-// LowPassFilter<float> input_filter1 = {input_filter_cutoff_frequency, lowpass_filter_sampling_time};
-// MovingAverageFilter<float> input_filter2 = {50};
-
-// Chained filter takes unique pointers to filters
-// ChainedFilter<float> input_filter = {};
-
-// MovingAverageFilter<float> input_filter = {50};
-// NoFilter<float> output_filter = {};
-// float max_rate_per_second = 1, update_rate = 0.000001;
-// RateLimitingFilter<float> output_filter = {max_rate_per_second, update_rate};
-// LowPassFilter<float> output_filter = {10000, 0.000001};
-MovingAverageFilter<float> output_filter = {30};
-// NoFilter<float> rate_limiting_filter = {};
 NoFilter<float> derivative_filter = {};
+NoFilter<float> input_filter = {};
+NoFilter<float> output_filter = {};
 
-// Initialize TrackingLoop estimator
-// TrackingLoop velocity_estimator(estimator_kp, estimator_ki, estimator_kd, max_integral, derivative_filter);
-// NoEstimator velocity_estimator = {};
-IncrementalEncoderVelocityEstimator velocity_estimator = {0.0000001, 1, 100};
+NoEstimator velocity_estimator = {};
 
 // PID Controller for velocity control
 PIDController<float> controller = {kp, ki, kd, max_integral, derivative_filter};
-VelocityController motor_controller = {motor_driver, encoder, controller, input_filter, output_filter, velocity_estimator, 0.01f, 0.02f};
+VelocityController_V2 motor_controller = {motor_driver, encoder, controller, input_filter, output_filter, derivative_filter, 0.01, 0.02, true};
 
 // Setpoint parameters
 const float max_amplitude = 2 * M_PI;
@@ -165,10 +147,8 @@ void debugLoop(void* pvParameters)
         Serial.println(motor_controller.get_setpoint());
         Serial.print(">estimated_vel[rad/s]:");
         Serial.println(velocity_estimator.get_output());
-        Serial.print(">delta_time[s]:");
-        Serial.println(velocity_estimator.get_delta_time());
-        Serial.print(">delta_position[rad]:");
-        Serial.println(velocity_estimator.get_delta_position());
+        Serial.print(">timing[s]:");
+        Serial.println(TIMING_US_TO_S_DOUBLE(timing_service.get_delta_time()) * 1000);
 
         vTaskDelay(pdMS_TO_TICKS(100));
     }

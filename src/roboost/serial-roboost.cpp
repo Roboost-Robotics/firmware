@@ -445,7 +445,7 @@ void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
         return;
     }
 
-    double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.get_delta_time());
+    double dt = TIMING_US_TO_S_DOUBLE(timing_service.get_delta_time());
     Eigen::Vector3d robot_velocity = robot_controller.get_robot_vel();
 
     // Update odometry
@@ -464,7 +464,7 @@ void pub_timer_callback(rcl_timer_t* timer, int64_t last_call_time)
 
 void pub_callback()
 {
-    double dt = MICROS_TO_SECONDS_DOUBLE(timing_service.get_delta_time());
+    double dt = TIMING_US_TO_S_DOUBLE(timing_service.get_delta_time());
     Eigen::Vector3d robot_velocity = robot_controller.get_robot_vel();
 
     // Update odometry

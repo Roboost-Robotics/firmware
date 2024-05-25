@@ -28,20 +28,10 @@ constexpr size_t OUTPUT_VALUES_SIZE = 50;
 // Save the last OUTPUT_VALUES_SIZE values of the output
 std::vector<float> output_values(OUTPUT_VALUES_SIZE);
 
-// PID Controller parameters for no load (Step response)
-// constexpr float kp = 0.8;
-// constexpr float ki = 0;
-// constexpr float kd = 0.045;
-
-// PID Controller parameters for load (Step response)
-// constexpr float kp = 4.0;
-// constexpr float ki = 0;
-// constexpr float kd = 0.045;
-
 // PID Controller parameters for no load (Sine wave)
-constexpr float kp = 2.8;   // 2.8
-constexpr float ki = 0.0;   // 0
-constexpr float kd = 0.045; // 0.045
+constexpr float kp = 2000.8; // 2.8
+constexpr float ki = 0.0;    // 0
+constexpr float kd = 0.045;  // 0.045
 
 constexpr float max_integral = 1000;
 
@@ -55,29 +45,25 @@ constexpr float update_rate = 0.000001;    // Assuming time is in microseconds
 constexpr float deadband_threshold = 0.01f;
 constexpr float minimum_output = 0.02f;
 
-// Motor, Encoder, and Controller instances
-L298NMotorDriver motor_driver = {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL};
+// Motor, Encoder, and Controller instances arrays
+L298NMotorDriver motor_drivers[4] = {{M0_IN1, M0_IN2, M0_ENA, M0_PWM_CNL}, {M1_IN1, M1_IN2, M1_ENA, M1_PWM_CNL}, {M2_IN1, M2_IN2, M2_ENA, M2_PWM_CNL}, {M3_IN1, M3_IN2, M3_ENA, M3_PWM_CNL}};
 
-HalfQuadEncoder encoder = {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION};
+HalfQuadEncoder encoders[4] = {{M0_ENC_A, M0_ENC_B, M0_ENC_RESOLUTION}, {M1_ENC_A, M1_ENC_B, M1_ENC_RESOLUTION}, {M2_ENC_A, M2_ENC_B, M2_ENC_RESOLUTION}, {M3_ENC_A, M3_ENC_B, M3_ENC_RESOLUTION}};
 
-// NoFilter<float> derivative_filter = {};
-// LowPassFilter<float> derivative_filter = {cutoff_frequency_derivative, sampling_time_derivative};
-// MovingAverageFilter<float> derivative_filter = {input_filter_window_size};
 LowPassFilter<float> derivative_filter = {cutoff_frequency_derivative, sampling_time_derivative};
-PIDController<float> controller = {kp, ki, kd, max_integral, derivative_filter};
-// MovingAverageFilter<float> input_filter = {input_filter_window_size};
+PIDController<float> controllers[4] = {
+    {kp, ki, kd, max_integral, derivative_filter}, {kp, ki, kd, max_integral, derivative_filter}, {kp, ki, kd, max_integral, derivative_filter}, {kp, ki, kd, max_integral, derivative_filter}};
+
 NoFilter<float> input_filter = {};
-// LowPassFilter<float> input_filter = {cutoff_frequency_derivative, sampling_time_derivative};
 NoFilter<float> output_filter = {};
-// LowPassFilter<float> output_filter = {cutoff_frequency_derivative, sampling_time_derivative};
-// MovingAverageFilter<float> output_filter = {output_filter_window_size};
-// LowPassFilter<float> output_filter = {cutoff_frequency_derivative, sampling_time_derivative};
-// RateLimitingFilter<float> rate_limiting_filter = {max_rate_per_second, update_rate};
 NoFilter<float> rate_limiting_filter = {};
 
-PositionController motor_controller = {motor_driver, encoder, controller, input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output};
+PositionController motor_controllers[4] = {{motor_drivers[0], encoders[0], controllers[0], input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output},
+                                           {motor_drivers[1], encoders[1], controllers[1], input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output},
+                                           {motor_drivers[2], encoders[2], controllers[2], input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output},
+                                           {motor_drivers[3], encoders[3], controllers[3], input_filter, output_filter, rate_limiting_filter, deadband_threshold, minimum_output}};
 
-IncrementalEncoderVelocityEstimator velocity_estimator = {0.000001, 0.01, 50};
+IncrementalEncoderVelocityEstimator velocity_estimators[4] = {{0.000001, 0.01, 50}, {0.000001, 0.01, 50}, {0.000001, 0.01, 50}, {0.000001, 0.01, 50}};
 
 const float max_amplitude = 2 * M_PI;
 unsigned long last_time = 0;
@@ -142,19 +128,17 @@ void controlLoop(void* pvParameters)
         unsigned long time = TIMING_US_TO_MS(timing_service.get_last_update_time()); // Get time in milliseconds
         setpoint = getSetpoint(time);                                                // Get setpoint from function pointer
 
-        motor_controller.update(setpoint);
+        for (int i = 0; i < 4; ++i)
+        {
+            motor_controllers[i].update(setpoint);
+        }
 
         // Put the current output in the output_values vector
-        output_values.push_back(controller.get_output());
+        output_values.push_back(controllers[2].get_output());
         if (output_values.size() > OUTPUT_VALUES_SIZE)
         {
             output_values.erase(output_values.begin());
         }
-
-        // velocity_estimator.update(encoder.get_position_radians());
-
-        // Serial.print(">setpoint[rad]:");
-        // Serial.println(setpoint);
 
         // Wait for the next cycle.
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
@@ -166,11 +150,11 @@ void debugLoop(void* pvParameters)
     while (1)
     {
         Serial.print(">estimated_vel[rad/s]:");
-        Serial.println(velocity_estimator.get_output());
+        Serial.println(velocity_estimators[2].get_output());
         Serial.print(">measured_pos[ticks]:");
-        Serial.println(encoder.get_position());
+        Serial.println(encoders[2].get_position());
         Serial.print(">measured_pos[rad]:");
-        Serial.println(encoder.get_position_radians());
+        Serial.println(encoders[2].get_position_radians());
         Serial.print(">setpoint[rad]:");
         Serial.println(setpoint);
         Serial.print(">error[rad]:");
@@ -178,19 +162,19 @@ void debugLoop(void* pvParameters)
         Serial.print(">dt[us]:");
         Serial.println(timing_service.get_delta_time());
         Serial.print(">P:");
-        Serial.println(controller.get_previous_error() * kp);
+        Serial.println(controllers[2].get_previous_error() * kp);
         Serial.print(">I:");
-        Serial.println(controller.get_integral() * ki);
+        Serial.println(controllers[2].get_integral() * ki);
         Serial.print(">D:");
-        Serial.println(controller.get_derivative() * kd);
+        Serial.println(controllers[2].get_derivative() * kd);
         Serial.print(">output:");
-        Serial.println(controller.get_output());
+        Serial.println(controllers[2].get_output());
         Serial.print(">filtered_output:");
         Serial.println(output_filter.get_output());
         Serial.print(">control_value:");
-        Serial.println(motor_driver.get_motor_control());
+        Serial.println(motor_drivers[2].get_motor_control());
         Serial.print(">position_setpoint:");
-        Serial.println(motor_controller.get_setpoint());
+        Serial.println(motor_controllers[2].get_setpoint());
         for (auto value : output_values)
         {
             Serial.print(">output_values:");
