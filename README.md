@@ -1,3 +1,5 @@
+# DEPRICATION NOTE: As I'm currently restructuring the project, this README is not quite up-to-date with the changes. Working on it!
+
 # Primary Motor Cortex Documentation
 
 This repository is part of the Roboost project. For more information visit the [project website](https://www.technologiehub.at/Roboost) and the [Roboost GitHub organization](https://github.com/Roboost-Robotics).
